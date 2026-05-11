@@ -71,7 +71,13 @@ export default function HomePage() {
   }, [searchQuery]);
 
   const [timeFilter, setTimeFilter] = useState("all");
-  const [viewState, setViewState] = useState({
+  const [viewState, setViewState] = useState<{
+    longitude: number;
+    latitude: number;
+    zoom: number;
+    pitch: number;
+    transitionDuration?: number;
+  }>({
     longitude: 25.2797,
     latitude: 54.6872,
     zoom: 12.2,
