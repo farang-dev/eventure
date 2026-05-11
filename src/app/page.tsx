@@ -492,7 +492,7 @@ export default function HomePage() {
                 events={filteredEvents}
                 selectedGenre={genre}
                 onEventSelect={setSelectedEvent}
-                selectedEventId={selectedEvent?.id}
+                selectedEventId={(selectedEvent as any)?.id}
                 viewState={viewState}
                 onViewStateChange={setViewState}
                 onBoundsChange={setMapBounds}
