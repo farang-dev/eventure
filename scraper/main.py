@@ -45,7 +45,14 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
     payload["variables"]["pageSize"] = 100
     
     headers = RA_HEADERS.copy()
-    headers["Referer"] = f"https://ra.co/events/uk/{city_name}" if city_name == "london" else f"https://ra.co/events/jp/{city_name}"
+    referer_map = {
+        "london": "uk",
+        "tokyo": "jp",
+        "vilnius": "lt",
+        "belgrade": "rs"
+    }
+    country_code = referer_map.get(city_name, "jp")
+    headers["Referer"] = f"https://ra.co/events/{country_code}/{city_name}"
 
     all_parsed_events = []
     page = 1
@@ -77,6 +84,8 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = 35.6580, 139.7016
                 elif city_name == "vilnius":
                     lat_base, lng_base = 54.6872, 25.2797
+                elif city_name == "belgrade":
+                    lat_base, lng_base = 44.8125, 20.4612
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                     
@@ -204,7 +213,7 @@ if __name__ == "__main__":
     vilnius_events = fetch_ra_graphql(area_id=561, city_name="vilnius", days_ahead=14)
     if vilnius_events: insert_into_supabase(vilnius_events)
         
-    belgrade_events = fetch_ra_graphql(area_id=237, city_name="belgrade", days_ahead=14)
+    belgrade_events = fetch_ra_graphql(area_id=562, city_name="belgrade", days_ahead=14)
     if belgrade_events: insert_into_supabase(belgrade_events)
 
     print("\nDone.")
