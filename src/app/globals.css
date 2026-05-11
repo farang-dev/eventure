@@ -470,8 +470,10 @@ select.input { cursor: pointer; }
   display: flex; align-items: center; justify-content: space-around;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border);
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  flex-shrink: 0; z-index: 50;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+  flex-shrink: 0; 
+  z-index: 100;
+  width: 100%;
 }
 
 /* ─── Divider ─── */
