@@ -11,6 +11,14 @@ import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
 import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
+interface ViewState {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+  pitch: number;
+  transitionDuration?: number;
+}
+
 export default function HomePage() {
   const [view, setView] = useState<AppView>("home");
   const [genre, setGenre] = useState("all");
@@ -71,13 +79,7 @@ export default function HomePage() {
   }, [searchQuery]);
 
   const [timeFilter, setTimeFilter] = useState("all");
-  const [viewState, setViewState] = useState<{
-    longitude: number;
-    latitude: number;
-    zoom: number;
-    pitch: number;
-    transitionDuration?: number;
-  }>({
+  const [viewState, setViewState] = useState<ViewState>({
     longitude: 25.2797,
     latitude: 54.6872,
     zoom: 12.2,
@@ -284,7 +286,7 @@ export default function HomePage() {
           latitude: lat,
           zoom: query.toLowerCase().includes("tokyo") || query.toLowerCase().includes("london") ? 11 : 14,
           transitionDuration: 1500
-        });
+        } as any);
         setSearchQuery(""); // Clear query so it doesn't filter out all events
         navigate("home"); // Go back to map to see results
       }
