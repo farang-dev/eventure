@@ -269,11 +269,12 @@ h1,h2,h3,h4,h5 {
 /* ─── Bottom sheet ─── */
 .bottom-sheet {
   background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px; /* Extra space from bottom nav */
 }
 .sheet-handle {
   width: 32px; height: 3px;
@@ -283,7 +284,9 @@ h1,h2,h3,h4,h5 {
 }
 .bottom-sheet-container {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 40;
 }
 

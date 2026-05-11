@@ -572,7 +572,7 @@ export default function HomePage() {
                   className="bottom-sheet"
                   style={{
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    maxHeight: isListHidden ? "44px" : (sheetExpanded ? "70vh" : "210px"),
+                    maxHeight: isListHidden ? "56px" : (sheetExpanded ? "70vh" : "210px"),
                     overflowY: sheetExpanded ? "auto" : "hidden",
                     opacity: 1,
                   }}
@@ -598,7 +598,7 @@ export default function HomePage() {
                     }}
                   >
                     <div className="sheet-handle" />
-                    <div style={{ padding: "8px 14px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ padding: "8px 14px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div 
                         style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}
                       >
