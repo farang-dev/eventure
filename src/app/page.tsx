@@ -578,19 +578,28 @@ export default function HomePage() {
                   }}
                 >
                   {/* Sheet handle + header */}
-                  <div style={{ 
-                    cursor: "pointer", 
-                    position: "sticky", 
-                    top: 0, 
-                    background: "var(--bg-secondary)", 
-                    zIndex: 10, // Increased z-index
-                    borderBottom: isListHidden ? "none" : "1px solid var(--border)",
-                    touchAction: "none" // Prevent scroll interference on handle area
-                  }}>
-                    <div className="sheet-handle" onClick={() => { if(isListHidden) setIsListHidden(false); setSheetExpanded(!sheetExpanded); }} />
+                  <div 
+                    onClick={() => { 
+                      if (isListHidden) {
+                        setIsListHidden(false);
+                        setSheetExpanded(false); 
+                      } else {
+                        setSheetExpanded(!sheetExpanded);
+                      }
+                    }}
+                    style={{ 
+                      cursor: "pointer", 
+                      position: "sticky", 
+                      top: 0, 
+                      background: "var(--bg-secondary)", 
+                      zIndex: 10, 
+                      borderBottom: isListHidden ? "none" : "1px solid var(--border)",
+                      touchAction: "none"
+                    }}
+                  >
+                    <div className="sheet-handle" />
                     <div style={{ padding: "8px 14px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div 
-                        onClick={() => { if(isListHidden) setIsListHidden(false); else setSheetExpanded(!sheetExpanded); }}
                         style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}
                       >
                         <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13 }}>
