@@ -118,17 +118,8 @@ export default function MapView({
   const handleMove = useCallback(
     (evt: any) => {
       onViewStateChange(evt.viewState);
-      const map = mapRef.current;
-      if (map) {
-        const b = map.getBounds();
-        if (b) {
-          const bounds: [number, number, number, number] = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
-          setBounds(bounds);
-          onBoundsChange?.(bounds);
-        }
-      }
     },
-    [onViewStateChange, onBoundsChange]
+    [onViewStateChange]
   );
 
   // Sync bounds whenever viewState changes or map is moved
