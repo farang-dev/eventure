@@ -98,12 +98,15 @@ export default function HomePage() {
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Restore state after mount
+  // Restore state after mount & handle Deep Linking
   useEffect(() => {
     setIsMounted(true);
     
+    const params = new URLSearchParams(window.location.search);
+    const cityParam = params.get("city");
+
     const savedViewState = localStorage.getItem("eventure-viewstate");
-    if (savedViewState) {
+    if (savedViewState && !cityParam) {
       try {
         setViewState(JSON.parse(savedViewState));
       } catch (e) {}
@@ -114,7 +117,30 @@ export default function HomePage() {
       setMapStyle(savedMapStyle);
     }
 
-    if ("geolocation" in navigator) {
+    // Handle city deep link (?city=london)
+    if (cityParam) {
+      const fetchCity = async () => {
+        try {
+          const resp = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(cityParam)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&limit=1`
+          );
+          const data = await resp.json();
+          if (data.features && data.features.length > 0) {
+            const [lng, lat] = data.features[0].center;
+            setViewState({
+              longitude: lng,
+              latitude: lat,
+              zoom: 12.2,
+              pitch: 40,
+              transitionDuration: 2000
+            });
+          }
+        } catch (err) {
+          console.error("Failed to geocode city from URL:", err);
+        }
+      };
+      fetchCity();
+    } else if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { longitude, latitude } = position.coords;
@@ -157,8 +183,13 @@ export default function HomePage() {
       pitch: 40,
       transitionDuration: 1000
     });
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
-      setIsListHidden(true);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("city");
+      window.history.pushState({}, "", url);
+      if (window.innerWidth < 768) {
+        setIsListHidden(true);
+      }
     }
   };
 
@@ -742,8 +773,18 @@ export default function HomePage() {
                               zoom: feat.place_type?.includes("region") || feat.place_type?.includes("country") ? 10 : 14,
                               transitionDuration: 1500
                             });
+                            
+                            // Update URL for sharing
+                            if (typeof window !== "undefined") {
+                              const url = new URL(window.location.href);
+                              // Extract a clean city name (e.g., "London" from "London, United Kingdom")
+                              const cityName = feat.text || feat.place_name.split(",")[0];
+                              url.searchParams.set("city", cityName.toLowerCase());
+                              window.history.pushState({}, "", url);
+                            }
+
                             setSearchQuery("");
-                            navigate("home");
+                            setView("home");
                           }}
                           style={{
                             padding: "10px 14px", background: "var(--card-bg)",

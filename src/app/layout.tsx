@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     description: "Discover the best club & music events happening right now.",
     type: "website",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Eventure",
+  },
 };
 
 export const viewport = {
@@ -18,6 +23,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#0D1117",
 };
 
 export default function RootLayout({
