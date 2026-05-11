@@ -16,9 +16,9 @@
     "date-fns": "^4.1.0",
     "lucide-react": "^0.511.0",
     "mapbox-gl": "^3.23.1",
-    "next": "latest",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "15.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-map-gl": "^8.1.1",
     "supercluster": "^8.0.1"
   },
@@ -28,7 +28,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "latest",
+    "eslint-config-next": "15.1.0",
     "typescript": "^5"
   }
 }
