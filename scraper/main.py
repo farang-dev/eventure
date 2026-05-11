@@ -204,4 +204,7 @@ if __name__ == "__main__":
     vilnius_events = fetch_ra_graphql(area_id=561, city_name="vilnius", days_ahead=14)
     if vilnius_events: insert_into_supabase(vilnius_events)
         
+    belgrade_events = fetch_ra_graphql(area_id=237, city_name="belgrade", days_ahead=14)
+    if belgrade_events: insert_into_supabase(belgrade_events)
+
     print("\nDone.")
