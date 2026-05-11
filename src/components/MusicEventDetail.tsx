@@ -1,0 +1,280 @@
+"use client";
+import type { MusicEvent } from "@/lib/types";
+import { GENRE_META, formatEventTime, getDaysUntil } from "@/lib/mock-data";
+import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star } from "lucide-react";
+import GenreIcon from "@/components/GenreIcon";
+
+interface Props {
+  event: MusicEvent;
+  onBack?: () => void;
+}
+
+export default function MusicEventDetail({ event, onBack }: Props) {
+  const meta = GENRE_META[event.genre] ?? GENRE_META.other;
+  const timeLabel = formatEventTime(event.starts_at);
+  const isLive = event.status === "happening_now";
+  const isToday = event.status === "today";
+  const daysUntil = getDaysUntil(event.starts_at);
+
+  const urgencyColor = isLive
+    ? "var(--primary)"
+    : isToday
+    ? "var(--today-color)"
+    : "var(--text-secondary)";
+
+  const startTime = new Date(event.starts_at).toLocaleTimeString("en", {
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  });
+  const endTime = new Date(event.ends_at).toLocaleTimeString("en", {
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  });
+  const dateStr = new Date(event.starts_at).toLocaleDateString("en", {
+    weekday: "long", month: "long", day: "numeric",
+  });
+
+  return (
+    <div
+      id={`event-detail-${event.id}`}
+      style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column" }}
+    >
+      <div className="detail-layout">
+        {/* Left/Top Column: Flyer */}
+        <div className="detail-hero">
+          {event.image_url ? (
+            <img 
+              src={event.image_url} 
+              alt={event.title} 
+              style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} 
+            />
+          ) : (
+            <div
+              style={{
+                width: "100%", height: "100%",
+                background: `linear-gradient(135deg, ${meta.bg}, var(--bg-secondary))`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <GenreIcon name={meta.icon} size={48} color={meta.color} />
+            </div>
+          )}
+          
+          {/* Back button */}
+          {onBack && (
+            <button
+              id="event-detail-back"
+              onClick={onBack}
+              style={{
+                position: "absolute", top: 14, left: 14,
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(13,17,23,0.85)", backdropFilter: "blur(6px)",
+                border: "1px solid var(--border)",
+                color: "var(--text-primary)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", zIndex: 10
+              }}
+            >
+              <ArrowLeft size={17} />
+            </button>
+          )}
+
+          {/* Badges */}
+          <div style={{ position: "absolute", top: 14, right: 14, display: "flex", gap: 6, zIndex: 10 }}>
+            {isLive && (
+              <span className="badge badge-live">
+                <span className="live-dot" style={{ width: 5, height: 5 }} />
+                LIVE NOW
+              </span>
+            )}
+            {event.is_featured && (
+              <span className="badge badge-featured">
+                <Star size={9} />Featured
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Right/Bottom Column: Content */}
+        <div className="detail-content">
+          {/* Genre tag */}
+          <div style={{ marginBottom: 16 }}>
+            <span
+              style={{
+                background: meta.bg, border: `1px solid ${meta.color}44`,
+                color: meta.color, fontSize: 11, fontWeight: 700,
+                padding: "4px 12px", borderRadius: 999,
+                textTransform: "uppercase", letterSpacing: "0.07em",
+                display: "inline-flex", alignItems: "center"
+              }}
+            >
+              <GenreIcon name={meta.icon} size={11} style={{ marginRight: 5 }} />
+              {meta.label}
+            </span>
+          </div>
+
+          {/* Date/time + title */}
+          <div>
+            <div
+              style={{
+                fontSize: 11, fontWeight: 700, color: urgencyColor,
+                textTransform: "uppercase", letterSpacing: "0.06em",
+                marginBottom: 7, display: "flex", alignItems: "center", gap: 5,
+              }}
+            >
+              {isLive && <span className="live-dot" style={{ width: 5, height: 5 }} />}
+              <Clock size={11} />
+              {timeLabel}
+            </div>
+            <h1
+              style={{
+                fontFamily: "'Poppins', sans-serif", fontWeight: 800,
+                fontSize: 32, color: "var(--text-primary)", lineHeight: 1.15, marginBottom: 8,
+              }}
+            >
+              {event.title}
+            </h1>
+            <p style={{ fontSize: 16, color: "var(--text-secondary)", fontWeight: 500 }}>
+              {dateStr} · {startTime}–{endTime}
+            </p>
+          </div>
+
+          {/* Artist lineup */}
+          {event.artists.length > 0 && (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <Music size={13} color="var(--text-muted)" />
+                <span className="label">Lineup</span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {event.artists.map((artist, i) => (
+                  <div
+                    key={artist}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "6px 12px",
+                      background: "var(--bg-elevated)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artist}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Venue card with Google Maps link */}
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.venue_name} ${event.venue_address || ""}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: "13px 15px",
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              display: "flex", alignItems: "flex-start", gap: 10,
+              textDecoration: "none",
+              transition: "transform 0.15s ease, background 0.15s ease",
+              cursor: "pointer",
+            }}
+            className="venue-card-link"
+          >
+            <div
+              style={{
+                width: 34, height: 34, borderRadius: 9,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <MapPin size={15} color="var(--text-muted)" />
+            </div>
+            <div>
+              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", marginBottom: 2 }}>
+                {event.venue_name}
+              </p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{event.venue_address || "View on Google Maps"}</p>
+            </div>
+            <ExternalLink size={12} color="var(--text-muted)" style={{ marginLeft: "auto", alignSelf: "center" }} />
+          </a>
+
+          {/* Description */}
+          {event.description && (
+            <div>
+              <label className="label">About</label>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                {event.description}
+              </p>
+            </div>
+          )}
+
+          {/* Price */}
+          {event.price && (
+            <div
+              style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "11px 15px",
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+              }}
+            >
+              <span className="label" style={{ marginBottom: 0 }}>Entrance</span>
+              <span
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 700, fontSize: 16,
+                  color: event.price === "Free" ? "var(--green)" : "var(--text-primary)",
+                }}
+              >
+                {event.price}
+              </span>
+            </div>
+          )}
+
+          {/* CTAs */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {event.ticket_url && (
+              <a
+                id="event-ticket-btn"
+                href={event.ticket_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  padding: "13px 20px", background: "var(--primary)", color: "#fff",
+                  borderRadius: 12, fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 700, fontSize: 14, textDecoration: "none",
+                  transition: "all 0.18s",
+                }}
+              >
+                <Ticket size={15} />
+                Get Tickets
+                <ExternalLink size={12} />
+              </a>
+            )}
+            {event.source_url && (
+              <a
+                href={event.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  padding: "10px 16px", background: "transparent",
+                  color: "var(--text-muted)", borderRadius: 10,
+                  border: "1px solid var(--border)", fontSize: 12, fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                <ExternalLink size={11} />
+                View on Resident Advisor
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
