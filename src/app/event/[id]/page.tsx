@@ -15,8 +15,11 @@ async function getEvent(id: string): Promise<MusicEvent | null> {
   return data as MusicEvent | null;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
+export async function generateMetadata(props: { 
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}): Promise<Metadata> {
+  const { id } = await props.params;
   const event = await getEvent(id);
   if (!event) return { title: "Event Not Found" };
 
@@ -37,8 +40,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function EventPage(props: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { id } = await props.params;
   const event = await getEvent(id);
   if (!event) return notFound();
 
