@@ -8,7 +8,7 @@ import SubmitEventModal from "@/components/SubmitEventModal";
 import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
-import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Layers } from "lucide-react";
+import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Layers, ChevronDown, ChevronUp } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 interface ViewState {
@@ -578,7 +578,15 @@ export default function HomePage() {
                   }}
                 >
                   {/* Sheet handle + header */}
-                  <div style={{ cursor: "pointer", position: "sticky", top: 0, background: "var(--bg-secondary)", zIndex: 1, borderBottom: isListHidden ? "none" : "1px solid var(--border)" }}>
+                  <div style={{ 
+                    cursor: "pointer", 
+                    position: "sticky", 
+                    top: 0, 
+                    background: "var(--bg-secondary)", 
+                    zIndex: 10, // Increased z-index
+                    borderBottom: isListHidden ? "none" : "1px solid var(--border)",
+                    touchAction: "none" // Prevent scroll interference on handle area
+                  }}>
                     <div className="sheet-handle" onClick={() => { if(isListHidden) setIsListHidden(false); setSheetExpanded(!sheetExpanded); }} />
                     <div style={{ padding: "8px 14px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div 
@@ -606,10 +614,27 @@ export default function HomePage() {
                         {!isListHidden && (
                           <button
                             className="btn btn-ghost"
-                            style={{ fontSize: 11, padding: "4px 8px", color: "var(--primary)" }}
-                            onClick={(e) => { e.stopPropagation(); setSheetExpanded(!sheetExpanded); }}
+                            style={{ 
+                              padding: "4px 10px", 
+                              color: "var(--primary)", 
+                              display: "flex", 
+                              alignItems: "center", 
+                              gap: 4 
+                            }}
+                            onClick={(e) => { 
+                              e.preventDefault();
+                              e.stopPropagation(); 
+                              setSheetExpanded(!sheetExpanded); 
+                            }}
                           >
-                            {sheetExpanded ? "Collapse" : `All (${sortedEvents.length})`}
+                            {sheetExpanded ? (
+                              <ChevronDown size={18} strokeWidth={2.5} />
+                            ) : (
+                              <>
+                                <span style={{ fontSize: 11, fontWeight: 700 }}>All ({sortedEvents.length})</span>
+                                <ChevronUp size={14} strokeWidth={2.5} />
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
