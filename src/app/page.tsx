@@ -23,6 +23,13 @@ export default function HomePage() {
   const [view, setView] = useState<AppView>("home");
   const [genre, setGenre] = useState("all");
   const [isListHidden, setIsListHidden] = useState(false);
+  
+  // Set initial hidden state for mobile
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setIsListHidden(true);
+    }
+  }, []);
   const [selectedEvent, setSelectedEvent] = useState<MusicEvent | null>(null as MusicEvent | null);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -138,6 +145,22 @@ export default function HomePage() {
     localStorage.setItem("eventure-viewstate", JSON.stringify(viewState));
   }, [viewState, isMounted]);
 
+  const handleReset = () => {
+    setView("home");
+    setGenre("all");
+    setSearchQuery("");
+    setSelectedEvent(null);
+    setViewState({
+      longitude: 25.2797,
+      latitude: 54.6872,
+      zoom: 12.2,
+      pitch: 40,
+      transitionDuration: 1000
+    });
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setIsListHidden(true);
+    }
+  };
 
   const events = useMemo(() => {
     // Deduplicate by title+venue+starts_at
@@ -371,12 +394,14 @@ export default function HomePage() {
               <div className="top-header-row">
                 <div
                   id="header-logo"
+                  onClick={handleReset}
                   style={{
                     fontFamily: "'Poppins', sans-serif", fontWeight: 900,
                     fontSize: 22, color: "var(--text-primary)", flexShrink: 0,
                     display: "flex", alignItems: "center", gap: 6,
-                    letterSpacing: "-0.02em"
+                    letterSpacing: "-0.02em", cursor: "pointer", userSelect: "none"
                   }}
+                  className="animate-fadein"
                 >
                   <span className="gradient-text">Eventure</span>
                 </div>
