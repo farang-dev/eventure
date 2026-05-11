@@ -22,6 +22,7 @@ interface ViewState {
 export default function HomePage() {
   const [view, setView] = useState<AppView>("home");
   const [genre, setGenre] = useState("all");
+  const [isListHidden, setIsListHidden] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<MusicEvent | null>(null as MusicEvent | null);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -545,16 +546,20 @@ export default function HomePage() {
                 <div
                   className="bottom-sheet"
                   style={{
-                    transition: "max-height 0.3s ease",
-                    maxHeight: sheetExpanded ? "62vh" : "200px",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    maxHeight: isListHidden ? "44px" : (sheetExpanded ? "70vh" : "210px"),
                     overflowY: sheetExpanded ? "auto" : "hidden",
+                    opacity: 1,
                   }}
                 >
                   {/* Sheet handle + header */}
-                  <div onClick={() => setSheetExpanded((s) => !s)} style={{ cursor: "pointer", position: "sticky", top: 0, background: "var(--bg-secondary)", zIndex: 1 }}>
-                    <div className="sheet-handle" />
-                    <div style={{ padding: "10px 14px 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ cursor: "pointer", position: "sticky", top: 0, background: "var(--bg-secondary)", zIndex: 1, borderBottom: isListHidden ? "none" : "1px solid var(--border)" }}>
+                    <div className="sheet-handle" onClick={() => { if(isListHidden) setIsListHidden(false); setSheetExpanded(!sheetExpanded); }} />
+                    <div style={{ padding: "8px 14px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div 
+                        onClick={() => { if(isListHidden) setIsListHidden(false); else setSheetExpanded(!sheetExpanded); }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}
+                      >
                         <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13 }}>
                           {timeFilter === "today" || liveCount > 0 ? "Now & Tonight" : "Upcoming Events"}
                         </span>
@@ -565,13 +570,24 @@ export default function HomePage() {
                           </span>
                         )}
                       </div>
-                      <button
-                        className="btn btn-ghost"
-                        style={{ fontSize: 11, padding: "3px 8px", color: "var(--primary)" }}
-                        onClick={(e) => { e.stopPropagation(); setSheetExpanded(true); }}
-                      >
-                        All ({sortedEvents.length})
-                      </button>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <button
+                          className="btn btn-ghost"
+                          style={{ fontSize: 11, padding: "4px 8px", color: "var(--text-secondary)", minWidth: 60 }}
+                          onClick={(e) => { e.stopPropagation(); setIsListHidden(!isListHidden); if(sheetExpanded) setSheetExpanded(false); }}
+                        >
+                          {isListHidden ? "Show List" : "Hide"}
+                        </button>
+                        {!isListHidden && (
+                          <button
+                            className="btn btn-ghost"
+                            style={{ fontSize: 11, padding: "4px 8px", color: "var(--primary)" }}
+                            onClick={(e) => { e.stopPropagation(); setSheetExpanded(!sheetExpanded); }}
+                          >
+                            {sheetExpanded ? "Collapse" : `All (${sortedEvents.length})`}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 

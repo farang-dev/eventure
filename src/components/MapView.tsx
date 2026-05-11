@@ -73,6 +73,14 @@ export default function MapView({
   const [bounds, setBounds] = useState<[number, number, number, number]>([
     138, 34, 141, 37,
   ]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const filtered = useMemo(
     () => (selectedGenre === "all" ? events : events.filter((e) => e.genre === selectedGenre)),
@@ -177,8 +185,15 @@ export default function MapView({
           });
         }}
       >
-        <NavigationControl position="bottom-right" />
-        <GeolocateControl position="bottom-right" trackUserLocation showUserLocation />
+        {/* Map Controls - Snapped to Top-Right corner */}
+        {!isMobile && (
+          <NavigationControl position="top-right" />
+        )}
+        <GeolocateControl 
+          position="top-right" 
+          trackUserLocation 
+          showUserLocation 
+        />
 
         {/* Persistent Custom User Location Marker - Enhanced Emphasis */}
         {userLocation && (
@@ -406,15 +421,25 @@ export default function MapView({
         })}
       </Map>
 
-      {/* Legend - Responsive to Theme */}
+      {/* Legend - Positioned Top-Left to avoid control overlap */}
       <div
         style={{
-          position: "absolute", top: 12, right: 12,
-          background: "var(--bg-elevated)", backdropFilter: "blur(10px)",
-          border: "1px solid var(--border)", borderRadius: 10,
-          padding: "9px 12px", zIndex: 10, pointerEvents: "none",
-          display: "flex", flexDirection: "column", gap: 5,
-          fontSize: 10, fontWeight: 700, color: "var(--text-primary)",
+          position: "absolute", 
+          top: isMobile ? 65 : 65, 
+          left: 12,
+          background: "var(--bg-elevated)", 
+          backdropFilter: "blur(10px)",
+          border: "1px solid var(--border)", 
+          borderRadius: 10,
+          padding: "9px 12px", 
+          zIndex: 5, // Lower than style toggle if needed
+          pointerEvents: "none",
+          display: "flex", 
+          flexDirection: "column", 
+          gap: 5,
+          fontSize: 10, 
+          fontWeight: 700, 
+          color: "var(--text-primary)",
           boxShadow: "var(--shadow-md)",
         }}
       >
