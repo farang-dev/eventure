@@ -114,8 +114,10 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 
                 starts_at = ev.get("startTime") or ev.get("date")
                 ends_at = ev.get("endTime") or starts_at
+                source_id = ev.get("id")
                 
                 all_parsed_events.append({
+                    "source_id": source_id,
                     "title": title,
                     "description": title,
                     "image_url": image_url,
@@ -165,13 +167,16 @@ def insert_into_supabase(events):
     success_count = 0
     for event in events:
         try:
+            # Use UPSERT via on_conflict on source_id
+            # Prefer: resolution=merge-duplicates is the standard PostgREST way for upsert
+            headers["Prefer"] = "resolution=merge-duplicates"
             res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=event, headers=headers)
             if res.status_code in [201, 204]:
                 success_count += 1
             else:
-                pass
+                print(f"Failed to insert event {event.get('title')}: {res.status_code} - {res.text}")
         except Exception as e:
-            pass
+            print(f"Error inserting event: {e}")
     print(f"🎉 Successfully inserted {success_count} / {len(events)} events!")
 
 def cleanup_expired_events():

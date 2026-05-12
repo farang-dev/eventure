@@ -28,6 +28,7 @@ create table public.music_events (
   price text,
   ticket_url text,
   source_url text, -- To track where we scraped this from
+  source_id text unique, -- Unique identifier from the source (e.g., RA ID) to prevent duplicates
   is_featured boolean default false,
   
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
