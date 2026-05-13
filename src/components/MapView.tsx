@@ -88,15 +88,37 @@ export default function MapView({
   );
 
   // Build GeoJSON points for supercluster
-  const points: GeoPoint[] = useMemo(
-    () =>
-      filtered.map((e) => ({
+  // IMPROVEMENT: Group events at the exact same location to prevent pin stacking
+  const points: GeoPoint[] = useMemo(() => {
+    const groups: Record<string, MusicEvent[]> = {};
+    
+    filtered.forEach(e => {
+      // Use a string key for exact coordinate match
+      const key = `${e.lat.toFixed(6)},${e.lng.toFixed(6)}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e);
+    });
+
+    return Object.values(groups).map(group => {
+      // Sort by starts_at ascending to find the nearest/current event
+      const sorted = [...group].sort((a, b) => 
+        new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+      );
+      
+      const nearest = sorted[0];
+      
+      return {
         type: "Feature",
-        geometry: { type: "Point", coordinates: [e.lng, e.lat] },
-        properties: { ...e, cluster: false },
-      })),
-    [filtered]
-  );
+        geometry: { type: "Point", coordinates: [nearest.lng, nearest.lat] },
+        properties: { 
+          ...nearest, 
+          cluster: false,
+          // We can attach the count or other events if we want to show a "multi-event" indicator
+          eventCountAtLocation: group.length 
+        },
+      } as GeoPoint;
+    });
+  }, [filtered]);
 
   // Create supercluster — higher radius + maxZoom means clusters replace pins until zoomed in enough
   const sc = useMemo(() => {
@@ -391,19 +413,58 @@ export default function MapView({
                     >
                       {isLive ? "LIVE" : event.venue_name}
                     </span>
+                    {(cluster.properties as any).eventCountAtLocation > 1 && (
+                      <span
+                        style={{
+                          background: "rgba(255,255,255,0.2)",
+                          borderRadius: 4,
+                          padding: "0 4px",
+                          fontSize: 9,
+                          fontWeight: 800,
+                          color: "#FFF",
+                          marginLeft: 2,
+                        }}
+                      >
+                        +{(cluster.properties as any).eventCountAtLocation - 1}
+                      </span>
+                    )}
                   </div>
                 ) : (
                   // Compact dot — at low zoom, no text, just color
-                  <div
-                    style={{
-                      width: isUrgent ? 14 : 11,
-                      height: isUrgent ? 14 : 11,
-                      borderRadius: "50%",
-                      background: pinBg,
-                      border: "2.5px solid white",
-                      boxShadow: `0 0 15px ${pinBg}, 0 0 5px rgba(0,0,0,0.8)`,
-                    }}
-                  />
+                  <div style={{ position: "relative" }}>
+                    <div
+                      style={{
+                        width: isUrgent ? 14 : 11,
+                        height: isUrgent ? 14 : 11,
+                        borderRadius: "50%",
+                        background: pinBg,
+                        border: "2.5px solid white",
+                        boxShadow: `0 0 15px ${pinBg}, 0 0 5px rgba(0,0,0,0.8)`,
+                      }}
+                    />
+                    {(cluster.properties as any).eventCountAtLocation > 1 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          background: "#FFF",
+                          color: "#000",
+                          borderRadius: "50%",
+                          width: 12,
+                          height: 12,
+                          fontSize: 8,
+                          fontWeight: 900,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                        }}
+                      >
+                        {(cluster.properties as any).eventCountAtLocation}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
