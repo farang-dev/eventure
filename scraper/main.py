@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import time
+import pytz
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
@@ -14,6 +15,13 @@ RA_GRAPHQL_URL = 'https://ra.co/graphql'
 RA_HEADERS = {
     'Content-Type': 'application/json',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+
+CITY_TIMEZONES = {
+    "tokyo": "Asia/Tokyo",
+    "london": "Europe/London",
+    "vilnius": "Europe/Vilnius",
+    "belgrade": "Europe/Belgrade"
 }
 
 def map_ra_genre(genre_name):
@@ -78,7 +86,9 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 
                 venue = ev.get("venue", {})
                 venue_name = venue.get("name", "TBA")
+                venue_location = venue.get("location")
                 
+                # Default coordinates (randomized city center) as fallback
                 import random
                 if city_name == "tokyo":
                     lat_base, lng_base = 35.6580, 139.7016
@@ -88,9 +98,14 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = 44.8125, 20.4612
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
-                    
+                
                 lat = lat_base + random.uniform(-0.02, 0.02)
                 lng = lng_base + random.uniform(-0.02, 0.02)
+
+                # Overwrite with actual RA coordinates if available
+                if venue_location and venue_location.get("latitude") and venue_location.get("longitude"):
+                    lat = float(venue_location["latitude"])
+                    lng = float(venue_location["longitude"])
                 
                 images = ev.get("images", [])
                 image_url = images[0].get("filename") if images else None
@@ -112,10 +127,32 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     elif any(x in title_lower for x in ["disco"]): genre_name = "disco"
                 genre = map_ra_genre(genre_name)
                 
-                starts_at = ev.get("startTime") or ev.get("date")
-                ends_at = ev.get("endTime") or starts_at
+                starts_at_local = ev.get("startTime") or ev.get("date")
+                ends_at_local = ev.get("endTime") or starts_at_local
                 source_id = ev.get("id")
                 
+                # Handle Timezones: RA returns local time without offset
+                # We convert it to UTC for storage
+                try:
+                    tz_name = CITY_TIMEZONES.get(city_name.lower(), "UTC")
+                    tz = pytz.timezone(tz_name)
+                    
+                    # RA format: 2026-05-17T23:00:00.000 (might vary slightly)
+                    # We strip the milliseconds if they exist for parsing
+                    s_str = starts_at_local.split('.')[0]
+                    e_str = ends_at_local.split('.')[0]
+                    
+                    s_dt = datetime.strptime(s_str, "%Y-%m-%dT%H:%M:%S")
+                    e_dt = datetime.strptime(e_str, "%Y-%m-%dT%H:%M:%S")
+                    
+                    # Localize and convert to UTC
+                    starts_at = tz.localize(s_dt).astimezone(pytz.UTC).isoformat().replace('+00:00', 'Z')
+                    ends_at = tz.localize(e_dt).astimezone(pytz.UTC).isoformat().replace('+00:00', 'Z')
+                except Exception as tz_err:
+                    print(f"⚠️ Timezone conversion error for {title}: {tz_err}")
+                    starts_at = starts_at_local
+                    ends_at = ends_at_local
+
                 all_parsed_events.append({
                     "source_id": source_id,
                     "title": title,
@@ -167,10 +204,18 @@ def insert_into_supabase(events):
     success_count = 0
     for event in events:
         try:
-            # Use UPSERT via on_conflict on source_id
-            # Prefer: resolution=merge-duplicates is the standard PostgREST way for upsert
+            # Attempt UPSERT (requires source_id column and unique constraint)
             headers["Prefer"] = "resolution=merge-duplicates"
             res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=event, headers=headers)
+            
+            if res.status_code == 400 and "source_id" in res.text:
+                # Fallback: source_id column doesn't exist yet
+                # We must remove it from the payload otherwise it will still fail
+                headers.pop("Prefer", None)
+                fallback_event = event.copy()
+                fallback_event.pop("source_id", None)
+                res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=fallback_event, headers=headers)
+
             if res.status_code in [201, 204]:
                 success_count += 1
             else:
@@ -203,22 +248,46 @@ def cleanup_expired_events():
     except Exception as e:
         print(f"❌ Error during cleanup: {e}")
 
+def clear_city_events(city_name):
+    if not SUPABASE_URL or not SUPABASE_KEY: return
+    
+    print(f"\n[Refresh] Clearing all events for {city_name.upper()} to ensure accurate data...")
+    
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        # Delete all events for this city
+        res = requests.delete(f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}", headers=headers)
+        if res.status_code in [200, 204]:
+            print(f"✅ Events for {city_name.upper()} cleared.")
+        else:
+            print(f"⚠️ Refresh returned status {res.status_code}")
+    except Exception as e:
+        print(f"❌ Error during refresh: {e}")
+
 if __name__ == "__main__":
     print("--- Eventure Scraping Pipeline (2 Weeks) ---")
     
     # Cleanup first to save space
     cleanup_expired_events()
     
-    tokyo_events = fetch_ra_graphql(area_id=27, city_name="tokyo", days_ahead=14)
-    if tokyo_events: insert_into_supabase(tokyo_events)
-        
-    london_events = fetch_ra_graphql(area_id=13, city_name="london", days_ahead=14)
-    if london_events: insert_into_supabase(london_events)
+    cities = [
+        {"name": "tokyo", "id": 27},
+        {"name": "london", "id": 13},
+        {"name": "vilnius", "id": 561},
+        {"name": "belgrade", "id": 562},
+    ]
 
-    vilnius_events = fetch_ra_graphql(area_id=561, city_name="vilnius", days_ahead=14)
-    if vilnius_events: insert_into_supabase(vilnius_events)
+    for city in cities:
+        # Clear all events to ensure no duplicates or inaccurate locations remain
+        clear_city_events(city["name"])
         
-    belgrade_events = fetch_ra_graphql(area_id=562, city_name="belgrade", days_ahead=14)
-    if belgrade_events: insert_into_supabase(belgrade_events)
+        events = fetch_ra_graphql(area_id=city["id"], city_name=city["name"], days_ahead=14)
+        if events:
+            insert_into_supabase(events)
 
     print("\nDone.")
