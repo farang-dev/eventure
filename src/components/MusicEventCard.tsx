@@ -12,7 +12,7 @@ interface Props {
 
 export default function MusicEventCard({ event, onClick, compact }: Props) {
   const meta = GENRE_META[event.genre] ?? GENRE_META.other;
-  const timeLabel = formatEventTime(event.starts_at);
+  const timeLabel = formatEventTime(event.starts_at, event.city);
   const isLive = event.status === "happening_now";
   const isToday = event.status === "today";
   const daysUntil = getDaysUntil(event.starts_at);

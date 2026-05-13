@@ -1,6 +1,6 @@
 "use client";
 import type { MusicEvent } from "@/lib/types";
-import { GENRE_META, formatEventTime, getDaysUntil } from "@/lib/mock-data";
+import { GENRE_META, formatEventTime, getDaysUntil, CITY_TZS } from "@/lib/mock-data";
 import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star } from "lucide-react";
 import GenreIcon from "@/components/GenreIcon";
 
@@ -11,7 +11,7 @@ interface Props {
 
 export default function MusicEventDetail({ event, onBack }: Props) {
   const meta = GENRE_META[event.genre] ?? GENRE_META.other;
-  const timeLabel = formatEventTime(event.starts_at);
+  const timeLabel = formatEventTime(event.starts_at, event.city);
   const isLive = event.status === "happening_now";
   const isToday = event.status === "today";
   const daysUntil = getDaysUntil(event.starts_at);
@@ -22,15 +22,17 @@ export default function MusicEventDetail({ event, onBack }: Props) {
     ? "var(--today-color)"
     : "var(--text-secondary)";
 
+  const tz = CITY_TZS[event.city.toLowerCase()];
+
   const startTime = new Date(event.starts_at).toLocaleTimeString("en", {
-    hour: "2-digit", minute: "2-digit", hour12: false,
+    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
   });
   const endTime = new Date(event.ends_at).toLocaleTimeString("en", {
-    hour: "2-digit", minute: "2-digit", hour12: false,
+    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
   });
-  const dateStr = new Date(event.starts_at).toLocaleDateString("en", {
-    weekday: "long", month: "long", day: "numeric",
-  });
+  const dateStr = new Intl.DateTimeFormat("en", {
+    weekday: "long", month: "long", day: "numeric", timeZone: tz
+  }).format(new Date(event.starts_at));
 
   return (
     <div

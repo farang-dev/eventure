@@ -234,12 +234,27 @@ export const GENRE_META: Record<
   other:           { label: "Other",        icon: "Music",             color: "#6B7280", bg: "rgba(107,114,128,0.12)" },
 };
 
-export function formatEventTime(startsAt: string): string {
+export const CITY_TZS: Record<string, string> = {
+  tokyo: "Asia/Tokyo",
+  london: "Europe/London",
+  vilnius: "Europe/Vilnius",
+  belgrade: "Europe/Belgrade",
+  東京: "Asia/Tokyo",
+};
+
+export function formatEventTime(startsAt: string, city?: string): string {
   const d = new Date(startsAt);
   const now = new Date();
   const diffMs = d.getTime() - now.getTime();
   const diffDays = getDaysUntil(startsAt);
-  const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+  
+  const tz = city ? CITY_TZS[city.toLowerCase()] : undefined;
+  const timeStr = d.toLocaleTimeString("en-GB", { 
+    hour: "2-digit", 
+    minute: "2-digit", 
+    hour12: false,
+    timeZone: tz
+  });
 
   if (diffMs < 0 && Math.abs(diffMs) < 3600000 * 6) return "🔴 LIVE NOW";
   if (diffMs < 0) return "Ended";
@@ -247,9 +262,13 @@ export function formatEventTime(startsAt: string): string {
   if (diffDays === 1) return `Tomorrow ${timeStr}`;
   if (diffDays < 7) {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    return `${days[d.getDay()]} ${timeStr}`;
+    // Note: getDay() uses local time, but for the day name it's usually acceptable. 
+    // For perfect accuracy we could use Intl.DateTimeFormat for the weekday too.
+    const dayName = new Intl.DateTimeFormat("en-US", { weekday: 'short', timeZone: tz }).format(d);
+    return `${dayName} ${timeStr}`;
   }
-  return `${d.toLocaleDateString("en-GB", { month: "short", day: "numeric" })} ${timeStr}`;
+  const datePart = new Intl.DateTimeFormat("en-GB", { month: "short", day: "numeric", timeZone: tz }).format(d);
+  return `${datePart} ${timeStr}`;
 }
 
 export function getDaysUntil(startsAt: string): number {
