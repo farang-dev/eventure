@@ -4,7 +4,7 @@ import { X, Upload, Plus, Trash2, Calendar, Clock, MapPin, Music, Ticket, Link, 
 import type { Genre } from "@/lib/types";
 import { GENRE_META } from "@/lib/mock-data";
 import GenreIcon from "@/components/GenreIcon";
-import Map, { Marker } from "react-map-gl";
+import Map, { Marker } from "react-map-gl/mapbox";
 
 const GENRES: Genre[] = ["techno", "house", "tech-house", "trance", "drum-and-bass", "dubstep", "disco", "funk", "hiphop", "other"];
 
@@ -398,7 +398,6 @@ export default function SubmitEventModal({ onClose }: Props) {
                     ))}
                   </div>
                 )}
-                </div>
 
                 <div style={{ width: "100%", height: 200, borderRadius: 12, overflow: "hidden", position: "relative", marginTop: 10, border: "1px solid var(--border)" }}>
                   <Map

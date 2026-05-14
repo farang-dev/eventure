@@ -11,7 +11,7 @@ const WINDOW = 60 * 1000; // 1 minute window
 export function middleware(request: NextRequest) {
   // Only apply to API routes or the main page if needed
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    const ip = request.ip || '127.0.0.1';
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
     const now = Date.now();
     
     const record = rateLimitMap.get(ip) || { count: 0, lastReset: now };
