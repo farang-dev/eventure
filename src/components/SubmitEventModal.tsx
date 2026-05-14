@@ -19,6 +19,8 @@ interface FormData {
   artists: string[];
   ticket_url: string;
   price: string;
+  lat: number;
+  lng: number;
   contact_email: string;
   submitter_name: string;
 }
@@ -35,6 +37,8 @@ const EMPTY_FORM: FormData = {
   artists: [""],
   ticket_url: "",
   price: "",
+  lat: 0,
+  lng: 0,
   contact_email: "",
   submitter_name: "",
 };
@@ -48,6 +52,11 @@ export default function SubmitEventModal({ onClose }: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  
+  // Geocoding state
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   const set = (key: keyof FormData, val: any) => {
     setForm((f) => ({ ...f, [key]: val }));
@@ -62,6 +71,40 @@ export default function SubmitEventModal({ onClose }: Props) {
 
   const addArtist = () => set("artists", [...form.artists, ""]);
   const removeArtist = (i: number) => set("artists", form.artists.filter((_, idx) => idx !== i));
+
+  const handleAddressSearch = async (query: string) => {
+    set("venue_address", query);
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    setIsGeocoding(true);
+    try {
+      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&limit=5`
+      );
+      const data = await res.json();
+      setSuggestions(data.features || []);
+      setShowSuggestions(true);
+    } catch (err) {
+      console.error("Geocoding error:", err);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  const selectSuggestion = (feature: any) => {
+    setForm(f => ({
+      ...f,
+      venue_address: feature.place_name,
+      lat: feature.center[1],
+      lng: feature.center[0]
+    }));
+    setShowSuggestions(false);
+    setSuggestions([]);
+  };
 
   const validateStep1 = () => {
     const e: Partial<FormData> = {};
@@ -277,17 +320,65 @@ export default function SubmitEventModal({ onClose }: Props) {
                 </div>
               </div>
 
-              <div>
+              <div style={{ position: "relative" }}>
                 <label className="label">Venue Address *</label>
-                <input
-                  id="submit-address"
-                  className="input"
-                  placeholder="e.g. 2-16 Maruyamacho, Shibuya, Tokyo"
-                  value={form.venue_address}
-                  onChange={(e) => set("venue_address", e.target.value)}
-                  style={{ borderColor: errors.venue_address ? "var(--primary)" : undefined }}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    id="submit-address"
+                    className="input"
+                    placeholder="Search for an address..."
+                    value={form.venue_address}
+                    onChange={(e) => handleAddressSearch(e.target.value)}
+                    onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                    style={{ 
+                      borderColor: errors.venue_address ? "var(--primary)" : undefined,
+                      paddingRight: isGeocoding ? 30 : 10
+                    }}
+                  />
+                  {isGeocoding && (
+                    <div style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}>
+                      <div className="spinner-small" style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.2)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
+                    </div>
+                  )}
+                </div>
+                
+                {showSuggestions && suggestions.length > 0 && (
+                  <div 
+                    style={{ 
+                      position: "absolute", top: "100%", left: 0, right: 0, 
+                      background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                      borderRadius: 12, marginTop: 4, zIndex: 50, boxShadow: "var(--shadow-lg)",
+                      overflow: "hidden"
+                    }}
+                  >
+                    {suggestions.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => selectSuggestion(s)}
+                        style={{ 
+                          width: "100%", padding: "10px 12px", textAlign: "left", 
+                          background: "none", border: "none", borderBottom: "1px solid var(--border)",
+                          cursor: "pointer", color: "var(--text-primary)", fontSize: 13,
+                          display: "flex", flexDirection: "column", gap: 2
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "none"}
+                      >
+                        <span style={{ fontWeight: 600 }}>{s.text}</span>
+                        <span style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {s.place_name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {errors.venue_address && <p style={{ color: "var(--primary)", fontSize: 11, marginTop: 4 }}>{errors.venue_address}</p>}
+                
+                {form.lat !== 0 && (
+                  <p style={{ fontSize: 10, color: "var(--green)", marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}>
+                    <CheckCircle2 size={10} /> Location verified: {form.lat.toFixed(4)}, {form.lng.toFixed(4)}
+                  </p>
+                )}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>

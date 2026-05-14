@@ -499,10 +499,13 @@ select.input { cursor: pointer; }
   100% { background-position: 200% 0 }
 }
 
+@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+
 .animate-fadein { animation: fadeIn 0.25s ease forwards; }
 .animate-slideup { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-scalein { animation: scaleIn 0.2s ease forwards; }
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+.animate-spin { animation: spin 1s linear infinite; }
 
 /* ─── Gradient text ─── */
 .gradient-text {
