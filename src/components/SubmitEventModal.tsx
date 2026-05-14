@@ -19,8 +19,10 @@ interface FormData {
   artists: string[];
   ticket_url: string;
   price: string;
+  currency: string;
   lat: number;
   lng: number;
+  ends_next_day: boolean;
   contact_email: string;
   submitter_name: string;
 }
@@ -37,8 +39,10 @@ const EMPTY_FORM: FormData = {
   artists: [""],
   ticket_url: "",
   price: "",
+  currency: "JPY",
   lat: 0,
   lng: 0,
+  ends_next_day: true,
   contact_email: "",
   submitter_name: "",
 };
@@ -388,33 +392,56 @@ export default function SubmitEventModal({ onClose }: Props) {
                 </div>
                 <div>
                   <label className="label">End Time</label>
-                  <input className="input" type="time" value={form.ends_time} onChange={(e) => set("ends_time", e.target.value)} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <input className="input" type="time" value={form.ends_time} onChange={(e) => set("ends_time", e.target.value)} />
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 11, whiteSpace: "nowrap" }}>
+                      <input 
+                        type="checkbox" 
+                        checked={form.ends_next_day} 
+                        onChange={(e) => set("ends_next_day", e.target.checked)}
+                        style={{ accentColor: "var(--primary)" }}
+                      />
+                      Ends next morning
+                    </label>
+                  </div>
                 </div>
               </div>
 
               {/* Price & Ticket URL */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div className="input-group">
-                  <label>Door/Advance Price</label>
-                  <div className="input-with-icon">
-                    <Ticket size={16} />
+                  <label className="label">Door/Advance Price</label>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <select 
+                      className="input" 
+                      style={{ width: 65, padding: "11px 4px", textAlign: "center", flexShrink: 0 }}
+                      value={form.currency}
+                      onChange={(e) => set("currency", e.target.value)}
+                    >
+                      <option value="JPY">¥</option>
+                      <option value="GBP">£</option>
+                      <option value="EUR">€</option>
+                      <option value="RSD">RSD</option>
+                    </select>
                     <input
+                      className="input"
                       type="text"
-                      placeholder="e.g. ¥3000 or Free"
+                      placeholder="e.g. 3000"
                       value={form.price}
-                      onChange={(e) => setForm({ ...form, price: e.target.value })}
+                      onChange={(e) => set("price", e.target.value)}
                     />
                   </div>
                 </div>
                 <div className="input-group">
-                  <label>Ticket / Event URL</label>
+                  <label className="label">Ticket / Event URL</label>
                   <div className="input-with-icon">
-                    <Link size={16} />
+                    <Link size={14} />
                     <input
+                      className="input"
                       type="url"
                       placeholder="https://..."
                       value={form.ticket_url}
-                      onChange={(e) => setForm({ ...form, ticket_url: e.target.value })}
+                      onChange={(e) => set("ticket_url", e.target.value)}
                     />
                   </div>
                 </div>
@@ -588,8 +615,8 @@ export default function SubmitEventModal({ onClose }: Props) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                   {[
                     { key: "venue", icon: "📍", val: `${form.venue_name} · ${form.venue_address}` },
-                    { key: "time", icon: "📅", val: `${form.starts_date} · ${form.starts_time} – ${form.ends_time}` },
-                    { key: "genre", icon: <GenreIcon name={meta.icon} size={14} color={meta.color} />, val: `${meta.label} · ${form.price || "Price TBD"}` },
+                    { key: "time", icon: "📅", val: `${form.starts_date} · ${form.starts_time} – ${form.ends_time}${form.ends_next_day ? " (+1)" : ""}` },
+                    { key: "genre", icon: <GenreIcon name={meta.icon} size={14} color={meta.color} />, val: `${meta.label} · ${form.price ? `${form.currency} ${form.price}` : "Price TBD"}` },
                     { key: "artists", icon: "🎤", val: form.artists.filter(Boolean).join(", ") || "No lineup listed" },
                     ...(form.ticket_url ? [{ key: "url", icon: "🔗", val: form.ticket_url }] : []),
                   ].map((row) => (

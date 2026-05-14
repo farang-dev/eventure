@@ -350,6 +350,28 @@ select.input { cursor: pointer; }
   display: block;
 }
 
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.input-group .label { margin-bottom: 6px; }
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-with-icon svg {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.input-with-icon input {
+  padding-left: 36px;
+}
+
 /* ─── Badges ─── */
 .badge {
   display: inline-flex; align-items: center; gap: 4px;
