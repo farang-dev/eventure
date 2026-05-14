@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://eventure-cyan.vercel.app/sitemap.xml',
+    sitemap: 'https://www.eventurer.online/sitemap.xml',
   }
 }

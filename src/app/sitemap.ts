@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
  
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://eventure-cyan.vercel.app'
+  const baseUrl = 'https://www.eventurer.online'
   const cities = ['tokyo', 'osaka', 'london', 'vilnius', 'belgrade', 'tbilisi']
   
   const cityUrls = cities.map((city) => ({
