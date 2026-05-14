@@ -285,11 +285,11 @@ if __name__ == "__main__":
     
     cities = [
         {"name": "tokyo", "id": 27},
-        {"name": "osaka", "id": 28},
+        {"name": "osaka", "id": 66},
         {"name": "london", "id": 13},
         {"name": "vilnius", "id": 561},
         {"name": "belgrade", "id": 562},
-        {"name": "tbilisi", "id": 163},
+        {"name": "tbilisi", "id": 188},
     ]
 
     for city in cities:
