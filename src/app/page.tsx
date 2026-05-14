@@ -6,7 +6,7 @@ import MusicEventDetail from "@/components/MusicEventDetail";
 import MapView from "@/components/MapView";
 import SubmitEventModal from "@/components/SubmitEventModal";
 import AuthModal from "@/components/AuthModal";
-import type { User } from "@supabase/supabase-js";
+import { useSession } from "next-auth/react";
 import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
@@ -40,24 +40,12 @@ export default function HomePage() {
   const [eventsData, setEventsData] = useState<MusicEvent[]>([]);
   const supabase = createClient();
 
-  // Authentication State
-  const [user, setUser] = useState<User | null>(null);
+  // Authentication State (NextAuth)
+  const { data: session } = useSession();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
-
   const handleOpenSubmit = () => {
-    if (user) {
+    if (session?.user) {
       setShowSubmit(true);
     } else {
       setShowAuthModal(true);

@@ -27,6 +27,8 @@ export const viewport = {
   themeColor: "#0D1117",
 };
 
+import NextAuthProvider from "@/components/NextAuthProvider";
+
 export default function RootLayout({
   children,
 }: {
@@ -56,7 +58,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <NextAuthProvider>
+          {children}
+        </NextAuthProvider>
+      </body>
     </html>
   );
 }
