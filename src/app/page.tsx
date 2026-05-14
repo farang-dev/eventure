@@ -5,6 +5,8 @@ import MusicEventCard from "@/components/MusicEventCard";
 import MusicEventDetail from "@/components/MusicEventDetail";
 import MapView from "@/components/MapView";
 import SubmitEventModal from "@/components/SubmitEventModal";
+import AuthModal from "@/components/AuthModal";
+import type { User } from "@supabase/supabase-js";
 import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
@@ -37,6 +39,30 @@ export default function HomePage() {
   const [mapBounds, setMapBounds] = useState<[number, number, number, number] | null>(null);
   const [eventsData, setEventsData] = useState<MusicEvent[]>([]);
   const supabase = createClient();
+
+  // Authentication State
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  const handleOpenSubmit = () => {
+    if (user) {
+      setShowSubmit(true);
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
   // FETCH EVENTS BASED ON MAP BOUNDS (Dynamic loading)
   useEffect(() => {
@@ -397,7 +423,7 @@ export default function HomePage() {
         <div style={{ marginTop: "auto", marginBottom: 12, textAlign: "center" }}>
           <button
             id="sidebar-submit-btn"
-            onClick={() => setShowSubmit(true)}
+            onClick={handleOpenSubmit}
             title="Submit an event"
             style={{
               width: 38, height: 38, borderRadius: 10,
@@ -457,7 +483,7 @@ export default function HomePage() {
                 <div className="header-actions">
                   <button
                     id="home-submit-btn"
-                    onClick={() => setShowSubmit(true)}
+                    onClick={handleOpenSubmit}
                     className="btn-primary-sm"
                     style={{
                       display: "flex", alignItems: "center", gap: 5,
@@ -899,7 +925,7 @@ export default function HomePage() {
                 <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14, lineHeight: 1.55 }}>
                   Get your events listed on Eventure. Submissions are reviewed within 24 hours.
                 </p>
-                <button className="btn btn-primary" onClick={() => setShowSubmit(true)} style={{ width: "100%", padding: "12px", borderRadius: 10 }}>
+                <button className="btn btn-primary" onClick={handleOpenSubmit} style={{ width: "100%", padding: "12px", borderRadius: 10 }}>
                   <Plus size={15} /> Submit an Event
                 </button>
               </div>
@@ -994,6 +1020,7 @@ export default function HomePage() {
 
       {/* SUBMIT EVENT MODAL */}
       {showSubmit && <SubmitEventModal onClose={() => setShowSubmit(false)} />}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => { setShowAuthModal(false); setShowSubmit(true); }} />}
     </div>
   );
 }
