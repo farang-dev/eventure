@@ -59,10 +59,10 @@ export default function AuthModal({ onClose, onSuccess }: Props) {
         <div style={{ padding: "20px 20px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h2 style={{ fontSize: 18, fontWeight: 700 }}>
-              {view === "sign_in" ? "Welcome back" : "Create an account"}
+              {view === "sign_in" ? "Sign in to Eventure" : "Create an account"}
             </h2>
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-              {view === "sign_in" ? "Sign in to submit an event" : "Join Eventure to submit events"}
+              {view === "sign_in" ? "You must be signed in to submit events" : "Join Eventure to submit events"}
             </p>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4 }}>
