@@ -19,9 +19,11 @@ RA_HEADERS = {
 
 CITY_TIMEZONES = {
     "tokyo": "Asia/Tokyo",
+    "osaka": "Asia/Tokyo",
     "london": "Europe/London",
     "vilnius": "Europe/Vilnius",
-    "belgrade": "Europe/Belgrade"
+    "belgrade": "Europe/Belgrade",
+    "tbilisi": "Asia/Tbilisi"
 }
 
 def map_ra_genre(genre_name):
@@ -56,8 +58,10 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
     referer_map = {
         "london": "uk",
         "tokyo": "jp",
+        "osaka": "jp",
         "vilnius": "lt",
-        "belgrade": "rs"
+        "belgrade": "rs",
+        "tbilisi": "ge"
     }
     country_code = referer_map.get(city_name, "jp")
     headers["Referer"] = f"https://ra.co/events/{country_code}/{city_name}"
@@ -92,10 +96,14 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 import random
                 if city_name == "tokyo":
                     lat_base, lng_base = 35.6580, 139.7016
+                elif city_name == "osaka":
+                    lat_base, lng_base = 34.6937, 135.5023
                 elif city_name == "vilnius":
                     lat_base, lng_base = 54.6872, 25.2797
                 elif city_name == "belgrade":
                     lat_base, lng_base = 44.8125, 20.4612
+                elif city_name == "tbilisi":
+                    lat_base, lng_base = 41.7151, 44.8271
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                 
@@ -277,9 +285,11 @@ if __name__ == "__main__":
     
     cities = [
         {"name": "tokyo", "id": 27},
+        {"name": "osaka", "id": 28},
         {"name": "london", "id": 13},
         {"name": "vilnius", "id": 561},
         {"name": "belgrade", "id": 562},
+        {"name": "tbilisi", "id": 163},
     ]
 
     for city in cities:

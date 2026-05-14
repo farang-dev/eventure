@@ -236,9 +236,11 @@ export const GENRE_META: Record<
 
 export const CITY_TZS: Record<string, string> = {
   tokyo: "Asia/Tokyo",
+  osaka: "Asia/Tokyo",
   london: "Europe/London",
   vilnius: "Europe/Vilnius",
   belgrade: "Europe/Belgrade",
+  tbilisi: "Asia/Tbilisi",
   東京: "Asia/Tokyo",
 };
 
