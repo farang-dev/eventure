@@ -4,6 +4,7 @@ import { X, Upload, Plus, Trash2, Calendar, Clock, MapPin, Music, Ticket, Link, 
 import type { Genre } from "@/lib/types";
 import { GENRE_META } from "@/lib/mock-data";
 import GenreIcon from "@/components/GenreIcon";
+import Map, { Marker } from "react-map-gl";
 
 const GENRES: Genre[] = ["techno", "house", "tech-house", "trance", "drum-and-bass", "dubstep", "disco", "funk", "hiphop", "other"];
 
@@ -61,6 +62,12 @@ export default function SubmitEventModal({ onClose }: Props) {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  
+  const [viewState, setViewState] = useState({
+    longitude: 139.7016,
+    latitude: 35.6580,
+    zoom: 12
+  });
 
   const set = (key: keyof FormData, val: any) => {
     setForm((f) => ({ ...f, [key]: val }));
@@ -85,10 +92,7 @@ export default function SubmitEventModal({ onClose }: Props) {
 
     setIsGeocoding(true);
     try {
-      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&limit=5`
-      );
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       setSuggestions(data.features || []);
       setShowSuggestions(true);
@@ -106,6 +110,7 @@ export default function SubmitEventModal({ onClose }: Props) {
       lat: feature.center[1],
       lng: feature.center[0]
     }));
+    setViewState(v => ({ ...v, longitude: feature.center[0], latitude: feature.center[1], zoom: 15 }));
     setShowSuggestions(false);
     setSuggestions([]);
   };
@@ -141,10 +146,27 @@ export default function SubmitEventModal({ onClose }: Props) {
     else if (step === 3 && validateStep3()) handleSubmit();
   };
 
-  const handleSubmit = () => {
-    // In production: POST to /api/events/submit or Supabase insert
-    console.log("Event submission:", form);
-    setSubmitted(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/events/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        alert("Submission failed. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Submission error.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const meta = GENRE_META[form.genre];
@@ -376,6 +398,30 @@ export default function SubmitEventModal({ onClose }: Props) {
                     ))}
                   </div>
                 )}
+                </div>
+
+                <div style={{ width: "100%", height: 200, borderRadius: 12, overflow: "hidden", position: "relative", marginTop: 10, border: "1px solid var(--border)" }}>
+                  <Map
+                    mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                    {...viewState}
+                    onMove={evt => setViewState(evt.viewState)}
+                    mapStyle="mapbox://styles/mapbox/dark-v11"
+                    onClick={(e) => {
+                      setForm(f => ({ ...f, lat: e.lngLat.lat, lng: e.lngLat.lng }));
+                      setViewState(v => ({ ...v, longitude: e.lngLat.lng, latitude: e.lngLat.lat }));
+                    }}
+                  >
+                    {form.lat !== 0 && (
+                      <Marker longitude={form.lng} latitude={form.lat} anchor="bottom">
+                        <MapPin size={28} color="var(--primary)" fill="var(--bg-secondary)" />
+                      </Marker>
+                    )}
+                  </Map>
+                  <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(0,0,0,0.6)", padding: "4px 8px", borderRadius: 4, fontSize: 10, color: "#fff", pointerEvents: "none", backdropFilter: "blur(4px)" }}>
+                    Click map to place pin accurately
+                  </div>
+                </div>
+
                 {errors.venue_address && <p style={{ color: "var(--primary)", fontSize: 11, marginTop: 4 }}>{errors.venue_address}</p>}
                 
                 {form.lat !== 0 && (

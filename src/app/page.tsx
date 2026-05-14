@@ -54,6 +54,7 @@ export default function HomePage() {
         .lte('lat', north + 0.05)
         .gte('lng', west - 0.05)
         .lte('lng', east + 0.05)
+        .or('is_approved.eq.true,is_approved.is.null')
         .order('starts_at', { ascending: true })
         .limit(1000);
         
