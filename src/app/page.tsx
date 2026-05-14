@@ -77,7 +77,7 @@ export default function HomePage() {
     const timer = setTimeout(async () => {
       try {
         const resp = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&autocomplete=true&limit=3`
+          `/api/geocode?q=${encodeURIComponent(searchQuery)}`
         );
         const data = await resp.json();
         if (data.features) setLocationSuggestions(data.features);

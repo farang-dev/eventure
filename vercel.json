@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "framework": "nextjs",
+  "security": {
+    "rateLimit": {
+      "requests": 100,
+      "window": "1m"
+    }
+  }
+}
