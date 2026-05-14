@@ -34,11 +34,55 @@ export default function MusicEventDetail({ event, onBack }: Props) {
     weekday: "long", month: "long", day: "numeric", timeZone: tz
   }).format(new Date(event.starts_at));
 
+  // Generate JSON-LD for Search Engines
+  const cityToCountry: Record<string, string> = {
+    london: "GB", tokyo: "JP", osaka: "JP", vilnius: "LT", belgrade: "RS", tbilisi: "GE"
+  };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "MusicEvent",
+    "name": event.title,
+    "startDate": event.starts_at,
+    "endDate": event.ends_at,
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "Place",
+      "name": event.venue_name,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": event.venue_address,
+        "addressLocality": event.city,
+        "addressCountry": cityToCountry[event.city.toLowerCase()] || "JP"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": event.lat,
+        "longitude": event.lng
+      }
+    },
+    "image": [event.image_url].filter(Boolean),
+    "description": `Club event in ${event.city}: ${event.title} at ${event.venue_name}. Featured artists: ${event.artists.join(", ")}.`,
+    "performer": event.artists.map(name => ({
+      "@type": "Person",
+      "name": name
+    })),
+    "offers": {
+      "@type": "Offer",
+      "url": event.ticket_url || event.source_url,
+      "availability": "https://schema.org/InStock"
+    }
+  };
+
   return (
     <div
       id={`event-detail-${event.id}`}
       style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column" }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="detail-layout">
         {/* Left/Top Column: Flyer */}
         <div className="detail-hero">
@@ -167,7 +211,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
 
           {/* Venue card with Google Maps link */}
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.venue_name} ${event.venue_address || ""}`)}`}
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.venue_name}, ${event.venue_address && event.venue_address !== event.venue_name ? event.venue_address : event.city}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{

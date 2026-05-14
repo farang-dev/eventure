@@ -422,6 +422,9 @@ export default function HomePage() {
             {/* Top bar */}
             {/* Responsive Top Bar: 1 Row on Desktop, 2 Rows on Mobile */}
             <div className="top-header">
+              <h1 style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 }}>
+                Eventure — World Club Event Map & Techno Guide
+              </h1>
               <div className="top-header-row">
                 <div
                   id="header-logo"

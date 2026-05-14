@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Eventure — Find Club & Music Events Worldwide",
+  title: "Eventure — Find Techno, House & Club Events Worldwide",
   description:
-    "Discover the best techno, house, drum and bass, and club events happening tonight. Live map view with urgency-based visual hierarchy.",
-  keywords: ["club events", "techno", "house music", "rave map", "music events map", "EDM", "dubstep"],
+    "Live interactive map of club events worldwide. Discover the best techno, house, and electronic music events in London, Tokyo, Osaka, Tbilisi, and more. Real-time schedules and ticket links.",
+  keywords: ["club events", "techno parties", "house music events", "rave map", "Tbilisi nightlife", "Tokyo clubs", "Osaka techno", "London raves", "music events map"],
   openGraph: {
-    title: "Eventure — Find Club & Music Events Worldwide",
-    description: "Discover the best club & music events happening right now.",
+    title: "Eventure — Find Techno, House & Club Events Worldwide",
+    description: "Discover the best club & music events happening right now globally.",
     type: "website",
   },
   appleWebApp: {

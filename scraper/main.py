@@ -107,13 +107,28 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                 
-                lat = lat_base + random.uniform(-0.02, 0.02)
-                lng = lng_base + random.uniform(-0.02, 0.02)
+                # Deterministic coordinates for the same venue to prevent drift
+                # We use the venue name or ID as a seed for a small offset if coordinates are missing
+                import hashlib
+                venue_id = str(venue.get("id", venue_name))
+                seed = int(hashlib.md5(venue_id.encode()).hexdigest(), 16)
+                offset_rng = random.Random(seed)
+                
+                lat = lat_base + offset_rng.uniform(-0.015, 0.015)
+                lng = lng_base + offset_rng.uniform(-0.015, 0.015)
 
-                # Overwrite with actual RA coordinates if available
+                # Overwrite with actual RA coordinates if available AND sane
                 if venue_location and venue_location.get("latitude") and venue_location.get("longitude"):
-                    lat = float(venue_location["latitude"])
-                    lng = float(venue_location["longitude"])
+                    v_lat = float(venue_location["latitude"])
+                    v_lng = float(venue_location["longitude"])
+                    
+                    # Sanity check: is it within a reasonable range of the city center? (~1.5 degrees)
+                    # This prevents London events showing up in India
+                    if abs(v_lat - lat_base) < 1.5 and abs(v_lng - lng_base) < 1.5:
+                        lat = v_lat
+                        lng = v_lng
+                    else:
+                        print(f"⚠️ RA coordinates for {venue_name} ({v_lat}, {v_lng}) seem incorrect for {city_name}. Using city center.")
                 
                 images = ev.get("images", [])
                 image_url = images[0].get("filename") if images else None
@@ -169,7 +184,7 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     "genre": genre,
                     "artists": artists,
                     "venue_name": venue_name,
-                    "venue_address": venue.get("name", ""),
+                    "venue_address": venue.get("address") or venue_location.get("address") or venue_name,
                     "city": city_name.lower(),
                     "lat": lat,
                     "lng": lng,
