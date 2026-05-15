@@ -5,33 +5,29 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { MusicEvent } from "@/lib/types";
+import { MOCK_EVENTS } from "@/lib/mock-data";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 async function getEvent(id: string): Promise<MusicEvent | null> {
-  // 1. Check if it's a mock ID (e.g. e1, e2) or a UUID
+  // 1. First, check MOCK_EVENTS (covers e1, e2, etc.)
+  const mockEvent = MOCK_EVENTS.find((e: MusicEvent) => e.id === id);
+  if (mockEvent) return mockEvent;
+
+  // 2. If not in mock, and it's a valid UUID, check Supabase
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-  
-  if (!isUuid) {
-    // If not a UUID, it might be from MOCK_EVENTS (for development/testing)
-    const { MOCK_EVENTS } = require("@/lib/mock-data");
-    return MOCK_EVENTS.find((e: MusicEvent) => e.id === id) || null;
+  if (isUuid && supabase) {
+    try {
+      const { data, error } = await supabase.from('music_events').select('*').eq('id', id).single();
+      if (!error && data) return data as MusicEvent;
+    } catch (err) {
+      console.error("Supabase fetch error:", err);
+    }
   }
 
-  // 2. Fetch from Supabase
-  try {
-    const { data, error } = await supabase.from('music_events').select('*').eq('id', id).single();
-    if (error) {
-      console.error("Supabase error fetching event:", error);
-      return null;
-    }
-    return data as MusicEvent | null;
-  } catch (err) {
-    console.error("Unexpected error fetching event:", err);
-    return null;
-  }
+  return null;
 }
 
 export async function generateMetadata(props: { 
