@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import MusicEventDetail from "@/components/MusicEventDetail";
 import Link from "next/link";
 import { ArrowLeft, Home } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
@@ -35,9 +36,9 @@ async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
     }
 
     // Recent events fallback
-    const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(100);
+    const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(200);
     if (recent) {
-      const found = recent.find((e: any) => createSlug(e.title, e.city) === cleanSlug);
+      const found = recent.find((e: MusicEvent) => createSlug(e.title, e.city) === cleanSlug || e.id === slug);
       if (found) return found as MusicEvent;
     }
   } catch (err) {}
@@ -45,7 +46,15 @@ async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
 }
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  return { title: "Event Detail | Eventure" };
+  const { slug } = await props.params;
+  const event = await getEventBySlugOrId(slug);
+  if (!event) return { title: "Event Detail | Eventure" };
+
+  return {
+    title: `${event.title} | Eventure`,
+    description: event.description?.slice(0, 160),
+    openGraph: { images: event.image_url ? [event.image_url] : [] }
+  };
 }
 
 export default async function EventPage(props: { params: Promise<{ slug: string }> }) {
@@ -54,35 +63,42 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
 
   if (!event) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', background: '#0D1117', color: 'white', minHeight: '100vh' }}>
-        <h2>Event Not Found</h2>
-        <p>ID: {slug}</p>
-        <Link href="/" style={{ color: '#E63946' }}>Back to home</Link>
+      <div className="app-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+        <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: 400 }}>
+          <div style={{ fontSize: 50, marginBottom: 20 }}>🔍</div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Event Not Found</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, marginBottom: 30 }}>
+            We couldn't find the event with the identifier: <code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 4px', borderRadius: 4 }}>{slug}</code>. It may have expired or been removed.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Link href="/" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Home size={16} /> Explore Other Events
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // DIAGNOSTIC VIEW: If this renders, then MusicEventDetail was the cause of the crash.
   return (
-    <div style={{ background: '#0D1117', color: 'white', minHeight: '100vh', padding: 20 }}>
-      <div style={{ maxWidth: 600, margin: '0 auto' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#848D97', textDecoration: 'none', marginBottom: 20 }}>
-          <ArrowLeft size={20} /> Back
-        </Link>
-        
-        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 10 }}>{event.title}</h1>
-        <div style={{ padding: 20, background: '#161B22', borderRadius: 12, border: '1px solid #30363D' }}>
-          <p><strong>City:</strong> {event.city}</p>
-          <p><strong>Venue:</strong> {event.venue_name}</p>
-          <p><strong>Date:</strong> {String(event.starts_at)}</p>
-          <p><strong>Genre:</strong> {event.genre}</p>
-          <hr style={{ border: 'none', borderTop: '1px solid #30363D', margin: '15px 0' }} />
-          <p style={{ color: '#848D97', fontSize: 14 }}>{event.description}</p>
+    <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)" }}>
+      <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column", position: "relative" }}>
+        <div style={{ position: "absolute", top: 14, left: 14, zIndex: 50 }}>
+          <Link 
+            href="/"
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "rgba(13,17,23,0.75)", backdropFilter: "blur(6px)",
+              border: "1px solid var(--border)",
+              color: "var(--text-primary)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              textDecoration: "none",
+            }}
+          >
+            <ArrowLeft size={17} />
+          </Link>
         </div>
-
-        <div style={{ marginTop: 20, fontSize: 11, color: '#484F58' }}>
-          Diagnostic Mode: Basic Render Active
-        </div>
+        <MusicEventDetail event={event} onBack={() => {}} />
       </div>
     </div>
   );

@@ -112,8 +112,8 @@ export default function MusicEventDetail({ event, onBack }: Props) {
       }
     },
     "image": [event.image_url].filter(Boolean),
-    "description": `Club event in ${event.city || "Japan"}: ${event.title} at ${event.venue_name}. Featured artists: ${event.artists.join(", ")}.`,
-    "performer": event.artists.map(name => ({
+    "description": `Club event in ${event.city || "Japan"}: ${event.title} at ${event.venue_name}. Featured artists: ${(event.artists || []).join(", ")}.`,
+    "performer": (event.artists || []).map(name => ({
       "@type": "Person",
       "name": name
     })),
