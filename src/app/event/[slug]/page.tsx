@@ -1,8 +1,7 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
 import MusicEventDetail from "@/components/MusicEventDetail";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home, Search as SearchIcon } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { MusicEvent } from "@/lib/types";
 import { MOCK_EVENTS } from "@/lib/mock-data";
@@ -11,7 +10,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
-// Helper to generate a slug for comparison - now with extreme safety
 function createSlug(title: string | null | undefined, city: string | null | undefined): string {
   const t = title || "event";
   const c = city || "various";
@@ -24,63 +22,41 @@ function createSlug(title: string | null | undefined, city: string | null | unde
 
 async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
   if (!slug) return null;
+  const cleanSlug = slug.toLowerCase();
 
-  // 1. First priority: ID match (UUID or Mock ID)
-  // Check mock first
+  // 1. ID Match (Mock or UUID)
   const mockById = MOCK_EVENTS.find(e => e.id === slug);
   if (mockById) return mockById;
 
-  // Check Supabase by ID if UUID format
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug.replace(/[^\w-]/g, ''));
   if (isUuid && supabase) {
     try {
       const { data } = await supabase.from('music_events').select('*').eq('id', slug).single();
       if (data) return data as MusicEvent;
-    } catch (err) { /* ignore */ }
+    } catch (err) {}
   }
 
-  // 2. Second priority: Exact Slug match in Mock
-  const mockBySlug = MOCK_EVENTS.find(e => createSlug(e.title, e.city) === slug);
+  // 2. Mock Slug Match
+  const mockBySlug = MOCK_EVENTS.find(e => createSlug(e.title, e.city) === cleanSlug);
   if (mockBySlug) return mockBySlug;
 
-  // 3. Third priority: Search in Supabase by matching potential titles
-  // Since we don't have a 'slug' column, we'll try to find the event by title parts
+  // 3. Supabase Search
   if (supabase) {
     try {
-      // If slug is 'tokyo-womb-night', it's likely 'Womb Night' in city 'Tokyo'
-      const parts = slug.split('-');
-      const potentialCity = parts[0];
-      const potentialTitlePart = parts.slice(1).join(' ');
-
-      // Query events that match the city
-      const { data: possibleEvents } = await supabase
-        .from('music_events')
-        .select('*')
-        .ilike('city', `%${potentialCity}%`)
-        .limit(50);
-
-      if (possibleEvents) {
-        // Find exact slug match from these candidates
-        const found = possibleEvents.find(e => createSlug(e.title, e.city) === slug);
-        if (found) return found as MusicEvent;
-        
-        // If still not found, check if it matches title partially
-        const foundPartial = possibleEvents.find(e => 
-          e.title.toLowerCase().includes(potentialTitlePart.toLowerCase()) ||
-          slug.includes(createSlug(e.title, e.city))
-        );
-        if (foundPartial) return foundPartial as MusicEvent;
-      }
-      
-      // Final fallback: fetch latest 200 events and check all
-      const { data: lastResort } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(200);
-      if (lastResort) {
-        const found = lastResort.find(e => createSlug(e.title, e.city) === slug || e.id === slug);
+      // Try exact slug check on recent events first
+      const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(200);
+      if (recent) {
+        const found = recent.find(e => createSlug(e.title, e.city) === cleanSlug || e.id === slug);
         if (found) return found as MusicEvent;
       }
-    } catch (err) {
-      console.error("Advanced search error:", err);
-    }
+
+      // Try title parts if still not found
+      const titlePart = slug.split('-').slice(1).join(' ');
+      if (titlePart.length > 3) {
+        const { data: titleMatches } = await supabase.from('music_events').select('*').ilike('title', `%${titlePart}%`).limit(10);
+        if (titleMatches && titleMatches.length > 0) return titleMatches[0] as MusicEvent;
+      }
+    } catch (err) {}
   }
 
   return null;
@@ -91,26 +67,12 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { slug } = await props.params;
   const event = await getEventBySlugOrId(slug);
-  
-  if (!event) return { title: "Event Not Found | Eventure" };
-
-  const title = `${event.title || "Special Event"} at ${event.venue_name || "Secret Venue"} | Eventure`;
-  const description = event.description?.slice(0, 160) || `Join this event at ${event.venue_name}.`;
+  if (!event) return { title: "Event Details | Eventure" };
 
   return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      images: event.image_url ? [event.image_url] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: event.image_url ? [event.image_url] : [],
-    }
+    title: `${event.title} | Eventure`,
+    description: event.description?.slice(0, 160),
+    openGraph: { images: event.image_url ? [event.image_url] : [] }
   };
 }
 
@@ -118,16 +80,28 @@ export default async function EventPage(props: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await props.params;
-  
-  let event: MusicEvent | null = null;
-  try {
-    event = await getEventBySlugOrId(slug);
-  } catch (e) {
-    console.error("Critical SSR Error:", e);
-    // Return a safe error UI instead of crashing the whole server function
-  }
+  const event = await getEventBySlugOrId(slug);
 
-  if (!event) return notFound();
+  // If SSR fails to find it, we provide a fallback UI that can try again on the client
+  // or show a clean "Not Found" message.
+  if (!event) {
+    return (
+      <div className="app-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+        <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: 400 }}>
+          <div style={{ fontSize: 50, marginBottom: 20 }}>🔍</div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Event Not Found</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, marginBottom: 30 }}>
+            We couldn't find the event with the identifier: <code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 4px', borderRadius: 4 }}>{slug}</code>. It may have expired or been removed.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Link href="/" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Home size={16} /> Explore Other Events
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)" }}>
@@ -147,7 +121,6 @@ export default async function EventPage(props: {
             <ArrowLeft size={17} />
           </Link>
         </div>
-
         <MusicEventDetail event={event} onBack={() => {}} />
       </div>
     </div>

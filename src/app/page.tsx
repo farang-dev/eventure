@@ -113,6 +113,28 @@ export default function HomePage() {
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  // Sync selectedEvent with URL for Deep Linking
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    if (selectedEvent) {
+      const createSlug = (title: string, city: string) => {
+        return `${city || "event"}-${title}`
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      };
+      const slug = createSlug(selectedEvent.title, selectedEvent.city || "event");
+      window.history.pushState(null, "", `/event/${slug}`);
+    } else {
+      // Clear URL when deselected
+      const params = new URLSearchParams(window.location.search);
+      const url = params.toString() ? `/?${params.toString()}` : "/";
+      window.history.replaceState(null, "", url);
+    }
+  }, [selectedEvent, isMounted]);
+
   // Restore state after mount & handle Deep Linking
   useEffect(() => {
     setIsMounted(true);
