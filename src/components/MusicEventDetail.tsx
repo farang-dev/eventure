@@ -35,7 +35,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
     ? "var(--today-color)"
     : "var(--text-secondary)";
 
-  const tz = CITY_TZS[event.city.toLowerCase()] || "UTC";
+  const tz = (event.city && CITY_TZS[event.city.toLowerCase()]) || "UTC";
 
   const startTime = new Date(event.starts_at).toLocaleTimeString("en", {
     hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
@@ -74,8 +74,8 @@ export default function MusicEventDetail({ event, onBack }: Props) {
       "address": {
         "@type": "PostalAddress",
         "streetAddress": event.venue_address,
-        "addressLocality": event.city,
-        "addressCountry": cityToCountry[event.city.toLowerCase()] || "JP"
+        "addressLocality": event.city || "Various",
+        "addressCountry": (event.city && cityToCountry[event.city.toLowerCase()]) || "JP"
       },
       "geo": {
         "@type": "GeoCoordinates",
@@ -84,7 +84,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
       }
     },
     "image": [event.image_url].filter(Boolean),
-    "description": `Club event in ${event.city}: ${event.title} at ${event.venue_name}. Featured artists: ${event.artists.join(", ")}.`,
+    "description": `Club event in ${event.city || "Japan"}: ${event.title} at ${event.venue_name}. Featured artists: ${event.artists.join(", ")}.`,
     "performer": event.artists.map(name => ({
       "@type": "Person",
       "name": name
