@@ -25,33 +25,61 @@ function createSlug(title: string | null | undefined, city: string | null | unde
 async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
   if (!slug) return null;
 
-  // 1. Check if slug is a valid UUID
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-  
-  // 2. Fetch from Supabase by ID first if UUID
+  // 1. First priority: ID match (UUID or Mock ID)
+  // Check mock first
+  const mockById = MOCK_EVENTS.find(e => e.id === slug);
+  if (mockById) return mockById;
+
+  // Check Supabase by ID if UUID format
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug.replace(/[^\w-]/g, ''));
   if (isUuid && supabase) {
     try {
       const { data } = await supabase.from('music_events').select('*').eq('id', slug).single();
       if (data) return data as MusicEvent;
-    } catch (err) {
-      console.error("ID search error:", err);
-    }
+    } catch (err) { /* ignore */ }
   }
 
-  // 3. Check MOCK_EVENTS (covers e1, e2 and slug forms)
-  const foundMock = MOCK_EVENTS.find(e => e.id === slug || createSlug(e.title, e.city) === slug);
-  if (foundMock) return foundMock;
+  // 2. Second priority: Exact Slug match in Mock
+  const mockBySlug = MOCK_EVENTS.find(e => createSlug(e.title, e.city) === slug);
+  if (mockBySlug) return mockBySlug;
 
-  // 4. Try Slug match in Supabase (Limit to a reasonable count to avoid crash)
+  // 3. Third priority: Search in Supabase by matching potential titles
+  // Since we don't have a 'slug' column, we'll try to find the event by title parts
   if (supabase) {
     try {
-      const { data: recentEvents } = await supabase.from('music_events').select('*').limit(100);
-      if (recentEvents) {
-        const found = recentEvents.find(e => createSlug(e.title, e.city) === slug);
+      // If slug is 'tokyo-womb-night', it's likely 'Womb Night' in city 'Tokyo'
+      const parts = slug.split('-');
+      const potentialCity = parts[0];
+      const potentialTitlePart = parts.slice(1).join(' ');
+
+      // Query events that match the city
+      const { data: possibleEvents } = await supabase
+        .from('music_events')
+        .select('*')
+        .ilike('city', `%${potentialCity}%`)
+        .limit(50);
+
+      if (possibleEvents) {
+        // Find exact slug match from these candidates
+        const found = possibleEvents.find(e => createSlug(e.title, e.city) === slug);
+        if (found) return found as MusicEvent;
+        
+        // If still not found, check if it matches title partially
+        const foundPartial = possibleEvents.find(e => 
+          e.title.toLowerCase().includes(potentialTitlePart.toLowerCase()) ||
+          slug.includes(createSlug(e.title, e.city))
+        );
+        if (foundPartial) return foundPartial as MusicEvent;
+      }
+      
+      // Final fallback: fetch latest 200 events and check all
+      const { data: lastResort } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(200);
+      if (lastResort) {
+        const found = lastResort.find(e => createSlug(e.title, e.city) === slug || e.id === slug);
         if (found) return found as MusicEvent;
       }
     } catch (err) {
-      console.error("Slug search error:", err);
+      console.error("Advanced search error:", err);
     }
   }
 
