@@ -622,18 +622,20 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="bottom-sheet-container">
-                <div
-                  className="bottom-sheet"
-                  style={{
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    maxHeight: isListHidden ? "56px" : (sheetExpanded ? "70vh" : "210px"),
-                    overflowY: "hidden",  // Never scroll the outer container
-                    opacity: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
+            {/* Bottom Sheet moved outside map container to bypass overflow:hidden and overlap genre tabs */}
+            <div className="bottom-sheet-container" style={{ zIndex: 999 }}>
+              <div
+                className="bottom-sheet"
+                style={{
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  maxHeight: isListHidden ? "56px" : (sheetExpanded ? "70vh" : "210px"),
+                  overflowY: "hidden", 
+                  opacity: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
+                }}
+              >
                   {/* Sheet handle + header */}
                   <div 
                     onClick={() => { 
@@ -736,9 +738,7 @@ export default function HomePage() {
                     </div>
                   )}
                   </div>
-                </div>
-
-              </div>
+            </div>
             </div>
           </>
         )}
