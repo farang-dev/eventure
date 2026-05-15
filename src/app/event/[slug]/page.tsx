@@ -46,7 +46,7 @@ async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
       // Try exact slug check on recent events first
       const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(200);
       if (recent) {
-        const found = recent.find(e => createSlug(e.title, e.city) === cleanSlug || e.id === slug);
+        const found = recent.find((e: MusicEvent) => createSlug(e.title, e.city) === cleanSlug || e.id === slug);
         if (found) return found as MusicEvent;
       }
 
