@@ -3,6 +3,10 @@ import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import { createSlug } from '@/lib/utils'
 
+// Force dynamic generation to ensure sitemap is always up-to-date with Supabase
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.eventurer.online'
   const cities = ['tokyo', 'osaka', 'london', 'vilnius', 'belgrade', 'tbilisi']
@@ -24,7 +28,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all events for dynamic sitemap
   let eventUrls: any[] = []
   try {
-    const { data: events } = await supabase.from('music_events').select('title, city, updated_at').limit(2000)
+    const { data: events } = await supabase
+      .from('music_events')
+      .select('title, city, updated_at, starts_at')
+      .order('starts_at', { ascending: false })
+      .limit(10000)
     if (events) {
       eventUrls = events.map((e) => ({
         url: `${baseUrl}/event/${createSlug(e.title, e.city)}`,

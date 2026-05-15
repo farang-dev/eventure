@@ -108,42 +108,61 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 
                 lat, lng = lat_base, lng_base
 
-                # 1. Try to use RA's native coordinates unconditionally if they exist
-                has_ra_coords = False
-                if venue_location and venue_location.get("latitude") and venue_location.get("longitude"):
-                    lat = float(venue_location["latitude"])
-                    lng = float(venue_location["longitude"])
-                    has_ra_coords = True
+                # --- Advanced Multi-Tier Validation Logic ---
+                final_lat, final_lng = lat_base, lng_base
+                ra_lat, ra_lng = None, None
+                mb_lat, mb_lng = None, None
 
-                # 2. If RA has no coordinates, Geocode using FULL ADDRESS + Name
-                if not has_ra_coords and venue_name != "TBA":
+                # 1. Get RA native coordinates if they exist
+                if venue_location and venue_location.get("latitude") and venue_location.get("longitude"):
+                    ra_lat = float(venue_location["latitude"])
+                    ra_lng = float(venue_location["longitude"])
+
+                # 2. Get Mapbox geocoded coordinates using full address
+                if venue_name != "TBA":
                     try:
-                        # Prioritize the exact address if available
                         exact_address = venue.get("address") or venue_location.get("address")
                         search_query = f"{venue_name}, {exact_address}, {city_name}" if exact_address else f"{venue_name}, {city_name}"
-                        
-                        print(f"  🔍 Geocoding {search_query} (Mapbox)...")
                         mapbox_token = os.environ.get("NEXT_PUBLIC_MAPBOX_TOKEN") or os.environ.get("MAPBOX_TOKEN")
+                        
                         if mapbox_token:
                             geo_res = requests.get(
                                 f"https://api.mapbox.com/geocoding/v5/mapbox.places/{requests.utils.quote(search_query)}.json",
-                                params={
-                                    "access_token": mapbox_token, 
-                                    "limit": 1,
-                                    "proximity": f"{lng_base},{lat_base}"
-                                }
+                                params={"access_token": mapbox_token, "limit": 1, "proximity": f"{lng_base},{lat_base}"}
                             )
                             geo_data = geo_res.json()
                             if geo_data.get("features"):
-                                center = geo_data["features"][0]["center"]
-                                lat, lng = center[1], center[0]
-                                print(f"  📍 Found: {lat}, {lng}")
-                            else:
-                                print(f"  ⚠️ Could not find exact location for {search_query}. Falling back to city center.")
-                        else:
-                            print("  ⚠️ Mapbox token missing.")
+                                feat = geo_data["features"][0]
+                                center = feat["center"]
+                                m_lat, m_lng = center[1], center[0]
+                                m_types = feat.get("place_type", [])
+                                
+                                # ONLY trust Mapbox if it found a specific 'poi' or 'address'
+                                # If it just found 'place' or 'region', it's too generic (like "Tokyo, Japan")
+                                if any(t in ["poi", "address"] for t in m_types):
+                                    # Mapbox Sanity: Must be within 20km of city center
+                                    if ((m_lat - lat_base)**2 + (m_lng - lng_base)**2)**0.5 * 111 < 20:
+                                        mb_lat, mb_lng = m_lat, m_lng
                     except Exception as geo_err:
                         print(f"  ❌ Geocoding error: {geo_err}")
+
+                # 3. Multi-Tier Decision Logic
+                if ra_lat and mb_lat:
+                    dist = ((ra_lat - mb_lat)**2 + (ra_lng - mb_lng)**2)**0.5 * 111
+                    if 0.3 < dist < 10: 
+                        # Significant local gap (300m - 10km) AND we have a specific Mapbox POI/Address
+                        print(f"  📍 Corrected {venue_name}: Moving {dist:.2f}km from RA to Mapbox {m_types}.")
+                        final_lat, final_lng = mb_lat, mb_lng
+                    else:
+                        final_lat, final_lng = ra_lat, ra_lng
+                elif ra_lat:
+                    final_lat, final_lng = ra_lat, ra_lng
+                elif mb_lat:
+                    final_lat, final_lng = mb_lat, mb_lng
+                else:
+                    print(f"  ⚠️ No valid coordinates for {venue_name}. Using city center.")
+
+                lat, lng = final_lat, final_lng
                 
                 images = ev.get("images", [])
                 image_url = images[0].get("filename") if images else None
