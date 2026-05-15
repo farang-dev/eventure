@@ -6,6 +6,7 @@ import { MusicEvent } from "@/lib/types";
 import { MOCK_EVENTS, GENRE_META, CITY_TZS } from "@/lib/mock-data";
 import { createSlug } from "@/lib/utils";
 import GenreIcon from "@/components/GenreIcon";
+import ShareButton from "@/components/ShareButton";
 
 // Initialize Supabase safely
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -205,6 +206,8 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
               </a>
             )}
           </div>
+
+          <ShareButton url={`https://www.eventurer.online/event/${createSlug(event.title, event.city)}`} />
         </div>
       </div>
     </div>
