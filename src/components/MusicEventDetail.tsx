@@ -70,7 +70,9 @@ export default function MusicEventDetail({ event, onBack }: Props) {
   const getNormalizedPrice = () => {
     if (!event?.price) return "Check Flyer or Ask Organizer";
     const p = String(event.price).toLowerCase();
-    if (p.includes("ra") || p === "tbd" || p === "unknown") return "Check Flyer or Ask Organizer";
+    const hasNumber = /\d/.test(p);
+    if (hasNumber) return event.price;
+    if (p.includes("ra") || p === "tbd" || p === "unknown" || p === "tickets") return "Check Flyer or Ask Organizer";
     return event.price;
   };
   const displayPrice = getNormalizedPrice();
