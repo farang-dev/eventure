@@ -92,8 +92,7 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 venue_name = venue.get("name", "TBA")
                 venue_location = venue.get("location")
                 
-                # Default coordinates (randomized city center) as fallback
-                import random
+                # Default coordinates (city center)
                 if city_name == "tokyo":
                     lat_base, lng_base = 35.6580, 139.7016
                 elif city_name == "osaka":
@@ -107,28 +106,38 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                 
-                # Deterministic coordinates for the same venue to prevent drift
-                # We use the venue name or ID as a seed for a small offset if coordinates are missing
-                import hashlib
-                venue_id = str(venue.get("id", venue_name))
-                seed = int(hashlib.md5(venue_id.encode()).hexdigest(), 16)
-                offset_rng = random.Random(seed)
-                
-                lat = lat_base + offset_rng.uniform(-0.015, 0.015)
-                lng = lng_base + offset_rng.uniform(-0.015, 0.015)
+                lat, lng = lat_base, lng_base
 
-                # Overwrite with actual RA coordinates if available AND sane
+                # 1. Try to use RA's native coordinates if they exist and are sane
+                has_ra_coords = False
                 if venue_location and venue_location.get("latitude") and venue_location.get("longitude"):
                     v_lat = float(venue_location["latitude"])
                     v_lng = float(venue_location["longitude"])
                     
                     # Sanity check: is it within a reasonable range of the city center? (~1.5 degrees)
-                    # This prevents London events showing up in India
                     if abs(v_lat - lat_base) < 1.5 and abs(v_lng - lng_base) < 1.5:
-                        lat = v_lat
-                        lng = v_lng
-                    else:
-                        print(f"⚠️ RA coordinates for {venue_name} ({v_lat}, {v_lng}) seem incorrect for {city_name}. Using city center.")
+                        lat, lng = v_lat, v_lng
+                        has_ra_coords = True
+
+                # 2. If RA has no coordinates, try to GEOCLASS (Geocode) based on Venue Name + City
+                if not has_ra_coords and venue_name != "TBA":
+                    try:
+                        print(f"  🔍 Geocoding {venue_name} in {city_name}...")
+                        search_query = f"{venue_name}, {city_name}"
+                        geo_res = requests.get(
+                            "https://nominatim.openstreetmap.org/search",
+                            params={"q": search_query, "format": "json", "limit": 1},
+                            headers={"User-Agent": "EventureScraper/1.0"}
+                        )
+                        geo_data = geo_res.json()
+                        if geo_data:
+                            lat, lng = float(geo_data[0]["lat"]), float(geo_data[0]["lon"])
+                            print(f"  📍 Found: {lat}, {lng}")
+                        else:
+                            # Fallback to city center (fixed, no randomization)
+                            print(f"  ⚠️ Could not geocode {venue_name}. Using city center.")
+                    except Exception as geo_err:
+                        print(f"  ❌ Geocoding error: {geo_err}")
                 
                 images = ev.get("images", [])
                 image_url = images[0].get("filename") if images else None
