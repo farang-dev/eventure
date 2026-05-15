@@ -674,13 +674,6 @@ export default function HomePage() {
                         {!isListHidden && (
                           <button
                             className="btn btn-ghost"
-                            style={{ 
-                              padding: "4px 10px", 
-                              color: "var(--primary)", 
-                              display: "flex", 
-                              alignItems: "center", 
-                              gap: 4 
-                            }}
                             onClick={(e) => { 
                               e.preventDefault();
                               e.stopPropagation(); 
@@ -692,7 +685,7 @@ export default function HomePage() {
                               display: "flex", 
                               alignItems: "center", 
                               gap: 4,
-                              minHeight: 36, // bigger tap target
+                              minHeight: 36,
                               minWidth: 36,
                             }}
                           >
