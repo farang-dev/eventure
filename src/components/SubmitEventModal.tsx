@@ -152,6 +152,41 @@ export default function SubmitEventModal({ onClose }: Props) {
     setShowSuggestions(false);
     setSuggestions([]);
   };
+  
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const { latitude, longitude } = position.coords;
+      
+      // Update form and viewState
+      setForm(f => ({ ...f, lat: latitude, lng: longitude }));
+      setViewState(v => ({ ...v, latitude, longitude, zoom: 15 }));
+
+      // Reverse geocode to get address
+      try {
+        const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`);
+        const data = await res.json();
+        if (data.features && data.features.length > 0) {
+          setForm(f => ({ ...f, venue_address: data.features[0].place_name }));
+        }
+      } catch (err) {
+        console.error("Reverse geocoding error:", err);
+      } finally {
+        setIsLocating(false);
+      }
+    }, (error) => {
+      console.error("Geolocation error:", error);
+      alert("Unable to retrieve your location. Please check your permissions.");
+      setIsLocating(false);
+    }, { enableHighAccuracy: true });
+  };
 
   const validateStep1 = () => {
     const e: Partial<FormData> = {};
@@ -440,7 +475,27 @@ export default function SubmitEventModal({ onClose }: Props) {
               </div>
 
               <div style={{ position: "relative" }}>
-                <label className="label">Venue Address *</label>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <label className="label" style={{ marginBottom: 0 }}>Venue Address *</label>
+                  <button
+                    type="button"
+                    onClick={handleUseCurrentLocation}
+                    disabled={isLocating}
+                    style={{
+                      background: "none", border: "none", color: "var(--primary)",
+                      fontSize: 11, fontWeight: 700, cursor: "pointer",
+                      display: "flex", alignItems: "center", gap: 4,
+                      opacity: isLocating ? 0.6 : 1, transition: "all 0.2s"
+                    }}
+                  >
+                    {isLocating ? (
+                      <div className="spinner-small" style={{ width: 10, height: 10, border: "1px solid rgba(230,57,70,0.2)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
+                    ) : (
+                      <Target size={12} />
+                    )}
+                    {isLocating ? "Locating..." : "Use Current Location"}
+                  </button>
+                </div>
                 <div style={{ position: "relative" }}>
                   <input
                     id="submit-address"
