@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { createSlug } from "@/lib/utils";
 import type { MusicEvent } from "@/lib/types";
 import { GENRE_META, formatEventTime, getDaysUntil, CITY_TZS } from "@/lib/mock-data";
 import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check } from "lucide-react";
@@ -18,15 +19,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
   const daysUntil = getDaysUntil(event.starts_at);
   const [copied, setCopied] = useState(false);
 
-  const createSlug = (title: string | null | undefined, city: string | null | undefined) => {
-    const t = title || "event";
-    const c = city || "various";
-    return `${c}-${t}`
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
+
 
   const slug = createSlug(event.title, event.city || "event");
   const shareUrl = typeof window !== "undefined"
@@ -46,23 +39,36 @@ export default function MusicEventDetail({ event, onBack }: Props) {
     ? "var(--today-color)"
     : "var(--text-secondary)";
 
-  const tz = (event.city && CITY_TZS[event.city.toLowerCase()]) || "UTC";
+  // Extreme Safety for Date/Time Formatting
+  let startTime = "TBA";
+  let endTime = "TBA";
+  let dateStr = "Date TBA";
 
-  // Safe Date Parsing
-  const startDate = new Date(event.starts_at);
-  const endDate = new Date(event.ends_at);
-  const isValidDate = !isNaN(startDate.getTime());
+  if (isValidDate) {
+    try {
+      // Validate timezone first
+      const safeTz = (event.city && CITY_TZS[event.city.toLowerCase()]) || "UTC";
+      
+      startTime = startDate.toLocaleTimeString("en", { 
+        hour: "2-digit", minute: "2-digit", hour12: false, timeZone: safeTz 
+      });
+      
+      if (!isNaN(endDate.getTime())) {
+        endTime = endDate.toLocaleTimeString("en", { 
+          hour: "2-digit", minute: "2-digit", hour12: false, timeZone: safeTz 
+        });
+      }
 
-  const startTime = isValidDate 
-    ? startDate.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz })
-    : "TBA";
-  const endTime = !isNaN(endDate.getTime())
-    ? endDate.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz })
-    : "TBA";
-    
-  const dateStr = isValidDate
-    ? new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric", timeZone: tz }).format(startDate)
-    : "Date TBA";
+      dateStr = new Intl.DateTimeFormat("en", { 
+        weekday: "long", month: "long", day: "numeric", timeZone: safeTz 
+      }).format(startDate);
+    } catch (e) {
+      // Fallback to local time if timezone fails
+      console.warn("Timezone formatting failed, falling back:", e);
+      startTime = startDate.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false });
+      dateStr = startDate.toLocaleDateString("en", { weekday: "long", month: "long", day: "numeric" });
+    }
+  }
 
   // Helper to normalize price text
   const getNormalizedPrice = () => {

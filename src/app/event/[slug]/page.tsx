@@ -6,19 +6,11 @@ import { createClient } from "@supabase/supabase-js";
 import { MusicEvent } from "@/lib/types";
 import { MOCK_EVENTS } from "@/lib/mock-data";
 
+import { createSlug } from "@/lib/utils";
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
-
-function createSlug(title: string | null | undefined, city: string | null | undefined): string {
-  const t = title || "event";
-  const c = city || "various";
-  return `${c}-${t}`
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '') 
-    .replace(/[\s_]+/g, '-')  
-    .replace(/^-+|-+$/g, ''); 
-}
 
 async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
   if (!slug) return null;
