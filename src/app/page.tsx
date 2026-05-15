@@ -621,6 +621,7 @@ export default function HomePage() {
                   </button>
                 ))}
               </div>
+            </div>
 
             {/* Bottom Sheet moved outside map container to bypass overflow:hidden and overlap genre tabs */}
             <div className="bottom-sheet-container" style={{ zIndex: 999 }}>
@@ -737,8 +738,8 @@ export default function HomePage() {
                       ))}
                     </div>
                   )}
-                  </div>
-            </div>
+                </div>
+              </div>
             </div>
           </>
         )}
