@@ -622,8 +622,10 @@ export default function HomePage() {
                   style={{
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                     maxHeight: isListHidden ? "56px" : (sheetExpanded ? "70vh" : "210px"),
-                    overflowY: sheetExpanded ? "auto" : "hidden",
+                    overflowY: "hidden",  // Never scroll the outer container
                     opacity: 1,
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
                   {/* Sheet handle + header */}
@@ -684,9 +686,18 @@ export default function HomePage() {
                               e.stopPropagation(); 
                               setSheetExpanded(!sheetExpanded); 
                             }}
+                            style={{ 
+                              padding: "4px 10px", 
+                              color: sheetExpanded ? "var(--text-muted)" : "var(--primary)",
+                              display: "flex", 
+                              alignItems: "center", 
+                              gap: 4,
+                              minHeight: 36, // bigger tap target
+                              minWidth: 36,
+                            }}
                           >
                             {sheetExpanded ? (
-                              <ChevronDown size={18} strokeWidth={2.5} />
+                              <ChevronDown size={20} strokeWidth={2.5} />
                             ) : (
                               <>
                                 <span style={{ fontSize: 11, fontWeight: 700 }}>All ({sortedEvents.length})</span>
@@ -699,6 +710,8 @@ export default function HomePage() {
                     </div>
                   </div>
 
+                  {/* Scrollable content area — separate from header so scroll doesn't eat touch events */}
+                  <div style={{ overflowY: sheetExpanded ? "auto" : "hidden", flex: 1 }}>
                   {!sheetExpanded ? (
                     <div
                       style={{
@@ -723,6 +736,7 @@ export default function HomePage() {
                       ))}
                     </div>
                   )}
+                  </div>
                 </div>
 
               </div>

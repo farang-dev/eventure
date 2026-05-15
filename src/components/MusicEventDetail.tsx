@@ -1,7 +1,8 @@
 "use client";
+import { useState } from "react";
 import type { MusicEvent } from "@/lib/types";
 import { GENRE_META, formatEventTime, getDaysUntil, CITY_TZS } from "@/lib/mock-data";
-import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check } from "lucide-react";
 import GenreIcon from "@/components/GenreIcon";
 
 interface Props {
@@ -15,6 +16,18 @@ export default function MusicEventDetail({ event, onBack }: Props) {
   const isLive = event.status === "happening_now";
   const isToday = event.status === "today";
   const daysUntil = getDaysUntil(event.starts_at);
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/event/${event.id}`
+    : `/event/${event.id}`;
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   const urgencyColor = isLive
     ? "var(--primary)"
@@ -256,29 +269,27 @@ export default function MusicEventDetail({ event, onBack }: Props) {
             </div>
           )}
 
-          {/* Price */}
-          {event.price && (
-            <div
+          {/* Price — always show, fallback if empty */}
+          <div
+            style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "11px 15px",
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+            }}
+          >
+            <span className="label" style={{ marginBottom: 0 }}>Entrance</span>
+            <span
               style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "11px 15px",
-                background: "var(--bg-elevated)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 700, fontSize: event.price ? 16 : 12,
+                color: event.price === "Free" ? "var(--green)" : event.price ? "var(--text-primary)" : "var(--text-muted)",
               }}
             >
-              <span className="label" style={{ marginBottom: 0 }}>Entrance</span>
-              <span
-                style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 700, fontSize: 16,
-                  color: event.price === "Free" ? "var(--green)" : "var(--text-primary)",
-                }}
-              >
-                {event.price}
-              </span>
-            </div>
-          )}
+              {event.price || "Check Flyer or Ask Organizer"}
+            </span>
+          </div>
 
           {/* CTAs */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -319,6 +330,24 @@ export default function MusicEventDetail({ event, onBack }: Props) {
               </a>
             )}
           </div>
+          {/* Share Event Button */}
+          <button
+            id="event-share-btn"
+            onClick={handleShare}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "11px 16px",
+              background: copied ? "rgba(16,185,129,0.1)" : "var(--bg-elevated)",
+              border: `1px solid ${copied ? "var(--green)" : "var(--border)"}`,
+              borderRadius: 12, cursor: "pointer",
+              color: copied ? "var(--green)" : "var(--text-muted)",
+              fontSize: 13, fontWeight: 600, transition: "all 0.2s",
+              width: "100%",
+            }}
+          >
+            {copied ? <Check size={14} /> : <Share2 size={14} />}
+            {copied ? "Link copied!" : `Share this event · eventure.online/event/${event.id.slice(0, 8)}…`}
+          </button>
         </div>
       </div>
     </div>

@@ -26,6 +26,7 @@ interface FormData {
   ends_next_day: boolean;
   contact_email: string;
   submitter_name: string;
+  image_url: string;
 }
 
 const EMPTY_FORM: FormData = {
@@ -46,6 +47,7 @@ const EMPTY_FORM: FormData = {
   ends_next_day: true,
   contact_email: "",
   submitter_name: "",
+  image_url: "",
 };
 
 interface Props {
@@ -62,6 +64,42 @@ export default function SubmitEventModal({ onClose }: Props) {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Image upload state
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const MAX_IMAGE_SIZE_MB = 2;
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      alert(`Image must be under ${MAX_IMAGE_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`);
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return null;
+    setIsUploadingImage(true);
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const ext = imageFile.name.split(".").pop();
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from("event-images")
+      .upload(filename, imageFile, { contentType: imageFile.type, upsert: false });
+    setIsUploadingImage(false);
+    if (error || !data) { alert("Image upload failed: " + error?.message); return null; }
+    const { data: { publicUrl } } = supabase.storage.from("event-images").getPublicUrl(data.path);
+    return publicUrl;
+  };
   
   const [viewState, setViewState] = useState({
     longitude: 139.7016,
@@ -151,10 +189,17 @@ export default function SubmitEventModal({ onClose }: Props) {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // First, upload image if provided
+      let imageUrl = form.image_url;
+      if (imageFile) {
+        const uploaded = await uploadImage();
+        if (uploaded) imageUrl = uploaded;
+      }
+
       const res = await fetch('/api/events/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: JSON.stringify({ ...form, image_url: imageUrl })
       });
       if (res.ok) {
         setSubmitted(true);
@@ -286,6 +331,54 @@ export default function SubmitEventModal({ onClose }: Props) {
                   style={{ borderColor: errors.title ? "var(--primary)" : undefined }}
                 />
                 {errors.title && <p style={{ color: "var(--primary)", fontSize: 11, marginTop: 4 }}>{errors.title}</p>}
+              </div>
+
+              {/* Hero Image Upload */}
+              <div>
+                <label className="label">Hero Image <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(optional, max 2MB)</span></label>
+                <label
+                  htmlFor="hero-image-upload"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "12px 14px", borderRadius: 10,
+                    border: "1px dashed var(--border)",
+                    background: "var(--bg-secondary)", cursor: "pointer",
+                    transition: "border-color 0.2s",
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.borderColor = "var(--primary)"}
+                  onMouseOut={(e) => e.currentTarget.style.borderColor = "var(--border)"}
+                >
+                  {imagePreview ? (
+                    <>
+                      <img
+                        src={imagePreview}
+                        alt="preview"
+                        style={{ width: 56, height: 40, objectFit: "cover", borderRadius: 6, flexShrink: 0 }}
+                      />
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", marginBottom: 1 }}>{imageFile?.name}</p>
+                        <p style={{ fontSize: 10, color: "var(--text-muted)" }}>
+                          {imageFile ? (imageFile.size / 1024 / 1024).toFixed(2) + " MB" : ""} · Click to change
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={18} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 1 }}>Upload flyer or event photo</p>
+                        <p style={{ fontSize: 10, color: "var(--text-muted)" }}>JPG, PNG, WebP · max 2MB</p>
+                      </div>
+                    </>
+                  )}
+                </label>
+                <input
+                  id="hero-image-upload"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: "none" }}
+                  onChange={handleImageChange}
+                />
               </div>
 
               <div>

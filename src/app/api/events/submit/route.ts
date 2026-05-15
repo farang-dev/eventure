@@ -34,10 +34,11 @@ export async function POST(request: Request) {
       ends_at: endsAtStr,
       artists: body.artists.filter((a: string) => a.trim() !== ''),
       ticket_url: body.ticket_url,
-      source_url: body.ticket_url, // fallback
-      price: body.price ? `${body.currency} ${body.price}` : 'TBD',
-      city: 'submitted', // generic placeholder for user submitted
-      is_approved: false, // Needs manual approval
+      source_url: body.ticket_url,
+      price: body.price ? `${body.currency} ${body.price}` : null,
+      city: 'submitted',
+      is_approved: false,
+      image_url: body.image_url || null,
     };
 
     // Insert into Supabase
