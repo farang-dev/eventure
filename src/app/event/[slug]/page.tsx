@@ -1,10 +1,11 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2 } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { MusicEvent } from "@/lib/types";
-import { MOCK_EVENTS } from "@/lib/mock-data";
+import { MOCK_EVENTS, GENRE_META, CITY_TZS } from "@/lib/mock-data";
 import { createSlug } from "@/lib/utils";
+import GenreIcon from "@/components/GenreIcon";
 
 // Initialize Supabase safely
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -28,7 +29,7 @@ async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
       const { data } = await supabase.from('music_events').select('*').eq('id', slug).single();
       if (data) return data as MusicEvent;
     }
-    const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(100);
+    const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(200);
     if (recent) {
       const found = recent.find((e: MusicEvent) => createSlug(e.title, e.city) === cleanSlug || e.id === slug);
       if (found) return found as MusicEvent;
@@ -41,7 +42,25 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const { slug } = await props.params;
   const event = await getEventBySlugOrId(slug);
   if (!event) return { title: "Event Detail | Eventure" };
-  return { title: `${event.title} | Eventure` };
+  return { 
+    title: `${event.title} | Eventure`,
+    description: event.description?.slice(0, 160),
+    openGraph: { images: event.image_url ? [event.image_url] : [] }
+  };
+}
+
+// Helper for safe time display
+function getSafeTimeLabel(startsAt: string, city?: string) {
+  try {
+    const d = new Date(startsAt);
+    const tz = city ? CITY_TZS[city.toLowerCase()] : "UTC";
+    const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz });
+    const date = d.toLocaleDateString("en-GB", { weekday: "long", month: "long", day: "numeric" });
+    return { time, date };
+  } catch (e) {
+    const d = new Date(startsAt);
+    return { time: d.toTimeString().slice(0, 5), date: d.toDateString() };
+  }
 }
 
 export default async function EventPage(props: { params: Promise<{ slug: string }> }) {
@@ -50,81 +69,141 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
 
   if (!event) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', background: '#0D1117', color: 'white', minHeight: '100vh' }}>
-        <h2>Event Not Found</h2>
-        <Link href="/" style={{ color: '#E63946' }}>Back to Map</Link>
+      <div style={{ padding: 40, textAlign: 'center', background: '#0D1117', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: 64, marginBottom: 20 }}>🔍</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Event Not Found</h2>
+        <p style={{ color: '#848D97', marginBottom: 24 }}>Identifier: {slug}</p>
+        <Link href="/" style={{ padding: '12px 24px', background: '#E63946', color: 'white', borderRadius: 12, textDecoration: 'none', fontWeight: 700 }}>Back to Map</Link>
       </div>
     );
   }
 
-  // Pure string-based date formatting to avoid Intl/timezone crashes
-  const dateObj = new Date(event.starts_at);
-  const dateStr = dateObj.toDateString(); 
-  const timeStr = dateObj.toTimeString().slice(0, 5);
+  const meta = GENRE_META[event.genre] || GENRE_META.other;
+  const { time, date } = getSafeTimeLabel(event.starts_at, event.city);
+  const isFeatured = event.is_featured;
+  
+  const displayPrice = (() => {
+    if (!event.price) return "Check Flyer or Ask Organizer";
+    const p = String(event.price).toLowerCase();
+    if (p.includes("ra") || p === "tbd" || p === "unknown") return "Check Flyer or Ask Organizer";
+    return event.price;
+  })();
 
   return (
-    <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid #30363D", borderRight: "1px solid #30363D", background: '#0D1117', color: 'white', minHeight: '100vh' }}>
-      <div style={{ position: "relative", width: "100%" }}>
-        {/* Hero Image */}
-        <div style={{ width: "100%", height: 350, background: "#161B22", position: "relative", overflow: "hidden" }}>
+    <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", background: 'var(--bg)', color: 'var(--text-primary)', minHeight: '100vh' }}>
+      <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column", position: "relative" }}>
+        
+        {/* HERO AREA */}
+        <div style={{ width: "100%", height: 400, background: "#000", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {event.image_url ? (
-            <img src={event.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src={event.image_url} alt={event.title} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           ) : (
-            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Music size={60} color="#30363D" />
+            <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${meta.bg}, #161B22)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <GenreIcon name={meta.icon} size={64} color={meta.color} />
             </div>
           )}
-          <Link href="/" style={{ position: "absolute", top: 14, left: 14, width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", textDecoration: "none" }}>
-            <ArrowLeft size={18} />
+          
+          {/* Back Button */}
+          <Link 
+            href="/"
+            style={{ position: "absolute", top: 14, left: 14, width: 36, height: 36, borderRadius: "50%", background: "rgba(13,17,23,0.75)", backdropFilter: "blur(6px)", border: "1px solid var(--border)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", zIndex: 10 }}
+          >
+            <ArrowLeft size={17} />
           </Link>
+
+          {/* Featured/Live Badges */}
+          <div style={{ position: "absolute", top: 14, right: 14, display: "flex", gap: 6, zIndex: 10 }}>
+            {isFeatured && (
+              <span className="badge badge-featured">
+                <Star size={9} /> Featured
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Content */}
+        {/* CONTENT AREA */}
         <div style={{ padding: "24px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#E63946", fontSize: 12, fontWeight: 700, textTransform: "uppercase", marginBottom: 12 }}>
-            <Clock size={14} />
-            {dateStr} @ {timeStr}
-          </div>
-          
-          <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 16, lineHeight: 1.1 }}>{event.title}</h1>
-          
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 16, background: "#161B22", borderRadius: 12, marginBottom: 20 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 8, background: "#30363D", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <MapPin size={20} color="#848D97" />
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>{event.venue_name}</div>
-              <div style={{ fontSize: 13, color: "#848D97" }}>{event.city}</div>
-            </div>
+          {/* Genre Tag */}
+          <div style={{ marginBottom: 16 }}>
+            <span style={{ background: meta.bg, border: `1px solid ${meta.color}44`, color: meta.color, fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.07em", display: "inline-flex", alignItems: "center" }}>
+              <GenreIcon name={meta.icon} size={11} style={{ marginRight: 5 }} />
+              {meta.label}
+            </span>
           </div>
 
+          {/* Time + Title */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 7, display: "flex", alignItems: "center", gap: 5 }}>
+              <Clock size={11} />
+              {time}
+            </div>
+            <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 32, color: "var(--text-primary)", lineHeight: 1.15, marginBottom: 8 }}>
+              {event.title}
+            </h1>
+            <p style={{ fontSize: 16, color: "var(--text-secondary)", fontWeight: 500 }}>
+              {date} · {time}
+            </p>
+          </div>
+
+          {/* Lineup */}
           {(event.artists || []).length > 0 && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, color: "#848D97", fontWeight: 700, textTransform: "uppercase", marginBottom: 10 }}>Lineup</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <Music size={13} color="var(--text-muted)" />
+                <span className="label">Lineup</span>
+              </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {(event.artists || []).map((a: string) => (
-                  <span key={a} style={{ padding: "6px 12px", background: "#161B22", border: "1px solid #30363D", borderRadius: 8, fontSize: 14 }}>{a}</span>
+                {(event.artists || []).map((artist: string, i: number) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artist}</span>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
+          {/* Venue Card */}
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.venue_name}, ${event.venue_address || event.city}`)}`}
+            target="_blank" rel="noopener noreferrer"
+            style={{ padding: "13px 15px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, display: "flex", alignItems: "flex-start", gap: 10, textDecoration: "none", cursor: "pointer", marginBottom: 24 }}
+          >
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <MapPin size={15} color="var(--text-muted)" />
+            </div>
+            <div>
+              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", marginBottom: 2 }}>{event.venue_name}</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{event.venue_address || "View on Google Maps"}</p>
+            </div>
+            <ExternalLink size={12} color="var(--text-muted)" style={{ marginLeft: "auto", alignSelf: "center" }} />
+          </a>
+
+          {/* Description */}
           {event.description && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, color: "#848D97", fontWeight: 700, textTransform: "uppercase", marginBottom: 10 }}>About</div>
-              <p style={{ color: "#C9D1D9", fontSize: 15, lineHeight: 1.6 }}>{event.description}</p>
+              <label className="label">About</label>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{event.description}</p>
             </div>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 30 }}>
+          {/* Price */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 15px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, marginBottom: 24 }}>
+            <span className="label" style={{ marginBottom: 0 }}>Entrance Fee</span>
+            <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: displayPrice.length > 20 ? 12 : 16, color: event.price === "Free" ? "var(--green)" : "var(--text-primary)" }}>{displayPrice}</span>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {event.ticket_url && (
-              <a href={event.ticket_url} target="_blank" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "#E63946", color: "white", borderRadius: 12, fontWeight: 700, textDecoration: "none" }}>
-                <Ticket size={18} /> Get Tickets <ExternalLink size={14} />
+              <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 20px", background: "var(--primary)", color: "#fff", borderRadius: 12, fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                <Ticket size={16} /> Get Tickets <ExternalLink size={12} />
               </a>
             )}
-            <button style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "#161B22", border: "1px solid #30363D", color: "white", borderRadius: 12, fontWeight: 700, cursor: "pointer" }}>
-              <Share2 size={18} /> Share Event
-            </button>
+            {event.source_url && (
+              <a href={event.source_url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 16px", background: "transparent", color: "var(--text-muted)", borderRadius: 10, border: "1px solid var(--border)", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+                <ExternalLink size={11} /> View Source
+              </a>
+            )}
           </div>
         </div>
       </div>
