@@ -9,6 +9,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+  
+  if (!supabaseUrl || !supabaseKey) return [];
+
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   const cityUrls = cities.map((city) => ({
@@ -21,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all events for dynamic sitemap
   let eventUrls: any[] = []
   try {
-    const { data: events } = await supabase.from('music_events').select('title, city, updated_at').limit(1000)
+    const { data: events } = await supabase.from('music_events').select('title, city, updated_at').limit(2000)
     if (events) {
       eventUrls = events.map((e) => ({
         url: `${baseUrl}/event/${createSlug(e.title, e.city)}`,
