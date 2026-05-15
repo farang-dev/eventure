@@ -11,8 +11,27 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function getEvent(id: string): Promise<MusicEvent | null> {
-  const { data } = await supabase.from('music_events').select('*').eq('id', id).single();
-  return data as MusicEvent | null;
+  // 1. Check if it's a mock ID (e.g. e1, e2) or a UUID
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  
+  if (!isUuid) {
+    // If not a UUID, it might be from MOCK_EVENTS (for development/testing)
+    const { MOCK_EVENTS } = require("@/lib/mock-data");
+    return MOCK_EVENTS.find((e: MusicEvent) => e.id === id) || null;
+  }
+
+  // 2. Fetch from Supabase
+  try {
+    const { data, error } = await supabase.from('music_events').select('*').eq('id', id).single();
+    if (error) {
+      console.error("Supabase error fetching event:", error);
+      return null;
+    }
+    return data as MusicEvent | null;
+  } catch (err) {
+    console.error("Unexpected error fetching event:", err);
+    return null;
+  }
 }
 
 export async function generateMetadata(props: { 
@@ -21,22 +40,43 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { id } = await props.params;
   const event = await getEvent(id);
-  if (!event) return { title: "Event Not Found" };
+  
+  if (!event) return { 
+    title: "Event Not Found | Eventure",
+    description: "The requested event could not be found."
+  };
 
-  const title = `${event.title} at ${event.venue_name} | Eventure`;
+  const title = `${event.title || "Special Event"} at ${event.venue_name || "Secret Venue"} | Eventure`;
+  const eventDate = event.starts_at ? new Date(event.starts_at) : null;
+  const dateStr = eventDate && !isNaN(eventDate.getTime()) ? eventDate.toLocaleDateString() : "TBA";
+  
   const description = event.description 
-    ? event.description.slice(0, 150) + "..."
-    : `Join ${event.title} at ${event.venue_name} on ${new Date(event.starts_at).toLocaleDateString()}. Get tickets and info.`;
+    ? event.description.slice(0, 160) + "..."
+    : `Join ${event.title || "this event"} at ${event.venue_name || "the venue"} on ${dateStr}. Get tickets and info on Eventure.`;
 
   return {
     title,
     description,
-    keywords: [event.genre, event.venue_name, event.city, "club event", "Eventure", ...(event.artists || [])],
+    keywords: [
+      event.genre || "music", 
+      event.venue_name || "", 
+      event.city || "", 
+      "club event", 
+      "Eventure", 
+      ...(event.artists || [])
+    ].filter(Boolean),
     openGraph: {
       title,
       description,
+      type: "website",
       images: event.image_url ? [event.image_url] : [],
     },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: event.image_url ? [event.image_url] : [],
+    }
   };
 }
 
