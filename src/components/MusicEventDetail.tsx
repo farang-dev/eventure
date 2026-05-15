@@ -234,14 +234,14 @@ export default function MusicEventDetail({ event, onBack }: Props) {
           </div>
 
           {/* Artist lineup */}
-          {event.artists.length > 0 && (
+          {(event.artists || []).length > 0 && (
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
                 <Music size={13} color="var(--text-muted)" />
                 <span className="label">Lineup</span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {event.artists.map((artist, i) => (
+                {(event.artists || []).map((artist, i) => (
                   <div
                     key={artist}
                     style={{
