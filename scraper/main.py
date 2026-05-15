@@ -127,7 +127,11 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                         if mapbox_token:
                             geo_res = requests.get(
                                 f"https://api.mapbox.com/geocoding/v5/mapbox.places/{requests.utils.quote(search_query)}.json",
-                                params={"access_token": mapbox_token, "limit": 1}
+                                params={
+                                    "access_token": mapbox_token, 
+                                    "limit": 1,
+                                    "proximity": f"{lng_base},{lat_base}"
+                                }
                             )
                             geo_data = geo_res.json()
                             if geo_data.get("features"):
