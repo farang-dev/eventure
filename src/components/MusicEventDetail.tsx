@@ -346,10 +346,10 @@ export default function MusicEventDetail({ event, onBack }: Props) {
             style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
               padding: "14px 20px",
-              background: copied ? "var(--green)" : "rgba(230,57,70,0.1)",
+              background: copied ? "var(--green)" : "var(--primary)",
               border: `1px solid ${copied ? "var(--green)" : "var(--primary)"}`,
               borderRadius: 12, cursor: "pointer",
-              color: copied ? "#fff" : "var(--primary)",
+              color: "#fff",
               fontSize: 14, fontWeight: 800, transition: "all 0.2s",
               width: "100%",
               marginTop: 14,
