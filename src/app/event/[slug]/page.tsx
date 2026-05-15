@@ -11,45 +11,48 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
-// Helper to generate a slug for comparison
-function createSlug(title: string, city: string): string {
-  return `${city}-${title}`
+// Helper to generate a slug for comparison - now with extreme safety
+function createSlug(title: string | null | undefined, city: string | null | undefined): string {
+  const t = title || "event";
+  const c = city || "various";
+  return `${c}-${t}`
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove non-word chars
-    .replace(/[\s_]+/g, '-')  // Replace spaces with hyphens
-    .replace(/^-+|-+$/g, ''); // Trim hyphens
+    .replace(/[^\w\s-]/g, '') 
+    .replace(/[\s_]+/g, '-')  
+    .replace(/^-+|-+$/g, ''); 
 }
 
 async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
-  // 1. Check MOCK_EVENTS by ID
-  const mockById = MOCK_EVENTS.find(e => e.id === slug);
-  if (mockById) return mockById;
+  if (!slug) return null;
 
-  // 2. Check MOCK_EVENTS by generated slug
-  const mockBySlug = MOCK_EVENTS.find(e => createSlug(e.title, e.city) === slug);
-  if (mockBySlug) return mockBySlug;
-
-  // 3. Check Supabase
-  if (!supabase) return null;
-
-  try {
-    // A. Check by ID (if UUID)
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-    if (isUuid) {
+  // 1. Check if slug is a valid UUID
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+  
+  // 2. Fetch from Supabase by ID first if UUID
+  if (isUuid && supabase) {
+    try {
       const { data } = await supabase.from('music_events').select('*').eq('id', slug).single();
       if (data) return data as MusicEvent;
+    } catch (err) {
+      console.error("ID search error:", err);
     }
+  }
 
-    // B. Check by Title/City match (slow but works as slug fallback)
-    // In a real app, we'd have a 'slug' column in DB.
-    // For now, we'll try to find an event where we can recreate this slug.
-    const { data: allEvents } = await supabase.from('music_events').select('*');
-    if (allEvents) {
-      const found = allEvents.find(e => createSlug(e.title, e.city) === slug);
-      if (found) return found as MusicEvent;
+  // 3. Check MOCK_EVENTS (covers e1, e2 and slug forms)
+  const foundMock = MOCK_EVENTS.find(e => e.id === slug || createSlug(e.title, e.city) === slug);
+  if (foundMock) return foundMock;
+
+  // 4. Try Slug match in Supabase (Limit to a reasonable count to avoid crash)
+  if (supabase) {
+    try {
+      const { data: recentEvents } = await supabase.from('music_events').select('*').limit(100);
+      if (recentEvents) {
+        const found = recentEvents.find(e => createSlug(e.title, e.city) === slug);
+        if (found) return found as MusicEvent;
+      }
+    } catch (err) {
+      console.error("Slug search error:", err);
     }
-  } catch (err) {
-    console.error("Fetch error:", err);
   }
 
   return null;

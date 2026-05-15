@@ -18,8 +18,10 @@ export default function MusicEventDetail({ event, onBack }: Props) {
   const daysUntil = getDaysUntil(event.starts_at);
   const [copied, setCopied] = useState(false);
 
-  const createSlug = (title: string, city: string) => {
-    return `${city}-${title}`
+  const createSlug = (title: string | null | undefined, city: string | null | undefined) => {
+    const t = title || "event";
+    const c = city || "various";
+    return `${c}-${t}`
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_]+/g, '-')
