@@ -37,20 +37,26 @@ export default function MusicEventDetail({ event, onBack }: Props) {
 
   const tz = (event.city && CITY_TZS[event.city.toLowerCase()]) || "UTC";
 
-  const startTime = new Date(event.starts_at).toLocaleTimeString("en", {
-    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
-  });
-  const endTime = new Date(event.ends_at).toLocaleTimeString("en", {
-    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
-  });
-  const dateStr = new Intl.DateTimeFormat("en", {
-    weekday: "long", month: "long", day: "numeric", timeZone: tz
-  }).format(new Date(event.starts_at));
+  // Safe Date Parsing
+  const startDate = new Date(event.starts_at);
+  const endDate = new Date(event.ends_at);
+  const isValidDate = !isNaN(startDate.getTime());
+
+  const startTime = isValidDate 
+    ? startDate.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz })
+    : "TBA";
+  const endTime = !isNaN(endDate.getTime())
+    ? endDate.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz })
+    : "TBA";
+    
+  const dateStr = isValidDate
+    ? new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric", timeZone: tz }).format(startDate)
+    : "Date TBA";
 
   // Helper to normalize price text
   const getNormalizedPrice = () => {
     if (!event.price) return "Check Flyer or Ask Organizer";
-    const p = event.price.toLowerCase();
+    const p = String(event.price).toLowerCase();
     if (p.includes("ra") || p === "tbd" || p === "unknown") return "Check Flyer or Ask Organizer";
     return event.price;
   };
