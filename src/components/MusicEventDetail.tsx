@@ -343,10 +343,11 @@ export default function MusicEventDetail({ event, onBack }: Props) {
               color: copied ? "var(--green)" : "var(--text-muted)",
               fontSize: 13, fontWeight: 600, transition: "all 0.2s",
               width: "100%",
+              marginTop: 10,
             }}
           >
             {copied ? <Check size={14} /> : <Share2 size={14} />}
-            {copied ? "Link copied!" : `Share this event · eventure.online/event/${event.id.slice(0, 8)}…`}
+            {copied ? "Link copied!" : "Share this event page"}
           </button>
         </div>
       </div>

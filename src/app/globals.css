@@ -291,7 +291,7 @@ h1,h2,h3,h4,h5 {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 40;
+  z-index: 90; /* Increased from 40 to stay above genre tabs */
 }
 
 /* ─── Scroll helpers ─── */

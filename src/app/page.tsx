@@ -540,7 +540,13 @@ export default function HomePage() {
             )}
 
             {/* Genre filter */}
-            <div style={{ borderBottom: "1px solid var(--border)", flexShrink: 0, background: "var(--bg-secondary)" }}>
+            <div style={{ 
+              borderBottom: "1px solid var(--border)", 
+              flexShrink: 0, 
+              background: "var(--bg-secondary)",
+              position: "relative",
+              zIndex: 30 
+            }}>
               <GenreFilter selected={genre} onChange={setGenre} />
             </div>
 
