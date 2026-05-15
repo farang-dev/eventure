@@ -18,9 +18,18 @@ export default function MusicEventDetail({ event, onBack }: Props) {
   const daysUntil = getDaysUntil(event.starts_at);
   const [copied, setCopied] = useState(false);
 
+  const createSlug = (title: string, city: string) => {
+    return `${city}-${title}`
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
+  const slug = createSlug(event.title, event.city || "event");
   const shareUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/event/${event.id}`
-    : `/event/${event.id}`;
+    ? `${window.location.origin}/event/${slug}`
+    : `/event/${slug}`;
 
   const handleShare = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
