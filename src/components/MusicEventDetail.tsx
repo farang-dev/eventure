@@ -35,7 +35,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
     ? "var(--today-color)"
     : "var(--text-secondary)";
 
-  const tz = CITY_TZS[event.city.toLowerCase()];
+  const tz = CITY_TZS[event.city.toLowerCase()] || "UTC";
 
   const startTime = new Date(event.starts_at).toLocaleTimeString("en", {
     hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
@@ -46,6 +46,15 @@ export default function MusicEventDetail({ event, onBack }: Props) {
   const dateStr = new Intl.DateTimeFormat("en", {
     weekday: "long", month: "long", day: "numeric", timeZone: tz
   }).format(new Date(event.starts_at));
+
+  // Helper to normalize price text
+  const getNormalizedPrice = () => {
+    if (!event.price) return "Check Flyer or Ask Organizer";
+    const p = event.price.toLowerCase();
+    if (p.includes("ra") || p === "tbd" || p === "unknown") return "Check Flyer or Ask Organizer";
+    return event.price;
+  };
+  const displayPrice = getNormalizedPrice();
 
   // Generate JSON-LD for Search Engines
   const cityToCountry: Record<string, string> = {
@@ -279,15 +288,15 @@ export default function MusicEventDetail({ event, onBack }: Props) {
               borderRadius: 12,
             }}
           >
-            <span className="label" style={{ marginBottom: 0 }}>Entrance</span>
+            <span className="label" style={{ marginBottom: 0 }}>Entrance Fee</span>
             <span
               style={{
                 fontFamily: "'Poppins', sans-serif",
-                fontWeight: 700, fontSize: event.price ? 16 : 12,
-                color: event.price === "Free" ? "var(--green)" : event.price ? "var(--text-primary)" : "var(--text-muted)",
+                fontWeight: 700, fontSize: displayPrice === "Check Flyer or Ask Organizer" ? 12 : 16,
+                color: event.price === "Free" ? "var(--green)" : (displayPrice === "Check Flyer or Ask Organizer" ? "var(--text-muted)" : "var(--text-primary)"),
               }}
             >
-              {event.price || "Check Flyer or Ask Organizer"}
+              {displayPrice}
             </span>
           </div>
 
@@ -335,19 +344,23 @@ export default function MusicEventDetail({ event, onBack }: Props) {
             id="event-share-btn"
             onClick={handleShare}
             style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              padding: "11px 16px",
-              background: copied ? "rgba(16,185,129,0.1)" : "var(--bg-elevated)",
-              border: `1px solid ${copied ? "var(--green)" : "var(--border)"}`,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              padding: "14px 20px",
+              background: copied ? "var(--green)" : "rgba(230,57,70,0.1)",
+              border: `1px solid ${copied ? "var(--green)" : "var(--primary)"}`,
               borderRadius: 12, cursor: "pointer",
-              color: copied ? "var(--green)" : "var(--text-muted)",
-              fontSize: 13, fontWeight: 600, transition: "all 0.2s",
+              color: copied ? "#fff" : "var(--primary)",
+              fontSize: 14, fontWeight: 800, transition: "all 0.2s",
               width: "100%",
-              marginTop: 10,
+              marginTop: 14,
+              fontFamily: "'Poppins', sans-serif",
+              textTransform: "uppercase",
+              letterSpacing: "0.03em",
+              boxShadow: copied ? "none" : "0 4px 12px rgba(230,57,70,0.15)",
             }}
           >
-            {copied ? <Check size={14} /> : <Share2 size={14} />}
-            {copied ? "Link copied!" : "Share this event page"}
+            {copied ? <Check size={16} strokeWidth={3} /> : <Share2 size={16} strokeWidth={3} />}
+            {copied ? "Link Copied!" : "Share Event Link"}
           </button>
         </div>
       </div>
