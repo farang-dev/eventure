@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { X, Upload, Plus, Trash2, Calendar, Clock, MapPin, Music, Ticket, Link, AlertCircle, CheckCircle2 } from "lucide-react";
+import { X, Upload, Plus, Trash2, Calendar, Clock, MapPin, Music, Ticket, Link, AlertCircle, CheckCircle2, Target } from "lucide-react";
 import type { Genre } from "@/lib/types";
 import { GENRE_META } from "@/lib/mock-data";
 import GenreIcon from "@/components/GenreIcon";
