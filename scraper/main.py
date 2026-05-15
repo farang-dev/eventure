@@ -108,34 +108,36 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 
                 lat, lng = lat_base, lng_base
 
-                # 1. Try to use RA's native coordinates if they exist and are sane
+                # 1. Try to use RA's native coordinates unconditionally if they exist
                 has_ra_coords = False
                 if venue_location and venue_location.get("latitude") and venue_location.get("longitude"):
-                    v_lat = float(venue_location["latitude"])
-                    v_lng = float(venue_location["longitude"])
-                    
-                    # Sanity check: is it within a reasonable range of the city center? (~1.5 degrees)
-                    if abs(v_lat - lat_base) < 1.5 and abs(v_lng - lng_base) < 1.5:
-                        lat, lng = v_lat, v_lng
-                        has_ra_coords = True
+                    lat = float(venue_location["latitude"])
+                    lng = float(venue_location["longitude"])
+                    has_ra_coords = True
 
-                # 2. If RA has no coordinates, try to GEOCLASS (Geocode) based on Venue Name + City
+                # 2. If RA has no coordinates, Geocode using FULL ADDRESS + Name
                 if not has_ra_coords and venue_name != "TBA":
                     try:
-                        print(f"  🔍 Geocoding {venue_name} in {city_name}...")
-                        search_query = f"{venue_name}, {city_name}"
-                        geo_res = requests.get(
-                            "https://nominatim.openstreetmap.org/search",
-                            params={"q": search_query, "format": "json", "limit": 1},
-                            headers={"User-Agent": "EventureScraper/1.0"}
-                        )
-                        geo_data = geo_res.json()
-                        if geo_data:
-                            lat, lng = float(geo_data[0]["lat"]), float(geo_data[0]["lon"])
-                            print(f"  📍 Found: {lat}, {lng}")
+                        # Prioritize the exact address if available
+                        exact_address = venue.get("address") or venue_location.get("address")
+                        search_query = f"{venue_name}, {exact_address}, {city_name}" if exact_address else f"{venue_name}, {city_name}"
+                        
+                        print(f"  🔍 Geocoding {search_query} (Mapbox)...")
+                        mapbox_token = os.environ.get("NEXT_PUBLIC_MAPBOX_TOKEN") or os.environ.get("MAPBOX_TOKEN")
+                        if mapbox_token:
+                            geo_res = requests.get(
+                                f"https://api.mapbox.com/geocoding/v5/mapbox.places/{requests.utils.quote(search_query)}.json",
+                                params={"access_token": mapbox_token, "limit": 1}
+                            )
+                            geo_data = geo_res.json()
+                            if geo_data.get("features"):
+                                center = geo_data["features"][0]["center"]
+                                lat, lng = center[1], center[0]
+                                print(f"  📍 Found: {lat}, {lng}")
+                            else:
+                                print(f"  ⚠️ Could not find exact location for {search_query}. Falling back to city center.")
                         else:
-                            # Fallback to city center (fixed, no randomization)
-                            print(f"  ⚠️ Could not geocode {venue_name}. Using city center.")
+                            print("  ⚠️ Mapbox token missing.")
                     except Exception as geo_err:
                         print(f"  ❌ Geocoding error: {geo_err}")
                 

@@ -169,7 +169,7 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
 
           {/* Venue Card */}
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.venue_name}, ${event.venue_address || event.city}`)}`}
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address && event.venue_address !== event.venue_name ? `${event.venue_name}, ${event.venue_address}` : `${event.venue_name}, ${event.city}`)}`}
             target="_blank" rel="noopener noreferrer"
             style={{ padding: "13px 15px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, display: "flex", alignItems: "flex-start", gap: 10, textDecoration: "none", cursor: "pointer", marginBottom: 24 }}
           >
