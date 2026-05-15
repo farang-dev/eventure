@@ -39,6 +39,11 @@ export default function MusicEventDetail({ event, onBack }: Props) {
     ? "var(--today-color)"
     : "var(--text-secondary)";
 
+  // Safe Date Parsing
+  const startDate = new Date(event.starts_at);
+  const endDate = new Date(event.ends_at);
+  const isValidDate = !isNaN(startDate.getTime());
+
   // Extreme Safety for Date/Time Formatting
   let startTime = "TBA";
   let endTime = "TBA";
