@@ -28,6 +28,7 @@ export default function HomePageClient({ initialEvents, initialCity }: { initial
   const [genre, setGenre] = useState("all");
   const [isListHidden, setIsListHidden] = useState(false);
   const [cityFilter, setCityFilter] = useState<string | null>(initialCity || null);
+  const [cityCounts, setCityCounts] = useState<Record<string, number>>({});
   const router = useRouter();
   
   useEffect(() => {
@@ -191,6 +192,25 @@ export default function HomePageClient({ initialEvents, initialCity }: { initial
       );
     }
   }, []);
+
+  useEffect(() => {
+    const fetchCityCounts = async () => {
+      const { data } = await supabase
+        .from("music_events")
+        .select("city")
+        .gte("ends_at", new Date().toISOString())
+        .or("is_approved.eq.true,is_approved.is.null");
+      if (data) {
+        const counts: Record<string, number> = {};
+        for (const row of data) {
+          const c = (row.city || "").toLowerCase();
+          counts[c] = (counts[c] || 0) + 1;
+        }
+        setCityCounts(counts);
+      }
+    };
+    fetchCityCounts();
+  }, [supabase]);
 
   useEffect(() => {
     if (!isMounted || !initialCity) return;
@@ -925,7 +945,7 @@ export default function HomePageClient({ initialEvents, initialCity }: { initial
               <p className="label" style={{ padding: "2px 0 6px" }}>Select a city to explore events</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
                 {CITIES.map((c) => {
-                  const count = events.filter((e) => e.city?.toLowerCase() === c.id).length;
+                  const count = cityCounts[c.id] || 0;
                   return (
                     <button
                       key={c.id}
