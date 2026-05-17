@@ -133,10 +133,19 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                 ra_lat, ra_lng = None, None
                 mb_lat, mb_lng = None, None
 
+                CITY_RADIUS_KM = 50
+
+                def km_from_city(lat, lng):
+                    return ((lat - lat_base)**2 + (lng - lng_base)**2)**0.5 * 111
+
                 # 1. Get RA native coordinates if they exist
                 if venue_location and venue_location.get("latitude") and venue_location.get("longitude"):
-                    ra_lat = float(venue_location["latitude"])
-                    ra_lng = float(venue_location["longitude"])
+                    raw_ra_lat = float(venue_location["latitude"])
+                    raw_ra_lng = float(venue_location["longitude"])
+                    if km_from_city(raw_ra_lat, raw_ra_lng) < CITY_RADIUS_KM:
+                        ra_lat, ra_lng = raw_ra_lat, raw_ra_lng
+                    else:
+                        print(f"  🗑️ Discarded RA coordinates for {venue_name}: {raw_ra_lat},{raw_ra_lng} ({km_from_city(raw_ra_lat, raw_ra_lng):.0f}km from {city_name})")
 
                 # 2. Get Mapbox geocoded coordinates using full address
                 if venue_name != "TBA":
@@ -157,21 +166,22 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                                 m_lat, m_lng = center[1], center[0]
                                 m_types = feat.get("place_type", [])
                                 
-                                # ONLY trust Mapbox if it found a specific 'poi' or 'address'
-                                # If it just found 'place' or 'region', it's too generic (like "Tokyo, Japan")
-                                if any(t in ["poi", "address"] for t in m_types):
-                                    # Mapbox Sanity: Must be within 20km of city center
-                                    if ((m_lat - lat_base)**2 + (m_lng - lng_base)**2)**0.5 * 111 < 20:
-                                        mb_lat, mb_lng = m_lat, m_lng
+                                # Accept Mapbox if it found a specific POI/address AND within 20km of city
+                                if any(t in ["poi", "address"] for t in m_types) and km_from_city(m_lat, m_lng) < 20:
+                                    mb_lat, mb_lng = m_lat, m_lng
+                                # If RA had no valid coords, also accept 'place' type results within city
+                                elif not ra_lat and any(t in ["poi", "address", "place", "neighborhood"] for t in m_types) and km_from_city(m_lat, m_lng) < CITY_RADIUS_KM:
+                                    mb_lat, mb_lng = m_lat, m_lng
                     except Exception as geo_err:
                         print(f"  ❌ Geocoding error: {geo_err}")
 
                 # 3. Multi-Tier Decision Logic
                 if ra_lat and mb_lat:
-                    dist = ((ra_lat - mb_lat)**2 + (ra_lng - mb_lng)**2)**0.5 * 111
-                    if 0.3 < dist < 10: 
-                        # Significant local gap (300m - 10km) AND we have a specific Mapbox POI/Address
-                        print(f"  📍 Corrected {venue_name}: Moving {dist:.2f}km from RA to Mapbox {m_types}.")
+                    gap = ((ra_lat - mb_lat)**2 + (ra_lng - mb_lng)**2)**0.5 * 111
+                    # If RA and Mapbox disagree significantly (300m+) but both in same city,
+                    # prefer Mapbox (more precise geocoding)
+                    if gap > 0.3 and km_from_city(mb_lat, mb_lng) < 10:
+                        print(f"  📍 Corrected {venue_name}: Moved {gap:.1f}km from RA to Mapbox.")
                         final_lat, final_lng = mb_lat, mb_lng
                     else:
                         final_lat, final_lng = ra_lat, ra_lng
