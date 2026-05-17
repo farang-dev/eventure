@@ -932,41 +932,58 @@ export default function HomePageClient({ initialEvents, initialCity }: { initial
           </div>
         )}
 
-        {/* CITIES */}
+        {/* CITIES: events grouped by city */}
         {view === "cities" && (
           <div className="view-panel">
             <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
               <button onClick={() => navigate("home")} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4 }}>
                 <X size={19} />
               </button>
-              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 15 }}>Cities</span>
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 15 }}>All Cities</span>
             </div>
-            <div className="scroll-y" style={{ flex: 1, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
-              <p className="label" style={{ padding: "2px 0 6px" }}>Select a city to explore events</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-                {CITIES.map((c) => {
-                  const count = cityCounts[c.id] || 0;
-                  return (
-                    <button
-                      key={c.id}
-                      id={`city-${c.id}`}
+            <div className="scroll-y" style={{ flex: 1 }}>
+              {CITIES.map((c) => {
+                const cityEvents = sortedEvents.filter((e) => e.city?.toLowerCase() === c.id);
+                if (cityEvents.length === 0) return null;
+                return (
+                  <div key={c.id}>
+                    <div
                       onClick={() => router.push(`/${c.id}`)}
                       style={{
-                        background: c.id === cityFilter ? "var(--purple-dim)" : "var(--card-bg)",
-                        border: `1px solid ${c.id === cityFilter ? "rgba(139,92,246,0.35)" : "var(--border)"}`,
-                        borderRadius: 12, padding: "14px",
-                        cursor: "pointer", textAlign: "left", transition: "all 0.18s",
+                        padding: "10px 14px", borderBottom: "1px solid var(--border)",
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        cursor: "pointer", background: "var(--bg-secondary)",
+                        position: "sticky", top: 0, zIndex: 10,
                       }}
                     >
-                      <div style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 15, color: "var(--text-primary)", marginBottom: 2 }}>{c.name}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>{c.country}</div>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple)" }}>
-                        {count} event{count !== 1 ? "s" : ""}
+                      <div>
+                        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>{c.name}</span>
+                        <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 8 }}>{c.country}</span>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--purple)" }}>
+                        {cityEvents.length} event{cityEvents.length !== 1 ? "s" : ""} →
+                      </span>
+                    </div>
+                    <div style={{ padding: "8px 14px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+                      {cityEvents.slice(0, 5).map((e) => (
+                        <MusicEventCard key={e.id} event={e} onClick={() => { setSelectedEvent(e); navigate("home"); }} />
+                      ))}
+                      {cityEvents.length > 5 && (
+                        <button
+                          onClick={() => router.push(`/${c.id}`)}
+                          style={{
+                            background: "none", border: "1px solid var(--border)", borderRadius: 10,
+                            padding: "8px", color: "var(--purple)", fontSize: 12, fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          View all {cityEvents.length} events in {c.name}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
