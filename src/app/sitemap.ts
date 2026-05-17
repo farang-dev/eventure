@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
  
 import { createClient } from '@supabase/supabase-js'
 import { createSlug } from '@/lib/utils'
+import { CITIES } from '@/lib/constants'
 
 // Force dynamic generation to ensure sitemap is always up-to-date with Supabase
 export const dynamic = 'force-dynamic';
@@ -9,7 +10,7 @@ export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.eventurer.online'
-  const cities = ['tokyo', 'osaka', 'london', 'vilnius', 'belgrade', 'tbilisi']
+  const cities = CITIES.map((c) => c.id)
   
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""

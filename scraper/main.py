@@ -23,7 +23,12 @@ CITY_TIMEZONES = {
     "london": "Europe/London",
     "vilnius": "Europe/Vilnius",
     "belgrade": "Europe/Belgrade",
-    "tbilisi": "Asia/Tbilisi"
+    "tbilisi": "Asia/Tbilisi",
+    "berlin": "Europe/Berlin",
+    "new-york": "America/New_York",
+    "amsterdam": "Europe/Amsterdam",
+    "paris": "Europe/Paris",
+    "barcelona": "Europe/Madrid"
 }
 
 def map_ra_genre(genre_name):
@@ -61,7 +66,12 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
         "osaka": "jp",
         "vilnius": "lt",
         "belgrade": "rs",
-        "tbilisi": "ge"
+        "tbilisi": "ge",
+        "berlin": "de",
+        "new-york": "us",
+        "amsterdam": "nl",
+        "paris": "fr",
+        "barcelona": "es"
     }
     country_code = referer_map.get(city_name, "jp")
     headers["Referer"] = f"https://ra.co/events/{country_code}/{city_name}"
@@ -103,6 +113,16 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = 44.8125, 20.4612
                 elif city_name == "tbilisi":
                     lat_base, lng_base = 41.7151, 44.8271
+                elif city_name == "berlin":
+                    lat_base, lng_base = 52.5200, 13.4050
+                elif city_name == "new-york":
+                    lat_base, lng_base = 40.7128, -74.0060
+                elif city_name == "amsterdam":
+                    lat_base, lng_base = 52.3676, 4.9041
+                elif city_name == "paris":
+                    lat_base, lng_base = 48.8566, 2.3522
+                elif city_name == "barcelona":
+                    lat_base, lng_base = 41.3874, 2.1686
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                 
@@ -339,6 +359,11 @@ if __name__ == "__main__":
         {"name": "vilnius", "id": 561},
         {"name": "belgrade", "id": 562},
         {"name": "tbilisi", "id": 188},
+        {"name": "berlin", "id": 34},
+        {"name": "new-york", "id": 8},
+        {"name": "amsterdam", "id": 29},
+        {"name": "paris", "id": 44},
+        {"name": "barcelona", "id": 20},
     ]
 
     for city in cities:
