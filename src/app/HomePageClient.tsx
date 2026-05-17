@@ -10,8 +10,10 @@ import { useSession } from "next-auth/react";
 import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
-import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Layers, ChevronDown, ChevronUp } from "lucide-react";
+import { CITIES } from "@/lib/constants";
+import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Layers, ChevronDown, ChevronUp, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 interface ViewState {
   longitude: number;
@@ -21,10 +23,12 @@ interface ViewState {
   transitionDuration?: number;
 }
 
-export default function HomePageClient({ initialEvents }: { initialEvents?: MusicEvent[] }) {
-  const [view, setView] = useState<AppView>("home");
+export default function HomePageClient({ initialEvents, initialCity }: { initialEvents?: MusicEvent[]; initialCity?: string }) {
+  const [view, setView] = useState<AppView>(initialCity ? "home" : "home");
   const [genre, setGenre] = useState("all");
   const [isListHidden, setIsListHidden] = useState(false);
+  const [cityFilter, setCityFilter] = useState<string | null>(initialCity || null);
+  const router = useRouter();
   
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -189,6 +193,20 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
   }, []);
 
   useEffect(() => {
+    if (!isMounted || !initialCity) return;
+    const city = CITIES.find((c) => c.id === initialCity);
+    if (city) {
+      setViewState({
+        longitude: city.lng,
+        latitude: city.lat,
+        zoom: 12.2,
+        pitch: 40,
+        transitionDuration: 1500,
+      });
+    }
+  }, [isMounted, initialCity]);
+
+  useEffect(() => {
     if (!isMounted) return;
     const isDark = mapStyle.includes("dark");
     document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
@@ -203,6 +221,7 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
   const handleReset = () => {
     setView("home");
     setGenre("all");
+    setCityFilter(null);
     setSearchQuery("");
     setSelectedEvent(null);
     setViewState({
@@ -212,10 +231,8 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
       pitch: 40,
       transitionDuration: 1000
     });
+    router.push("/");
     if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("city");
-      window.history.pushState({}, "", url);
       if (window.innerWidth < 768) {
         setIsListHidden(true);
       }
@@ -245,6 +262,8 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
   }, [eventsData]);
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
+      if (cityFilter && e.city?.toLowerCase() !== cityFilter) return false;
+
       if (genre !== "all" && e.genre !== genre) return false;
 
       if (searchQuery) {
@@ -281,7 +300,7 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
 
       return true;
     });
-  }, [events, genre, searchQuery, timeFilter]);
+  }, [events, genre, searchQuery, timeFilter, cityFilter]);
 
   const visibleEvents = useMemo(() => {
     return filteredEvents.filter(e => {
@@ -371,12 +390,19 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
       {[
         { id: "home", icon: <MapIcon size={19} />, label: "Map" },
         { id: "search", icon: <Search size={19} />, label: "Search" },
+        { id: "cities", icon: <Building2 size={19} />, label: "Cities" },
         { id: "about", icon: <Info size={19} />, label: "About" },
       ].map((item) => (
         <button
           key={item.id}
           id={`nav-${item.id}`}
-          onClick={() => navigate(item.id as AppView)}
+          onClick={() => {
+            if (item.id === "home") {
+              handleReset();
+            } else {
+              navigate(item.id as AppView);
+            }
+          }}
           className={`nav-item ${view === item.id ? "active" : ""}`}
           style={{ width: 56, height: 52, borderRadius: 12 }}
         >
@@ -548,20 +574,36 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
               <GenreFilter selected={genre} onChange={setGenre} />
             </div>
 
-            {/* Active filter pill */}
-            {timeFilter !== "all" && (
+            {/* Active filter pills */}
+            {(timeFilter !== "all" || cityFilter) && (
               <div style={{ padding: "6px 14px", borderBottom: "1px solid var(--border)", display: "flex", gap: 8, flexShrink: 0 }}>
-                <div
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 5,
-                    padding: "3px 10px", borderRadius: 999,
-                    background: "var(--primary-dim)", border: "1px solid rgba(230,57,70,0.28)",
-                    color: "var(--primary)", fontSize: 11, fontWeight: 700,
-                  }}
-                >
-                  {TIME_FILTERS.find((t) => t.id === timeFilter)?.label}
-                  <X size={12} onClick={() => setTimeFilter("all")} style={{ cursor: "pointer" }} />
-                </div>
+                {timeFilter !== "all" && (
+                  <div
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "3px 10px", borderRadius: 999,
+                      background: "var(--primary-dim)", border: "1px solid rgba(230,57,70,0.28)",
+                      color: "var(--primary)", fontSize: 11, fontWeight: 700,
+                    }}
+                  >
+                    {TIME_FILTERS.find((t) => t.id === timeFilter)?.label}
+                    <X size={12} onClick={() => setTimeFilter("all")} style={{ cursor: "pointer" }} />
+                  </div>
+                )}
+                {cityFilter && (
+                  <div
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "3px 10px", borderRadius: 999,
+                      background: "var(--purple-dim)", border: "1px solid rgba(139,92,246,0.28)",
+                      color: "var(--purple)", fontSize: 11, fontWeight: 700,
+                    }}
+                  >
+                    <Building2 size={11} />
+                    {CITIES.find((c) => c.id === cityFilter)?.name || cityFilter}
+                    <X size={12} onClick={() => { setCityFilter(null); router.push("/"); }} style={{ cursor: "pointer" }} />
+                  </div>
+                )}
               </div>
             )}
 
@@ -870,6 +912,45 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
           </div>
         )}
 
+        {/* CITIES */}
+        {view === "cities" && (
+          <div className="view-panel">
+            <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
+              <button onClick={() => navigate("home")} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4 }}>
+                <X size={19} />
+              </button>
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 15 }}>Cities</span>
+            </div>
+            <div className="scroll-y" style={{ flex: 1, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+              <p className="label" style={{ padding: "2px 0 6px" }}>Select a city to explore events</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+                {CITIES.map((c) => {
+                  const count = events.filter((e) => e.city?.toLowerCase() === c.id).length;
+                  return (
+                    <button
+                      key={c.id}
+                      id={`city-${c.id}`}
+                      onClick={() => router.push(`/${c.id}`)}
+                      style={{
+                        background: c.id === cityFilter ? "var(--purple-dim)" : "var(--card-bg)",
+                        border: `1px solid ${c.id === cityFilter ? "rgba(139,92,246,0.35)" : "var(--border)"}`,
+                        borderRadius: 12, padding: "14px",
+                        cursor: "pointer", textAlign: "left", transition: "all 0.18s",
+                      }}
+                    >
+                      <div style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 15, color: "var(--text-primary)", marginBottom: 2 }}>{c.name}</div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>{c.country}</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple)" }}>
+                        {count} event{count !== 1 ? "s" : ""}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ABOUT */}
         {view === "about" && (
           <div className="view-panel">
@@ -935,12 +1016,19 @@ export default function HomePageClient({ initialEvents }: { initialEvents?: Musi
             {[
               { id: "home", icon: <MapIcon size={19} />, label: "Map" },
               { id: "search", icon: <Search size={19} />, label: "Search" },
+              { id: "cities", icon: <Building2 size={19} />, label: "Cities" },
               { id: "about", icon: <Info size={19} />, label: "About" },
             ].map((item) => (
               <button
                 key={item.id}
                 id={`bottom-nav-${item.id}`}
-                onClick={() => navigate(item.id as AppView)}
+                onClick={() => {
+                  if (item.id === "home") {
+                    handleReset();
+                  } else {
+                    navigate(item.id as AppView);
+                  }
+                }}
                 className={`nav-item ${view === item.id ? "active" : ""}`}
               >
                 {item.icon}

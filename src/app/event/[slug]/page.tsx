@@ -94,8 +94,44 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
     return event.price;
   })();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "MusicEvent",
+    name: event.title,
+    description: event.description?.slice(0, 200),
+    startDate: event.starts_at,
+    endDate: event.ends_at,
+    ...(event.image_url ? { image: event.image_url } : {}),
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    location: {
+      "@type": "Place",
+      name: event.venue_name,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: event.city,
+      },
+    },
+    ...((event.artists || []).length > 0 ? {
+      performer: event.artists.map((a: string) => ({
+        "@type": "MusicGroup",
+        name: a,
+      })),
+    } : {}),
+    ...(event.ticket_url ? {
+      offers: {
+        "@type": "Offer",
+        url: event.ticket_url,
+      },
+    } : {}),
+  };
+
   return (
     <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", background: 'var(--bg)', color: 'var(--text-primary)', minHeight: '100vh' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column", position: "relative" }}>
         
         {/* HERO AREA */}

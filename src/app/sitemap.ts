@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   const cityUrls = cities.map((city) => ({
-    url: `${baseUrl}/?city=${city}`,
+    url: `${baseUrl}/${city}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
     priority: 0.8,
