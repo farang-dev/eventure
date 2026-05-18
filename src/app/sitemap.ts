@@ -3,6 +3,7 @@ import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import { createSlug } from '@/lib/utils'
 import { CITIES } from '@/lib/constants'
+import { GENRE_META } from '@/lib/mock-data'
 
 // Force dynamic generation to ensure sitemap is always up-to-date with Supabase
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'daily' as const,
     priority: 0.8,
   }))
+
+  const genreKeys = Object.keys(GENRE_META)
+  const genreUrls = cities.flatMap((city) =>
+    genreKeys.map((genre) => ({
+      url: `${baseUrl}/${city}/${genre}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
+  )
 
   // Fetch all events for dynamic sitemap
   let eventUrls: any[] = []
@@ -54,6 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     ...cityUrls,
+    ...genreUrls,
     ...eventUrls
   ]
 }

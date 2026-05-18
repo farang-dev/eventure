@@ -23,9 +23,9 @@ interface ViewState {
   transitionDuration?: number;
 }
 
-export default function HomePageClient({ initialEvents, initialCity }: { initialEvents?: MusicEvent[]; initialCity?: string }) {
+export default function HomePageClient({ initialEvents, initialCity, initialGenre }: { initialEvents?: MusicEvent[]; initialCity?: string; initialGenre?: string }) {
   const [view, setView] = useState<AppView>(initialCity ? "home" : "home");
-  const [genre, setGenre] = useState("all");
+  const [genre, setGenre] = useState(initialGenre || "all");
   const [isListHidden, setIsListHidden] = useState(false);
   const [cityFilter, setCityFilter] = useState<string | null>(initialCity || null);
   const [cityCounts, setCityCounts] = useState<Record<string, number>>({});

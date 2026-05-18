@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { CITIES, CITY_META } from "@/lib/constants";
 import type { MusicEvent } from "@/lib/types";
+import { createSlug } from "@/lib/utils";
 import HomePageClient from "../HomePageClient";
 
 export const revalidate = 60;
@@ -22,6 +23,10 @@ export async function generateMetadata(props: { params: Promise<{ city: string }
     openGraph: {
       title: `${info.name} Club Events | Eventure`,
       description: meta.description || `Find the best parties in ${info.name}.`,
+      url: `https://www.eventurer.online/${city}`,
+    },
+    alternates: {
+      canonical: `https://www.eventurer.online/${city}`,
     },
   };
 }
@@ -56,5 +61,41 @@ export default async function CityPage(props: { params: Promise<{ city: string }
     }
   }
 
-  return <HomePageClient initialEvents={initialEvents} initialCity={city} />;
+  const eventCount = initialEvents.length;
+  const cityUrl = `https://www.eventurer.online/${city}`;
+
+  const cityLd = [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Eventure", item: "https://www.eventurer.online" },
+        { "@type": "ListItem", position: 2, name: info.name, item: cityUrl },
+      ],
+    },
+    {
+      "@type": "ItemList",
+      name: `${info.name} Club Events`,
+      description: `Upcoming electronic music events in ${info.name}, ${info.country}.`,
+      url: cityUrl,
+      numberOfItems: eventCount,
+      itemListElement: initialEvents.slice(0, 20).map((e, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "MusicEvent",
+          name: e.title,
+          url: `https://www.eventurer.online/event/${createSlug(e.title, e.city)}`,
+          startDate: e.starts_at,
+          location: { "@type": "Place", name: e.venue_name },
+        },
+      })),
+    },
+  ];
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(cityLd) }} />
+      <HomePageClient initialEvents={initialEvents} initialCity={city} />
+    </>
+  );
 }

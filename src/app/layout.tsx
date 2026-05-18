@@ -11,6 +11,13 @@ export const metadata: Metadata = {
     title: "Eventure — Find Techno, House & Club Events Worldwide",
     description: "Discover the best club & music events happening right now globally.",
     type: "website",
+    siteName: "Eventure",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Eventure — Find Techno, House & Club Events Worldwide",
+    description: "Discover the best club & music events happening right now globally.",
   },
   appleWebApp: {
     capable: true,
@@ -37,6 +44,37 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  name: "Eventure",
+                  url: "https://www.eventurer.online",
+                  logo: "https://www.eventurer.online/favicon.ico",
+                  description: "Live interactive map of club events worldwide.",
+                },
+                {
+                  "@type": "WebSite",
+                  url: "https://www.eventurer.online",
+                  name: "Eventure",
+                  description: "Find techno, house & club events worldwide on a live map.",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate: "https://www.eventurer.online/?q={search_term_string}",
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
         {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-PZ1K9BVYDK"

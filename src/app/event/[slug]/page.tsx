@@ -43,10 +43,18 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const { slug } = await props.params;
   const event = await getEventBySlugOrId(slug);
   if (!event) return { title: "Event Detail | Eventure" };
+  const citySlug = event.city?.toLowerCase().replace(/\s+/g, "-") || "";
+  const desc = event.description?.slice(0, 160) || `${event.title} at ${event.venue_name} in ${event.city}. ${event.artists?.length ? `Featuring ${event.artists.slice(0, 3).join(", ")}.` : ""} Get tickets and event info on Eventure.`;
   return { 
     title: `${event.title} | Eventure`,
-    description: event.description?.slice(0, 160),
-    openGraph: { images: event.image_url ? [event.image_url] : [] }
+    description: desc,
+    openGraph: { 
+      images: event.image_url ? [event.image_url] : [],
+      url: `https://www.eventurer.online/event/${slug}`,
+    },
+    alternates: {
+      canonical: `https://www.eventurer.online/event/${slug}`,
+    },
   };
 }
 
@@ -94,7 +102,17 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
     return event.price;
   })();
 
-  const jsonLd = {
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Eventure", item: "https://www.eventurer.online" },
+      ...(event.city ? [{ "@type": "ListItem", position: 2, name: event.city, item: `https://www.eventurer.online/${event.city.toLowerCase().replace(/\s+/g, "-")}` }] : []),
+      { "@type": "ListItem", position: event.city ? 3 : 2, name: event.title, item: `https://www.eventurer.online/event/${createSlug(event.title, event.city)}` },
+    ],
+  };
+
+  const eventLd = {
     "@context": "https://schema.org",
     "@type": "MusicEvent",
     name: event.title,
@@ -130,7 +148,7 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
     <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", background: 'var(--bg)', color: 'var(--text-primary)', minHeight: '100vh' }}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbLd, eventLd]) }}
       />
       <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column", position: "relative" }}>
         
@@ -247,7 +265,7 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
             )}
           </div>
 
-          <ShareButton url={`https://www.eventurer.online/event/${createSlug(event.title, event.city)}`} />
+          <ShareButton url={`https://www.eventurer.online/event/${createSlug(event.title, event.city)}`} title={event.title} />
         </div>
       </div>
     </div>
