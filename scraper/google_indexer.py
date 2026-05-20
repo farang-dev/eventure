@@ -78,12 +78,13 @@ def get_all_google_auth_sessions():
             
     return sessions
 
-def notify_google_url(session, url: str, action: str = "URL_UPDATED"):
+def notify_google_url_detailed(session, url: str, action: str = "URL_UPDATED"):
     """
     Sends a notification to Google Indexing API.
-    action can be:
-      - "URL_UPDATED" : To index or update URL
-      - "URL_DELETED" : To notify Google the page is gone
+    Returns:
+      - "SUCCESS": Indexed successfully
+      - "QUOTA_EXCEEDED": Rate/quota limit hit (429)
+      - "FAILED": Any other error (403, 500, etc.)
     """
     endpoint = "https://indexing.googleapis.com/v3/urlNotifications:publish"
     payload = {
@@ -95,19 +96,24 @@ def notify_google_url(session, url: str, action: str = "URL_UPDATED"):
         res = session.post(endpoint, json=payload, timeout=10)
         if res.status_code == 200:
             print(f"✅ Google notified ({action}): {url}")
-            return True
+            return "SUCCESS"
+        elif res.status_code == 429:
+            # 429 is quota exhaustion
+            print(f"⚠️ Quota exceeded (429) for {url}")
+            return "QUOTA_EXCEEDED"
         else:
             print(f"❌ API Error ({res.status_code}) for {url}: {res.text}")
-            return False
+            return "FAILED"
     except Exception as e:
         print(f"❌ Network error notifying Google for {url}: {e}")
-        return False
+        return "FAILED"
 
 def index_latest_events():
     """
     Fetches upcoming events from Supabase and registers them in Google Search.
     Only indexes URLs that haven't been submitted previously (tracked locally).
     Rotates service accounts automatically if multiple JSON files are present (200 requests/day per file).
+    Self-heals and rotates to the next account immediately if a 429 error is hit.
     """
     sessions_info = get_all_google_auth_sessions()
     if not sessions_info:
@@ -161,19 +167,45 @@ def index_latest_events():
             return
 
         success_count = 0
+        current_session_idx = 0
+        current_session_requests = 0
+
         for idx, (event_url, event) in enumerate(unindexed_events):
-            # Calculate which service account session to use (each handles up to 200 requests)
-            session_idx = success_count // 200
-            if session_idx >= len(sessions_info):
-                print(f"Reached overall quota limit of {total_quota} events for this run.")
-                break
-                
-            filename, session = sessions_info[session_idx]
+            event_submitted = False
             
-            print(f"[{idx+1}/{len(unindexed_events)}] (Using {filename}) Indexing: {event.get('title')} ({event.get('city')})")
-            if notify_google_url(session, event_url, "URL_UPDATED"):
-                log_indexed_url(event_url)
-                success_count += 1
+            while current_session_idx < len(sessions_info):
+                filename, session = sessions_info[current_session_idx]
+                
+                # Check if we hit the 200 limit on this script run
+                if current_session_requests >= 200:
+                    print(f"Reached 200 request limit for {filename}. Switching to next account...")
+                    current_session_idx += 1
+                    current_session_requests = 0
+                    continue
+                
+                print(f"[{idx+1}/{len(unindexed_events)}] (Using {filename}) Indexing: {event.get('title')} ({event.get('city')})")
+                current_session_requests += 1
+                
+                res_status = notify_google_url_detailed(session, event_url, "URL_UPDATED")
+                
+                if res_status == "SUCCESS":
+                    log_indexed_url(event_url)
+                    success_count += 1
+                    event_submitted = True
+                    break  # Success! Proceed to the next event
+                elif res_status == "QUOTA_EXCEEDED":
+                    print(f"⚠️ Account {filename} returned Quota Exceeded (429). Switching to next account...")
+                    current_session_idx += 1
+                    current_session_requests = 0
+                    continue  # Loop again with the new current_session_idx for the same event
+                else:
+                    # General failure (403, 500, etc.)
+                    event_submitted = True
+                    break  # Move to next event to avoid infinite loop on bad URL
+            
+            if not event_submitted:
+                print("\nAll available service accounts have been exhausted or failed.")
+                break
                 
         print(f"\n🎉 Successfully indexed {success_count} new events in this run!")
             
@@ -188,7 +220,7 @@ if __name__ == "__main__":
         if sessions_info:
             filename, session = sessions_info[0]
             print(f"Running manual indexing test for: {test_url} using {filename}")
-            notify_google_url(session, test_url, "URL_UPDATED")
+            notify_google_url_detailed(session, test_url, "URL_UPDATED")
     else:
         # Run indexing with all loaded sessions
         index_latest_events()
