@@ -120,6 +120,7 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
                 fontWeight: 800,
                 background: "linear-gradient(135deg, var(--primary), var(--purple))",
                 WebkitBackgroundClip: "text",
+                backgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 fontFamily: "'Poppins', sans-serif",
               }}
@@ -196,9 +197,7 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
               fontWeight: 800,
               letterSpacing: "-0.02em",
               marginBottom: 16,
-              background: "linear-gradient(135deg, #FFF 60%, var(--text-secondary))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: "var(--text-primary)",
             }}
           >
             Club Event Guides & Live Maps by City

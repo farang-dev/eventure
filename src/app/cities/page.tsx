@@ -41,20 +41,22 @@ export default async function CitiesPage() {
     try {
       const supabase = createClient(supabaseUrl, supabaseKey);
       const now = new Date().toISOString();
-      const { data } = await supabase
-        .from("music_events")
-        .select("city")
-        .gte("ends_at", now)
-        .or("is_approved.eq.true,is_approved.is.null");
+      
+      const counts = await Promise.all(
+        CITIES.map(async (city) => {
+          const { count } = await supabase
+            .from("music_events")
+            .select("*", { count: "exact", head: true })
+            .eq("city", city.id)
+            .gte("ends_at", now)
+            .or("is_approved.eq.true,is_approved.is.null");
+          return { id: city.id, count: count || 0 };
+        })
+      );
 
-      if (data) {
-        data.forEach((e) => {
-          if (e.city) {
-            const cityId = e.city.toLowerCase();
-            eventCounts[cityId] = (eventCounts[cityId] || 0) + 1;
-          }
-        });
-      }
+      counts.forEach(({ id, count }) => {
+        eventCounts[id] = count;
+      });
     } catch (e) {
       console.error("Failed to fetch event counts:", e);
     }
