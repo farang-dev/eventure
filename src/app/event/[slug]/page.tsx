@@ -32,7 +32,7 @@ async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
     }
     
     // Extract city prefix to optimize Supabase query and fetch all matching city events
-    const cities = ["tokyo", "osaka", "london", "vilnius", "belgrade", "tbilisi", "berlin", "new-york", "amsterdam", "paris", "barcelona"];
+    const cities = ["tokyo", "osaka", "london", "vilnius", "belgrade", "tbilisi", "berlin", "new-york", "amsterdam", "paris", "barcelona", "sydney", "melbourne", "perth"];
     let matchedCity = "";
     for (const city of cities) {
       if (cleanSlug.startsWith(city.toLowerCase() + "-")) {

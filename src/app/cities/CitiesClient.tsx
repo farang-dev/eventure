@@ -53,6 +53,12 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
         return "linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.15) 100%)";
       case "tbilisi":
         return "linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%)";
+      case "sydney":
+        return "linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)";
+      case "melbourne":
+        return "linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)";
+      case "perth":
+        return "linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(20, 184, 166, 0.15) 100%)";
       default:
         return "linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)";
     }
@@ -68,6 +74,12 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
         return "rgba(59, 130, 246, 0.15)";
       case "barcelona":
         return "rgba(245, 158, 11, 0.15)";
+      case "sydney":
+        return "rgba(6, 182, 212, 0.2)";
+      case "melbourne":
+        return "rgba(244, 63, 94, 0.2)";
+      case "perth":
+        return "rgba(234, 179, 8, 0.2)";
       default:
         return "rgba(255, 255, 255, 0.1)";
     }

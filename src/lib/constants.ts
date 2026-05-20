@@ -20,6 +20,9 @@ export const CITIES: CityInfo[] = [
   { id: "amsterdam", name: "Amsterdam", country: "Netherlands", lat: 52.3676, lng: 4.9041, areaId: 29 },
   { id: "paris", name: "Paris", country: "France", lat: 48.8566, lng: 2.3522, areaId: 44 },
   { id: "barcelona", name: "Barcelona", country: "Spain", lat: 41.3874, lng: 2.1686, areaId: 20 },
+  { id: "sydney", name: "Sydney", country: "Australia", lat: -33.8688, lng: 151.2093, areaId: 1 },
+  { id: "melbourne", name: "Melbourne", country: "Australia", lat: -37.8136, lng: 144.9631, areaId: 2 },
+  { id: "perth", name: "Perth", country: "Australia", lat: -31.9505, lng: 115.8605, areaId: 3 },
 ];
 
 export const CITY_META: Record<string, { description: string; keywords: string[] }> = {
@@ -66,5 +69,17 @@ export const CITY_META: Record<string, { description: string; keywords: string[]
   barcelona: {
     description: "Barcelona club events & electronic music map. Discover techno, house & beach parties on the Mediterranean coast.",
     keywords: ["Barcelona club events", "Barcelona techno", "Barcelona nightlife", "Spain electronic music", "Barcelona rave"],
+  },
+  sydney: {
+    description: "Sydney club events & electronic music map. Discover techno, house & underground parties in Sydney.",
+    keywords: ["Sydney club events", "Sydney techno", "Sydney nightlife", "Australia electronic music", "Sydney rave map"],
+  },
+  melbourne: {
+    description: "Melbourne club nights & electronic music events. Discover techno, house & underground parties in the cultural capital of Australia.",
+    keywords: ["Melbourne club events", "Melbourne techno", "Melbourne nightlife", "Australia electronic music", "Melbourne rave"],
+  },
+  perth: {
+    description: "Perth club events & electronic music map. Discover techno, house & underground parties in Western Australia.",
+    keywords: ["Perth club events", "Perth techno", "Perth nightlife", "Australia electronic music", "Perth rave"],
   },
 };

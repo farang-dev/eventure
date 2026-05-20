@@ -30,7 +30,10 @@ CITY_TIMEZONES = {
     "new-york": "America/New_York",
     "amsterdam": "Europe/Amsterdam",
     "paris": "Europe/Paris",
-    "barcelona": "Europe/Madrid"
+    "barcelona": "Europe/Madrid",
+    "sydney": "Australia/Sydney",
+    "melbourne": "Australia/Melbourne",
+    "perth": "Australia/Perth"
 }
 
 def map_ra_genre(genre_name):
@@ -73,7 +76,10 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
         "new-york": "us",
         "amsterdam": "nl",
         "paris": "fr",
-        "barcelona": "es"
+        "barcelona": "es",
+        "sydney": "au",
+        "melbourne": "au",
+        "perth": "au"
     }
     country_code = referer_map.get(city_name, "jp")
     headers["Referer"] = f"https://ra.co/events/{country_code}/{city_name}"
@@ -125,6 +131,12 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = 48.8566, 2.3522
                 elif city_name == "barcelona":
                     lat_base, lng_base = 41.3874, 2.1686
+                elif city_name == "sydney":
+                    lat_base, lng_base = -33.8688, 151.2093
+                elif city_name == "melbourne":
+                    lat_base, lng_base = -37.8136, 144.9631
+                elif city_name == "perth":
+                    lat_base, lng_base = -31.9505, 115.8605
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                 
@@ -383,6 +395,9 @@ if __name__ == "__main__":
         {"name": "amsterdam", "id": 29},
         {"name": "paris", "id": 44},
         {"name": "barcelona", "id": 20},
+        {"name": "sydney", "id": 1},
+        {"name": "melbourne", "id": 2},
+        {"name": "perth", "id": 3},
     ]
 
     for city in cities:
