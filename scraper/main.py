@@ -410,4 +410,13 @@ if __name__ == "__main__":
 
     # Run cleanup one last time to remove any events whose capped ends_at are in the past
     cleanup_expired_events()
+
+    # Trigger Google Search Indexing API
+    try:
+        from google_indexer import index_latest_events
+        print("\n[Indexing] Triggering Google Search Indexing API submission...")
+        index_latest_events(limit=150)
+    except Exception as e:
+        print(f"\n[Indexing] Skip automatic submission: {e}")
+        
     print("\nDone.")
