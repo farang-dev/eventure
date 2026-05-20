@@ -9,5 +9,8 @@ dist
 # スクレイパーの依存関係なども重い場合は除外
 scraper/venv
 scraper/__pycache__
-service-account.json
+service-account*.json
+scraper/indexed_urls.txt
+
+
 

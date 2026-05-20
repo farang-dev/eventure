@@ -415,7 +415,7 @@ if __name__ == "__main__":
     try:
         from google_indexer import index_latest_events
         print("\n[Indexing] Triggering Google Search Indexing API submission...")
-        index_latest_events(limit=150)
+        index_latest_events()
     except Exception as e:
         print(f"\n[Indexing] Skip automatic submission: {e}")
         
