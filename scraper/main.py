@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+if not os.environ.get("NEXT_PUBLIC_SUPABASE_URL"):
+    load_dotenv(dotenv_path=".env.local")
 
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -231,6 +233,13 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     
                     s_dt = datetime.strptime(s_str, "%Y-%m-%dT%H:%M:%S")
                     e_dt = datetime.strptime(e_str, "%Y-%m-%dT%H:%M:%S")
+                    
+                    # Cap event duration to prevent long/repeating events from staying "Live" forever
+                    duration = e_dt - s_dt
+                    is_festival = any(x in title.lower() for x in ["festival", "fest", "weekend", "camp", "weeker", "starfestival"])
+                    max_duration = timedelta(hours=48) if is_festival else timedelta(hours=20)
+                    if duration > max_duration or duration < timedelta(0):
+                        e_dt = s_dt + (timedelta(hours=30) if is_festival else timedelta(hours=8))
                     
                     # Localize and convert to UTC
                     starts_at = tz.localize(s_dt).astimezone(pytz.UTC).isoformat().replace('+00:00', 'Z')

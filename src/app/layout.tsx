@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description:
     "Live interactive map of club events worldwide. Discover the best techno, house, and electronic music events in London, Tokyo, Osaka, Tbilisi, and more. Real-time schedules and ticket links.",
   keywords: ["club events", "techno parties", "house music events", "rave map", "Tbilisi nightlife", "Tokyo clubs", "Osaka techno", "London raves", "music events map"],
+  alternates: {
+    canonical: "https://www.eventurer.online",
+  },
   openGraph: {
     title: "Eventure — Find Techno, House & Club Events Worldwide",
     description: "Discover the best club & music events happening right now globally.",

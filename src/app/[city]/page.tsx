@@ -66,6 +66,7 @@ export default async function CityPage(props: { params: Promise<{ city: string }
 
   const cityLd = [
     {
+      "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Eventure", item: "https://www.eventurer.online" },
@@ -73,6 +74,7 @@ export default async function CityPage(props: { params: Promise<{ city: string }
       ],
     },
     {
+      "@context": "https://schema.org",
       "@type": "ItemList",
       name: `${info.name} Club Events`,
       description: `Upcoming electronic music events in ${info.name}, ${info.country}.`,

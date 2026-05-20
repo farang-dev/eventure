@@ -30,7 +30,30 @@ async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
       const { data } = await supabase.from('music_events').select('*').eq('id', slug).single();
       if (data) return data as MusicEvent;
     }
-    const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(200);
+    
+    // Extract city prefix to optimize Supabase query and fetch all matching city events
+    const cities = ["tokyo", "osaka", "london", "vilnius", "belgrade", "tbilisi", "berlin", "new-york", "amsterdam", "paris", "barcelona"];
+    let matchedCity = "";
+    for (const city of cities) {
+      if (cleanSlug.startsWith(city.toLowerCase() + "-")) {
+        matchedCity = city;
+        break;
+      }
+    }
+
+    if (matchedCity) {
+      const { data: cityEvents } = await supabase
+        .from('music_events')
+        .select('*')
+        .eq('city', matchedCity);
+      if (cityEvents) {
+        const found = cityEvents.find((e: MusicEvent) => createSlug(e.title, e.city) === cleanSlug);
+        if (found) return found as MusicEvent;
+      }
+    }
+
+    // Fallback: search across recent events in the database
+    const { data: recent } = await supabase.from('music_events').select('*').order('created_at', { ascending: false }).limit(1000);
     if (recent) {
       const found = recent.find((e: MusicEvent) => createSlug(e.title, e.city) === cleanSlug || e.id === slug);
       if (found) return found as MusicEvent;
@@ -43,17 +66,17 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const { slug } = await props.params;
   const event = await getEventBySlugOrId(slug);
   if (!event) return { title: "Event Detail | Eventure" };
-  const citySlug = event.city?.toLowerCase().replace(/\s+/g, "-") || "";
+  const canonicalSlug = createSlug(event.title, event.city);
   const desc = event.description?.slice(0, 160) || `${event.title} at ${event.venue_name} in ${event.city}. ${event.artists?.length ? `Featuring ${event.artists.slice(0, 3).join(", ")}.` : ""} Get tickets and event info on Eventure.`;
   return { 
     title: `${event.title} | Eventure`,
     description: desc,
     openGraph: { 
       images: event.image_url ? [event.image_url] : [],
-      url: `https://www.eventurer.online/event/${slug}`,
+      url: `https://www.eventurer.online/event/${canonicalSlug}`,
     },
     alternates: {
-      canonical: `https://www.eventurer.online/event/${slug}`,
+      canonical: `https://www.eventurer.online/event/${canonicalSlug}`,
     },
   };
 }

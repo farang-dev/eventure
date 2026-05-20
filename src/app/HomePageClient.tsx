@@ -451,7 +451,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
               boxShadow: "0 4px 12px var(--primary-glow)"
             }}
           >
-            🎵
+            ⚡️
           </div>
         </div>
         <SidebarNav />
@@ -999,7 +999,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
             </div>
             <div className="scroll-y" style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
               <div style={{ textAlign: "center", paddingTop: 16 }}>
-                <div style={{ fontSize: 44, marginBottom: 14 }}>🎵</div>
+                <div style={{ fontSize: 44, marginBottom: 14 }}>⚡️</div>
                 <h1
                   style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: 26, marginBottom: 10 }}
                   className="gradient-text"
