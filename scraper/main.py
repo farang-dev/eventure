@@ -323,10 +323,10 @@ def insert_into_supabase(events):
 def cleanup_expired_events():
     if not SUPABASE_URL or not SUPABASE_KEY: return
     
-    print("\n[Cleanup] Removing expired events (older than 48 hours)...")
+    print("\n[Cleanup] Removing expired events (older than 3 hours)...")
     
-    # Calculate cutoff (current time - 48 hours)
-    cutoff = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    # Calculate cutoff (current time - 3 hours)
+    cutoff = (datetime.now() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     
     headers = {
         "apikey": SUPABASE_KEY,
@@ -393,4 +393,6 @@ if __name__ == "__main__":
         if events:
             insert_into_supabase(events)
 
+    # Run cleanup one last time to remove any events whose capped ends_at are in the past
+    cleanup_expired_events()
     print("\nDone.")

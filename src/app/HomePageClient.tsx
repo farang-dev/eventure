@@ -14,6 +14,7 @@ import { CITIES } from "@/lib/constants";
 import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Layers, ChevronDown, ChevronUp, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface ViewState {
   longitude: number;
@@ -408,28 +409,48 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
   const SidebarNav = () => (
     <>
       {[
-        { id: "home", icon: <MapIcon size={19} />, label: "Map" },
+        { id: "home", icon: <MapIcon size={19} />, label: "Map", href: "/" },
         { id: "search", icon: <Search size={19} />, label: "Search" },
-        { id: "cities", icon: <Building2 size={19} />, label: "Cities" },
+        { id: "cities", icon: <Building2 size={19} />, label: "Cities", href: "/cities" },
         { id: "about", icon: <Info size={19} />, label: "About" },
-      ].map((item) => (
-        <button
-          key={item.id}
-          id={`nav-${item.id}`}
-          onClick={() => {
-            if (item.id === "home") {
-              handleReset();
-            } else {
-              navigate(item.id as AppView);
-            }
-          }}
-          className={`nav-item ${view === item.id ? "active" : ""}`}
-          style={{ width: 56, height: 52, borderRadius: 12 }}
-        >
-          {item.icon}
-          <span>{item.label}</span>
-        </button>
-      ))}
+      ].map((item) => {
+        const isActive = view === item.id;
+        const className = `nav-item ${isActive ? "active" : ""}`;
+        const style = { width: 56, height: 52, borderRadius: 12, textDecoration: "none", display: "flex", justifyContent: "center" };
+        
+        if (item.href) {
+          return (
+            <Link
+              key={item.id}
+              id={`nav-${item.id}`}
+              href={item.href}
+              onClick={() => {
+                if (item.id === "home") {
+                  handleReset();
+                }
+              }}
+              className={className}
+              style={style}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          );
+        }
+        
+        return (
+          <button
+            key={item.id}
+            id={`nav-${item.id}`}
+            onClick={() => navigate(item.id as AppView)}
+            className={className}
+            style={style}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
     </>
   );
 
@@ -1051,27 +1072,46 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
         {!(view === "home" && selectedEvent) && (
           <div className="mobile-only bottom-nav">
             {[
-              { id: "home", icon: <MapIcon size={19} />, label: "Map" },
+              { id: "home", icon: <MapIcon size={19} />, label: "Map", href: "/" },
               { id: "search", icon: <Search size={19} />, label: "Search" },
-              { id: "cities", icon: <Building2 size={19} />, label: "Cities" },
+              { id: "cities", icon: <Building2 size={19} />, label: "Cities", href: "/cities" },
               { id: "about", icon: <Info size={19} />, label: "About" },
-            ].map((item) => (
-              <button
-                key={item.id}
-                id={`bottom-nav-${item.id}`}
-                onClick={() => {
-                  if (item.id === "home") {
-                    handleReset();
-                  } else {
-                    navigate(item.id as AppView);
-                  }
-                }}
-                className={`nav-item ${view === item.id ? "active" : ""}`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </button>
-            ))}
+            ].map((item) => {
+              const isActive = view === item.id;
+              const className = `nav-item ${isActive ? "active" : ""}`;
+              
+              if (item.href) {
+                return (
+                  <Link
+                    key={item.id}
+                    id={`bottom-nav-${item.id}`}
+                    href={item.href}
+                    onClick={() => {
+                      if (item.id === "home") {
+                        handleReset();
+                      }
+                    }}
+                    className={className}
+                    style={{ textDecoration: "none" }}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              }
+              
+              return (
+                <button
+                  key={item.id}
+                  id={`bottom-nav-${item.id}`}
+                  onClick={() => navigate(item.id as AppView)}
+                  className={className}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
