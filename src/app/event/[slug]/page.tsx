@@ -187,7 +187,7 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
           
           {/* Back Button */}
           <Link 
-            href="/"
+            href={event.city ? `/${event.city.toLowerCase()}` : "/"}
             style={{ position: "absolute", top: 14, left: 14, width: 36, height: 36, borderRadius: "50%", background: "rgba(13,17,23,0.75)", backdropFilter: "blur(6px)", border: "1px solid var(--border)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", zIndex: 10 }}
           >
             <ArrowLeft size={17} />
