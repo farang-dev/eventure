@@ -40,14 +40,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all events for dynamic sitemap
   let eventUrls: any[] = []
   try {
-    const { data: events } = await supabase
-      .from('music_events')
-      .select('title, city, updated_at, starts_at')
-      .order('starts_at', { ascending: false })
-      .limit(10000)
-    if (events) {
-      const seenUrls = new Set<string>();
-      const uniqueEvents: any[] = [];
+    const seenUrls = new Set<string>();
+    const uniqueEvents: any[] = [];
+    
+    let hasMore = true;
+    let offset = 0;
+    const limit = 1000; // Supabase default max_rows limit is 1000
+    
+    while (hasMore) {
+      const { data: events, error } = await supabase
+        .from('music_events')
+        .select('title, city, updated_at, starts_at')
+        .order('starts_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) {
+        console.error("Sitemap error:", error);
+        break;
+      }
+
+      if (!events || events.length === 0) {
+        hasMore = false;
+        break;
+      }
+
       for (const e of events) {
         const slug = createSlug(e.title, e.city);
         const url = `${baseUrl}/event/${slug}`;
@@ -61,8 +77,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           });
         }
       }
-      eventUrls = uniqueEvents;
+
+      offset += limit;
+
+      // Safety limit: Google allows up to 50,000 URLs per sitemap
+      if (offset >= 45000) {
+        break;
+      }
     }
+    
+    eventUrls = uniqueEvents;
   } catch (err) {
     console.error("Sitemap error:", err)
   }
