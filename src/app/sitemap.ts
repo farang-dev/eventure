@@ -46,12 +46,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order('starts_at', { ascending: false })
       .limit(10000)
     if (events) {
-      eventUrls = events.map((e) => ({
-        url: `${baseUrl}/event/${createSlug(e.title, e.city)}`,
-        lastModified: new Date(e.updated_at || new Date()),
-        changeFrequency: 'weekly' as const,
-        priority: 0.6,
-      }))
+      const seenUrls = new Set<string>();
+      const uniqueEvents: any[] = [];
+      for (const e of events) {
+        const slug = createSlug(e.title, e.city);
+        const url = `${baseUrl}/event/${slug}`;
+        if (!seenUrls.has(url)) {
+          seenUrls.add(url);
+          uniqueEvents.push({
+            url,
+            lastModified: new Date(e.updated_at || new Date()),
+            changeFrequency: 'weekly' as const,
+            priority: 0.6,
+          });
+        }
+      }
+      eventUrls = uniqueEvents;
     }
   } catch (err) {
     console.error("Sitemap error:", err)
