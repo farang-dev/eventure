@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { createSlug } from "@/lib/utils";
 import type { MusicEvent } from "@/lib/types";
 import { GENRE_META, formatEventTime, getDaysUntil, CITY_TZS } from "@/lib/mock-data";
@@ -12,7 +12,6 @@ interface Props {
 }
 
 export default function MusicEventDetail({ event, onBack }: Props) {
-  // Ultra-safe meta lookup
   const meta = (event?.genre && GENRE_META[event.genre]) || GENRE_META.other || {
     label: "Other", icon: "Music", color: "#6B7280", bg: "rgba(107,114,128,0.12)"
   };
@@ -22,6 +21,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
   const isToday = event?.status === "today";
   const daysUntil = getDaysUntil(event?.starts_at || "");
   const [copied, setCopied] = useState(false);
+  const [imgFit, setImgFit] = useState<"contain" | "cover">("contain");
 
   const slug = createSlug(event?.title, event?.city || "event");
   const shareUrl = typeof window !== "undefined"
@@ -37,18 +37,28 @@ export default function MusicEventDetail({ event, onBack }: Props) {
     }
   };
 
+  const handleImgLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    const ratio = w / h;
+    if (ratio >= 1) {
+      setImgFit("cover");
+    } else {
+      setImgFit("contain");
+    }
+  }, []);
+
   const urgencyColor = isLive
     ? "var(--primary)"
     : isToday
     ? "var(--today-color)"
     : "var(--text-secondary)";
 
-  // Safe Date Parsing
   const startDate = new Date(event?.starts_at || "");
   const endDate = new Date(event?.ends_at || "");
   const isValidDate = !isNaN(startDate.getTime());
 
-  // Extreme Safety for Date/Time Formatting
   let startTime = "TBA";
   let endTime = "TBA";
   let dateStr = "Date TBA";
@@ -85,23 +95,29 @@ export default function MusicEventDetail({ event, onBack }: Props) {
       style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column" }}
     >
       <div className="detail-layout">
-        {/* Left/Top Column: Flyer */}
         <div className="detail-hero">
           {event.image_url ? (
-            <img 
-              src={event.image_url} 
-              alt={event.title} 
-              style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} 
+            <img
+              src={event.image_url}
+              alt={event.title}
+              onLoad={handleImgLoad}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: imgFit,
+                background: imgFit === "cover" ? "transparent" : "#0a0a0a",
+              }}
             />
           ) : (
             <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${meta.bg}, var(--bg-secondary))`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <GenreIcon name={meta.icon} size={48} color={meta.color} />
             </div>
           )}
-          
+
           {onBack && (
             <button
               onClick={onBack}
+              className="detail-back-btn"
               style={{ position: "absolute", top: 14, left: 14, width: 36, height: 36, borderRadius: "50%", background: "var(--btn-overlay-bg)", backdropFilter: "blur(6px)", border: "1px solid var(--border)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 10 }}
             >
               <ArrowLeft size={17} />
@@ -115,7 +131,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
         </div>
 
         <div className="detail-content">
-          <div style={{ marginBottom: 16 }}>
+          <div>
             <span style={{ background: meta.bg, border: `1px solid ${meta.color}44`, color: meta.color, fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.07em", display: "inline-flex", alignItems: "center" }}>
               <GenreIcon name={meta.icon} size={11} style={{ marginRight: 5 }} />
               {meta.label}
@@ -148,11 +164,11 @@ export default function MusicEventDetail({ event, onBack }: Props) {
             </div>
           )}
 
-          {/* Venue Card */}
           <a
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address && event.venue_address !== event.venue_name ? `${event.venue_name}, ${event.venue_address}` : `${event.venue_name}, ${event.city}`)}`}
             target="_blank" rel="noopener noreferrer"
-            style={{ padding: "12px 14px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, display: "flex", alignItems: "flex-start", gap: 10, textDecoration: "none", cursor: "pointer", marginBottom: 20 }}
+            className="detail-venue-card"
+            style={{ padding: "12px 14px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, display: "flex", alignItems: "flex-start", gap: 10, textDecoration: "none", cursor: "pointer" }}
           >
             <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <MapPin size={14} color="var(--text-muted)" />
@@ -161,7 +177,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
               <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, color: "var(--text-primary)", marginBottom: 2 }}>{event.venue_name}</p>
               <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{event.venue_address || "View on Google Maps"}</p>
             </div>
-            <ExternalLink size={12} color="var(--text-muted)" style={{ alignSelf: "center" }} />
+            <ExternalLink size={12} color="var(--text-muted)" style={{ alignSelf: "center", flexShrink: 0 }} />
           </a>
 
           {event.description && (
@@ -191,7 +207,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
 
           <button
             onClick={handleShare}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 20px", background: copied ? "var(--green)" : "var(--primary)", border: "none", borderRadius: 12, cursor: "pointer", color: "#fff", fontSize: 14, fontWeight: 800, width: "100%", marginTop: 14, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase" }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 20px", background: copied ? "var(--green)" : "var(--primary)", border: "none", borderRadius: 12, cursor: "pointer", color: "#fff", fontSize: 14, fontWeight: 800, width: "100%", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase" }}
           >
             {copied ? <Check size={16} strokeWidth={3} /> : <Share2 size={16} strokeWidth={3} />}
             {copied ? "Link Copied!" : "Share Event Link"}
