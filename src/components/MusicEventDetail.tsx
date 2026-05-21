@@ -102,7 +102,7 @@ export default function MusicEventDetail({ event, onBack }: Props) {
           {onBack && (
             <button
               onClick={onBack}
-              style={{ position: "absolute", top: 14, left: 14, width: 36, height: 36, borderRadius: "50%", background: "rgba(13,17,23,0.85)", backdropFilter: "blur(6px)", border: "1px solid var(--border)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 10 }}
+              style={{ position: "absolute", top: 14, left: 14, width: 36, height: 36, borderRadius: "50%", background: "var(--btn-overlay-bg)", backdropFilter: "blur(6px)", border: "1px solid var(--border)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 10 }}
             >
               <ArrowLeft size={17} />
             </button>
