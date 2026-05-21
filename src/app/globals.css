@@ -593,7 +593,7 @@ select.input { cursor: pointer; }
   }
 
   .event-detail-panel {
-    width: 860px;
+    width: 1060px;
   }
 
   .bottom-sheet-container {
@@ -668,7 +668,8 @@ select.input { cursor: pointer; }
     flex-direction: row;
   }
   .detail-hero {
-    width: 65%;
+    width: 55%;
+    max-width: 560px;
     height: 100dvh;
     border-right: 1px solid var(--border);
     background: #0a0a0a;
