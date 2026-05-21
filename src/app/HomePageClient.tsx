@@ -11,7 +11,7 @@ import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
 import { CITIES } from "@/lib/constants";
-import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Layers, ChevronDown, ChevronUp, Building2 } from "lucide-react";
+import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, Layers, ChevronDown, ChevronUp, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -481,7 +481,25 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
           </div>
         </div>
         <SidebarNav />
-        <div style={{ marginTop: "auto", marginBottom: 12, textAlign: "center" }}>
+        <div style={{ marginTop: "auto", marginBottom: 12, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <button
+            id="sidebar-theme-btn"
+            onClick={() => setMapStyle(mapStyle.includes("dark") ? "mapbox://styles/mapbox/streets-v12" : "mapbox://styles/mapbox/dark-v11")}
+            title={mapStyle.includes("dark") ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            style={{
+              width: 38, height: 38, borderRadius: 10,
+              background: "var(--bg-elevated)", border: "1px solid var(--border)",
+              color: "var(--text-primary)", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            {mapStyle.includes("dark") ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+          <span style={{ fontSize: 9, color: "var(--text-muted)", display: "block", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            {mapStyle.includes("dark") ? "Light" : "Dark"}
+          </span>
+        </div>
+        <div style={{ marginBottom: 12, textAlign: "center" }}>
           <button
             id="sidebar-submit-btn"
             onClick={handleOpenSubmit}
@@ -568,6 +586,20 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
                     }}
                   >
                     <SlidersHorizontal size={18} />
+                  </button>
+                  <button
+                    className="btn-icon"
+                    id="home-theme-btn"
+                    onClick={() => setMapStyle(mapStyle.includes("dark") ? "mapbox://styles/mapbox/streets-v12" : "mapbox://styles/mapbox/dark-v11")}
+                    title={mapStyle.includes("dark") ? "Light Mode" : "Dark Mode"}
+                    style={{
+                      width: 38, height: 38, borderRadius: 10,
+                      background: "var(--bg-elevated)",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    {mapStyle.includes("dark") ? <Sun size={18} /> : <Moon size={18} />}
                   </button>
                 </div>
               </div>
