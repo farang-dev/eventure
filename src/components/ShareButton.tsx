@@ -23,19 +23,24 @@ export default function ShareButton({ url, title }: { url: string; title: string
     <button
       onClick={handleShare}
       style={{
-        background: "var(--card-bg)",
-        border: "1px solid var(--border)",
-        borderRadius: 12,
-        padding: "8px 14px",
+        flex: 1,
         display: "inline-flex",
         alignItems: "center",
+        justifyContent: "center",
         gap: 6,
+        padding: "10px 16px",
+        background: copied ? "rgba(16,185,129,0.12)" : "var(--bg-elevated)",
+        color: copied ? "var(--green)" : "var(--text-primary)",
+        borderRadius: 10,
+        border: `1px solid ${copied ? "rgba(16,185,129,0.3)" : "var(--border)"}`,
+        fontSize: 12,
+        fontWeight: 600,
         cursor: "pointer",
-        color: "var(--text-primary)",
-        fontSize: 14,
+        fontFamily: "'Inter', sans-serif",
+        transition: "all 0.15s",
       }}
     >
-      {copied ? <Check size={16} /> : <Share2 size={16} />}
+      {copied ? <Check size={14} /> : <Share2 size={14} />}
       {copied ? "Copied!" : "Share"}
     </button>
   );

@@ -344,11 +344,14 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
                 <Ticket size={16} /> Get Tickets <ExternalLink size={12} />
               </a>
             )}
-            {event.source_url && (
-              <a href={event.source_url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 16px", background: "transparent", color: "var(--text-muted)", borderRadius: 10, border: "1px solid var(--border)", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
-                <ExternalLink size={11} /> View Source
-              </a>
-            )}
+            <div style={{ display: "flex", gap: 10 }}>
+              {event.source_url && (
+                <a href={event.source_url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 16px", background: "transparent", color: "var(--text-muted)", borderRadius: 10, border: "1px solid var(--border)", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+                  <ExternalLink size={11} /> Source
+                </a>
+              )}
+              <ShareButton url={`https://www.eventurer.online/event/${createSlug(event.title, event.city)}`} title={event.title} />
+            </div>
           </div>
 
           {/* Related Events */}
@@ -392,8 +395,6 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
               </Link>
             </div>
           )}
-
-          <ShareButton url={`https://www.eventurer.online/event/${createSlug(event.title, event.city)}`} title={event.title} />
         </div>
       </div>
     </div>
