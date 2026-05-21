@@ -142,7 +142,7 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
     description: event.description?.slice(0, 200),
     startDate: event.starts_at,
     endDate: event.ends_at,
-    ...(event.image_url ? { image: event.image_url } : {}),
+    image: event.image_url || "https://www.eventurer.online/favicon.ico",
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {
