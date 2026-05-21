@@ -844,7 +844,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
 
         {/* EVENT DETAIL */}
         {view === "home" && selectedEvent && (
-          <div className="view-panel">
+          <div className="view-panel event-detail-panel">
             <MusicEventDetail
               event={events.find((e) => e.id === selectedEvent.id) ?? selectedEvent}
               onBack={() => setSelectedEvent(null)}

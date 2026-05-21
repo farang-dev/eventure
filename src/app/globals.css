@@ -572,9 +572,13 @@ select.input { cursor: pointer; }
     position: absolute;
     top: 0; left: 0; bottom: 0;
     z-index: 50;
-    width: 780px; /* Increased from 580px */
+    width: 780px;
     box-shadow: 4px 0 32px rgba(0,0,0,0.5);
     border-right: 1px solid var(--border);
+  }
+
+  .event-detail-panel {
+    width: 860px;
   }
 
   .bottom-sheet-container {
