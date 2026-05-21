@@ -273,10 +273,14 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     starts_at = starts_at_local
                     ends_at = ends_at_local
 
+                content = ev.get("content", "").strip()
+                if len(content) > 1000:
+                    content = content[:1000]
+
                 all_parsed_events.append({
                     "source_id": source_id,
                     "title": title,
-                    "description": title,
+                    "description": content or title,
                     "image_url": image_url,
                     "genre": genre,
                     "artists": artists,
