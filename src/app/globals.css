@@ -451,6 +451,21 @@ select.input { cursor: pointer; }
     align-items: center;
     margin-top: 4px;
   }
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  .bottom-sheet-container {
+    bottom: calc(55px + env(safe-area-inset-bottom));
+  }
+  .view-panel {
+    padding-bottom: calc(55px + env(safe-area-inset-bottom));
+  }
+  .event-detail-panel {
+    padding-bottom: 0;
+  }
 }
 
 /* ─── Sidebar ─── */
