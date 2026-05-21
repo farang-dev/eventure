@@ -52,7 +52,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=localStorage.getItem("eventure-map-style");if(s&&s.includes("light")){document.documentElement.setAttribute("data-theme","light");}else{document.documentElement.setAttribute("data-theme","dark");}}catch(e){}})()`,
+            __html: `(function(){try{var s=localStorage.getItem("eventure-map-style");document.documentElement.setAttribute("data-theme",!s||s.includes("dark")?"dark":"light");}catch(e){}})()`,
           }}
         />
         <script
