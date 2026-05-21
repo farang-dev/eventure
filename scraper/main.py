@@ -143,6 +143,12 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = -37.8136, 144.9631
                 elif city_name == "perth":
                     lat_base, lng_base = -31.9505, 115.8605
+                elif city_name == "los-angeles":
+                    lat_base, lng_base = 34.0522, -118.2437
+                elif city_name == "chicago":
+                    lat_base, lng_base = 41.8781, -87.6298
+                elif city_name == "miami":
+                    lat_base, lng_base = 25.7617, -80.1918
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                 
@@ -398,8 +404,8 @@ if __name__ == "__main__":
         {"name": "tbilisi", "id": 188},
         {"name": "berlin", "id": 34},
         {"name": "new-york", "id": 8},
-        {"name": "los-angeles", "id": 11},
-        {"name": "chicago", "id": 9},
+        {"name": "los-angeles", "id": 23},
+        {"name": "chicago",     "id": 17},
         {"name": "miami", "id": 12},
         {"name": "amsterdam", "id": 29},
         {"name": "paris", "id": 44},

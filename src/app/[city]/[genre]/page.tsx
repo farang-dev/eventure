@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { CITIES } from "@/lib/constants";
 import { GENRE_META } from "@/lib/mock-data";
 import type { MusicEvent } from "@/lib/types";
 import { createSlug } from "@/lib/utils";
-import HomePageClient from "../../HomePageClient";
+import { MapPin, Calendar, Music, ArrowRight, ExternalLink, Map as MapIcon } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -38,11 +39,87 @@ export async function generateMetadata(props: { params: Promise<{ city: string; 
   };
 }
 
+function formatDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  } catch { return dateStr; }
+}
+
+function formatTime(dateStr: string) {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  } catch { return ""; }
+}
+
+function EventCard({ event }: { event: MusicEvent }) {
+  const meta = GENRE_META[event.genre] ?? GENRE_META.other;
+  const slug = createSlug(event.title, event.city);
+  const genreColor = meta.color;
+  const genreBg = meta.bg;
+
+  return (
+    <Link
+      href={`/event/${slug}`}
+      className="card-hover-effect"
+      style={{
+        textDecoration: "none",
+        color: "inherit",
+        display: "flex",
+        gap: 16,
+        padding: "16px 20px",
+        background: "var(--bg-elevated)",
+        borderRadius: 14,
+        border: "1px solid var(--border)",
+        cursor: "pointer",
+        transition: "border-color 0.15s, transform 0.15s",
+      }}
+    >
+      {event.image_url && (
+        <div style={{ width: 100, height: 100, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "var(--bg)" }}>
+          <img src={event.image_url} alt={event.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <span style={{ background: genreBg, border: `1px solid ${genreColor}44`, color: genreColor, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            {meta.label}
+          </span>
+        </div>
+        <h3 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 16, color: "var(--text-primary)", marginBottom: 4, lineHeight: 1.3 }}>
+          {event.title}
+        </h3>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <Calendar size={11} /> {formatDate(event.starts_at)} · {formatTime(event.starts_at)}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <MapPin size={11} /> {event.venue_name}
+          </span>
+        </div>
+        {(event.artists || []).length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {event.artists.slice(0, 3).map((a, i) => (
+              <span key={i} style={{ fontSize: 11, color: "var(--text-muted)", background: "var(--bg)", padding: "2px 7px", borderRadius: 6 }}>
+                {a}
+              </span>
+            ))}
+            {event.artists.length > 3 && (
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>+{event.artists.length - 3}</span>
+            )}
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
 export default async function CityGenrePage(props: { params: Promise<{ city: string; genre: string }> }) {
   const { city, genre } = await props.params;
   const info = CITIES.find((c) => c.id === city);
-  const meta = GENRE_META[genre];
-  if (!info || !meta) notFound();
+  const genreMeta = GENRE_META[genre];
+  if (!info || !genreMeta) notFound();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -76,14 +153,99 @@ export default async function CityGenrePage(props: { params: Promise<{ city: str
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Eventure", item: "https://www.eventurer.online" },
       { "@type": "ListItem", position: 2, name: info.name, item: `https://www.eventurer.online/${city}` },
-      { "@type": "ListItem", position: 3, name: `${meta.label} Events`, item: `https://www.eventurer.online/${city}/${genre}` },
+      { "@type": "ListItem", position: 3, name: `${genreMeta.label} Events`, item: `https://www.eventurer.online/${city}/${genre}` },
     ],
   };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventLd) }} />
-      <HomePageClient initialEvents={initialEvents} initialCity={city} initialGenre={genre} />
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text-primary)", fontFamily: "'Inter', sans-serif" }}>
+        {/* Nav Header */}
+        <header style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--bg-secondary)", position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 24, fontWeight: 800, background: "linear-gradient(135deg, var(--primary), var(--purple))", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Poppins', sans-serif" }}>
+                Eventure
+              </span>
+            </Link>
+            <nav style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <Link href="/" style={{ color: "var(--text-secondary)", textDecoration: "none", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
+                <MapIcon size={16} /> Map
+              </Link>
+            </nav>
+          </div>
+        </header>
+
+        <main style={{ maxWidth: 1200, width: "100%", margin: "0 auto", padding: "40px 20px" }}>
+          {/* Breadcrumbs */}
+          <nav aria-label="Breadcrumb" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-secondary)", marginBottom: 24 }}>
+            <Link href="/" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Home</Link>
+            <span>/</span>
+            <Link href="/cities" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Cities</Link>
+            <span>/</span>
+            <Link href={`/${city}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>{info.name}</Link>
+            <span>/</span>
+            <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>{genreMeta.label}</span>
+          </nav>
+
+          {/* Hero */}
+          <section style={{ marginBottom: 40, textAlign: "center", padding: "48px 20px", borderRadius: 20, background: `linear-gradient(135deg, ${genreMeta.color}33, rgba(0,0,0,0.6))`, position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 1 }} />
+            <div style={{ position: "relative", zIndex: 2 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: genreMeta.color, marginBottom: 8, display: "block" }}>
+                {info.name} · {info.country}
+              </span>
+              <h1 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontFamily: "'Poppins', sans-serif", fontWeight: 800, color: "#fff", marginBottom: 12, letterSpacing: "-0.02em" }}>
+                {genreMeta.label} Events
+              </h1>
+              <p style={{ fontSize: 15, color: "rgba(255,255,255,0.8)", maxWidth: 600, margin: "0 auto 24px", lineHeight: 1.6 }}>
+                {initialEvents.length > 0
+                  ? `Discover ${initialEvents.length} upcoming ${genreMeta.label.toLowerCase()} event${initialEvents.length !== 1 ? "s" : ""} in ${info.name}.`
+                  : `Explore ${genreMeta.label.toLowerCase()} events in ${info.name}.`}
+              </p>
+              <Link
+                href={`/${city}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", color: "#fff", borderRadius: 10, fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
+              >
+                All Events in {info.name} <ArrowRight size={14} />
+              </Link>
+            </div>
+          </section>
+
+          {/* Event list */}
+          <section>
+            <h2 style={{ fontSize: 18, fontFamily: "'Poppins', sans-serif", fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>
+              Upcoming {genreMeta.label} Events
+              {initialEvents.length > 0 && <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: 15 }}> · {initialEvents.length} total</span>}
+            </h2>
+            {initialEvents.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {initialEvents.map((event) => (
+                  <EventCard key={event.id || `${event.title}-${event.starts_at}`} event={event} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-secondary)", background: "var(--bg-elevated)", borderRadius: 14, border: "1px solid var(--border)" }}>
+                <h3 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 8, color: "var(--text-primary)" }}>
+                  No {genreMeta.label.toLowerCase()} events in {info.name}
+                </h3>
+                <p style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+                  Events are updated daily. Check back soon or browse all events in {info.name}.
+                </p>
+                <Link href={`/${city}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", background: "var(--primary)", color: "#fff", borderRadius: 10, fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+                  Browse All {info.name} Events <ArrowRight size={14} />
+                </Link>
+              </div>
+            )}
+          </section>
+        </main>
+
+        <footer style={{ borderTop: "1px solid var(--border)", padding: "24px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: 12, marginTop: 48 }}>
+          <Link href="/" style={{ color: "var(--text-secondary)", textDecoration: "none", fontWeight: 600 }}>Eventure</Link>
+          {" "}· Live interactive map of club events worldwide
+        </footer>
+      </div>
     </>
   );
 }
