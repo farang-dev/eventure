@@ -112,7 +112,12 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
     pitch: 40,
   });
   
-  const [mapStyle, setMapStyle] = useState("mapbox://styles/mapbox/dark-v11");
+  const [mapStyle, setMapStyle] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("eventure-map-style") || "mapbox://styles/mapbox/dark-v11";
+    }
+    return "mapbox://styles/mapbox/dark-v11";
+  });
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
