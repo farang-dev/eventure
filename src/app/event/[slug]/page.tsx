@@ -153,16 +153,22 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
         addressLocality: event.city,
       },
     },
-    ...((event.artists || []).length > 0 ? {
-      performer: event.artists.map((a: string) => ({
-        "@type": "MusicGroup",
-        name: a,
-      })),
-    } : {}),
+    performer: (event.artists || []).length > 0 
+      ? event.artists.map((a: string) => ({ "@type": "MusicGroup", name: a }))
+      : [{ "@type": "MusicGroup", name: "Various Artists" }],
+    organizer: {
+      "@type": "Organization",
+      name: event.venue_name || "Event Organizer",
+      url: "https://www.eventurer.online"
+    },
     ...(event.ticket_url ? {
       offers: {
         "@type": "Offer",
         url: event.ticket_url,
+        price: (event.price && /\d/.test(event.price)) ? event.price.replace(/[^\d.]/g, '') || "0" : "0",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        validFrom: new Date().toISOString().split('T')[0],
       },
     } : {}),
   };
