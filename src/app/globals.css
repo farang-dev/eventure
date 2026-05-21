@@ -52,6 +52,7 @@
   --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
   --shadow-glow: 0 0 20px rgba(230,57,70,0.3);
   --overlay-bg: rgba(0,0,0,0.7);
+  --btn-overlay-bg: rgba(13,17,23,0.85);
 }
 
 [data-theme="light"] {
@@ -73,6 +74,7 @@
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
   --overlay-bg: rgba(0,0,0,0.4);
+  --btn-overlay-bg: rgba(255,255,255,0.9);
 }
 
 
