@@ -231,7 +231,7 @@ export const GENRE_META: Record<
   disco:           { label: "Disco",        icon: "Sparkles",          color: "#D946EF", bg: "rgba(217,70,239,0.12)" },
   funk:            { label: "Funk",         icon: "Flame",             color: "#EAB308", bg: "rgba(234,179,8,0.12)" },
   hiphop:          { label: "Hip-Hop",      icon: "Mic2",              color: "#10B981", bg: "rgba(16,185,129,0.12)" },
-  other:           { label: "Other",        icon: "Music",             color: "#6B7280", bg: "rgba(107,114,128,0.12)" },
+  other:           { label: "Not Specified", icon: "Music",             color: "#6B7280", bg: "rgba(107,114,128,0.12)" },
 };
 
 export const CITY_TZS: Record<string, string> = {
