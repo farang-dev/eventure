@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check, ArrowRight } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { MusicEvent } from "@/lib/types";
 import { MOCK_EVENTS, GENRE_META, CITY_TZS } from "@/lib/mock-data";
@@ -99,6 +99,24 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
   const { slug } = await props.params;
   const event = await getEventBySlugOrId(slug);
 
+  // Fetch related events (same city, upcoming)
+  let relatedEvents: MusicEvent[] = [];
+  if (event?.city && supabase) {
+    try {
+      const now = new Date().toISOString();
+      const { data } = await supabase
+        .from("music_events")
+        .select("*")
+        .eq("city", event.city)
+        .neq("id", event.id)
+        .gte("ends_at", now)
+        .or("is_approved.eq.true,is_approved.is.null")
+        .order("starts_at", { ascending: true })
+        .limit(6);
+      if (data) relatedEvents = data as MusicEvent[];
+    } catch (e) {}
+  }
+
   if (!event) {
     return (
       <div style={{ padding: 40, textAlign: 'center', background: '#0D1117', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -139,7 +157,7 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
     "@context": "https://schema.org",
     "@type": "MusicEvent",
     name: event.title,
-    description: event.description?.slice(0, 200),
+    description: event.description || `${event.title} at ${event.venue_name} in ${event.city}. Featuring ${(event.artists || []).length > 0 ? event.artists.slice(0, 5).join(", ") : "various artists"}.`,
     startDate: event.starts_at,
     endDate: event.ends_at,
     image: event.image_url || "https://www.eventurer.online/favicon.ico",
@@ -173,11 +191,50 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
     } : {}),
   };
 
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `When is ${event.title} in ${event.city}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${event.title} starts at ${time} on ${date} at ${event.venue_name} in ${event.city}.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Where is ${event.title} taking place?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${event.title} is at ${event.venue_name}${event.venue_address ? ` (${event.venue_address})` : ""} in ${event.city}.`,
+        },
+      },
+      ...((event.artists || []).length > 0 ? [{
+        "@type": "Question",
+        name: `Who is performing at ${event.title}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `The lineup includes ${(event.artists || []).slice(0, 10).join(", ")}.`,
+        },
+      }] : []),
+      ...(event.ticket_url ? [{
+        "@type": "Question",
+        name: `How to get tickets for ${event.title}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Tickets for ${event.title} are available at ${event.ticket_url}.`,
+        },
+      }] : []),
+    ],
+  };
+
   return (
     <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", background: 'var(--bg)', color: 'var(--text-primary)', minHeight: '100vh' }}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbLd, eventLd]) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbLd, eventLd, faqLd]) }}
       />
       <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column", position: "relative" }}>
         
@@ -267,12 +324,12 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
           </a>
 
           {/* Description */}
-          {event.description && (
-            <div style={{ marginBottom: 24 }}>
-              <label className="label">About</label>
-              <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{event.description}</p>
-            </div>
-          )}
+          <div style={{ marginBottom: 24 }}>
+            <label className="label">About This Event</label>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>
+              {event.description || `${event.title} is an upcoming ${meta.label.toLowerCase()} event at ${event.venue_name} in ${event.city}.${(event.artists || []).length > 0 ? ` Featuring performances by ${event.artists.slice(0, 10).join(", ")}.` : ""} Check the event page for the full lineup, ticket details, and venue information on Eventure.`}
+            </p>
+          </div>
 
           {/* Price */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 15px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, marginBottom: 24 }}>
@@ -293,6 +350,48 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
               </a>
             )}
           </div>
+
+          {/* Related Events */}
+          {relatedEvents.length > 0 && (
+            <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+              <h2 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 16, color: "var(--text-primary)", marginBottom: 16 }}>
+                More Events in {event.city}
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {relatedEvents.map((re) => {
+                  const reSlug = createSlug(re.title, re.city);
+                  const reMeta = GENRE_META[re.genre] ?? GENRE_META.other;
+                  return (
+                    <Link
+                      key={re.id || reSlug}
+                      href={`/event/${reSlug}`}
+                      style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12 }}
+                      className="card-hover-effect"
+                    >
+                      {re.image_url ? (
+                        <img src={re.image_url} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                      ) : (
+                        <div style={{ width: 48, height: 48, borderRadius: 8, background: reMeta.bg, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <Music size={18} color={reMeta.color} />
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, color: "var(--text-primary)", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{re.title}</p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{re.venue_name} · {new Date(re.starts_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                      </div>
+                      <ArrowRight size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                    </Link>
+                  );
+                })}
+              </div>
+              <Link
+                href={`/${event.city}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 12, fontSize: 13, fontWeight: 700, color: "var(--primary)", textDecoration: "none" }}
+              >
+                View All Events in {event.city} <ArrowRight size={13} />
+              </Link>
+            </div>
+          )}
 
           <ShareButton url={`https://www.eventurer.online/event/${createSlug(event.title, event.city)}`} title={event.title} />
         </div>
