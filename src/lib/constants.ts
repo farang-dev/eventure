@@ -17,6 +17,9 @@ export const CITIES: CityInfo[] = [
   { id: "tbilisi", name: "Tbilisi", country: "Georgia", lat: 41.7151, lng: 44.8271, areaId: 188 },
   { id: "berlin", name: "Berlin", country: "Germany", lat: 52.5200, lng: 13.4050, areaId: 34 },
   { id: "new-york", name: "New York", country: "USA", lat: 40.7128, lng: -74.0060, areaId: 8 },
+  { id: "los-angeles", name: "Los Angeles", country: "USA", lat: 34.0522, lng: -118.2437, areaId: 11 },
+  { id: "chicago", name: "Chicago", country: "USA", lat: 41.8781, lng: -87.6298, areaId: 9 },
+  { id: "miami", name: "Miami", country: "USA", lat: 25.7617, lng: -80.1918, areaId: 12 },
   { id: "amsterdam", name: "Amsterdam", country: "Netherlands", lat: 52.3676, lng: 4.9041, areaId: 29 },
   { id: "paris", name: "Paris", country: "France", lat: 48.8566, lng: 2.3522, areaId: 44 },
   { id: "barcelona", name: "Barcelona", country: "Spain", lat: 41.3874, lng: 2.1686, areaId: 20 },
@@ -81,5 +84,17 @@ export const CITY_META: Record<string, { description: string; keywords: string[]
   perth: {
     description: "Perth club events & electronic music map. Discover techno, house & underground parties in Western Australia.",
     keywords: ["Perth club events", "Perth techno", "Perth nightlife", "Australia electronic music", "Perth rave"],
+  },
+  "los-angeles": {
+    description: "Los Angeles club events & electronic music map. Find techno, house & underground parties in LA, Hollywood & beyond.",
+    keywords: ["Los Angeles club events", "LA techno", "LA nightlife", "LA electronic music", "Los Angeles rave map"],
+  },
+  chicago: {
+    description: "Chicago club events & electronic music map. The birthplace of house music — find techno, house & underground parties.",
+    keywords: ["Chicago club events", "Chicago house music", "Chicago techno", "Chicago nightlife", "Chicago rave map"],
+  },
+  miami: {
+    description: "Miami club events & electronic music map. Find techno, house & underground parties in Miami Beach & Wynwood.",
+    keywords: ["Miami club events", "Miami techno", "Miami nightlife", "Miami Beach parties", "Miami rave map"],
   },
 };

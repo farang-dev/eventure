@@ -241,6 +241,17 @@ export const CITY_TZS: Record<string, string> = {
   vilnius: "Europe/Vilnius",
   belgrade: "Europe/Belgrade",
   tbilisi: "Asia/Tbilisi",
+  berlin: "Europe/Berlin",
+  "new-york": "America/New_York",
+  "los-angeles": "America/Los_Angeles",
+  chicago: "America/Chicago",
+  miami: "America/New_York",
+  amsterdam: "Europe/Amsterdam",
+  paris: "Europe/Paris",
+  barcelona: "Europe/Madrid",
+  sydney: "Australia/Sydney",
+  melbourne: "Australia/Melbourne",
+  perth: "Australia/Perth",
   東京: "Asia/Tokyo",
 };
 
