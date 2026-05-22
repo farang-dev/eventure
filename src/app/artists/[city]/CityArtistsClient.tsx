@@ -47,6 +47,9 @@ export default function CityArtistsClient({ initialArtist }: Props) {
   const [exploreCurrentDJ, setExploreCurrentDJ] = useState<string | null>(null);
   const [exploreInitVideoId, setExploreInitVideoId] = useState<string | null>(null);
   const [exploreSecondsPlayed, setExploreSecondsPlayed] = useState(0);
+  const [exploreVideoCurrent, setExploreVideoCurrent] = useState(0);
+  const [exploreVideoTotal, setExploreVideoTotal] = useState(0);
+  const [exploreHoverPos, setExploreHoverPos] = useState<number | null>(null);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [upNext, setUpNext] = useState<string[]>([]);
   const explorePlayerRef = useRef<any>(null);
@@ -266,6 +269,9 @@ export default function CityArtistsClient({ initialArtist }: Props) {
     setExploreCurrentDJ(null);
     setExploreInitVideoId(null);
     setExploreSecondsPlayed(0);
+    setExploreVideoCurrent(0);
+    setExploreVideoTotal(0);
+    setExploreHoverPos(null);
     setIsFadingOut(false);
     setIsSkipping(false);
     setUpNext([]);
@@ -277,6 +283,15 @@ export default function CityArtistsClient({ initialArtist }: Props) {
     const interval = setInterval(() => {
       secs++;
       setExploreSecondsPlayed(secs);
+      try {
+        const player = explorePlayerRef.current;
+        if (player && typeof player.getCurrentTime === "function") {
+          const cur = player.getCurrentTime();
+          const total = player.getDuration();
+          if (cur !== undefined && !isNaN(cur)) setExploreVideoCurrent(Math.floor(cur));
+          if (total && total > 0 && !isNaN(total)) setExploreVideoTotal(Math.floor(total));
+        }
+      } catch (e) {}
       if (secs >= EXPLORE_PLAY_DURATION - EXPLORE_FADE_DURATION) {
         setIsFadingOut(true);
         const elapsed = secs - (EXPLORE_PLAY_DURATION - EXPLORE_FADE_DURATION);
@@ -289,6 +304,13 @@ export default function CityArtistsClient({ initialArtist }: Props) {
       }
     }, 1000);
     exploreIntervalRef.current = interval;
+  };
+
+  const handleExploreSeek = (seconds: number) => {
+    if (!explorePlayerRef.current) return;
+    try {
+      explorePlayerRef.current.seekTo(seconds, true);
+    } catch (e) {}
   };
 
   const beginTrack = (videoId: string, artist: string) => {
@@ -371,6 +393,9 @@ export default function CityArtistsClient({ initialArtist }: Props) {
             onReady: (event: any) => {
               event.target.setVolume(100);
               startTimer();
+            },
+            onError: () => {
+              advanceExploreRef.current();
             }
           }
         });
@@ -1097,9 +1122,22 @@ export default function CityArtistsClient({ initialArtist }: Props) {
               )}
             </div>
 
-            {/* Progress bar */}
-            <div style={{ width: isMobile ? "100%" : 200, order: isMobile ? 10 : undefined }}>
-              <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2 }}>
+            {/* Seek bar */}
+            <div style={{ width: isMobile ? "100%" : 240, order: isMobile ? 10 : undefined, display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, cursor: "pointer", position: "relative" }}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                  const target = exploreVideoTotal > 0 ? pct * exploreVideoTotal : pct * 7200;
+                  handleExploreSeek(target);
+                }}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                  setExploreHoverPos(pct);
+                }}
+                onMouseLeave={() => setExploreHoverPos(null)}
+              >
                 <div style={{
                   height: "100%",
                   background: isFadingOut ? "rgba(255,255,255,0.2)" : "linear-gradient(90deg, #7c3aed, #4f46e5)",
@@ -1107,10 +1145,43 @@ export default function CityArtistsClient({ initialArtist }: Props) {
                   width: `${Math.min(100, (exploreSecondsPlayed / EXPLORE_PLAY_DURATION) * 100)}%`,
                   transition: "width 1s linear, background 0.5s"
                 }} />
+                {exploreHoverPos !== null && (
+                  <>
+                    <div style={{
+                      position: "absolute",
+                      top: -8,
+                      left: `calc(${exploreHoverPos * 100}% - 4px)`,
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#a78bfa",
+                      border: "2px solid #fff",
+                      boxShadow: "0 0 8px rgba(167,139,250,0.6)",
+                      pointerEvents: "none",
+                      zIndex: 2
+                    }} />
+                    <div style={{
+                      position: "absolute",
+                      bottom: 10,
+                      left: `calc(${exploreHoverPos * 100}% - 28px)`,
+                      background: "rgba(0,0,0,0.85)",
+                      color: "#fff",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      fontFamily: "monospace",
+                      whiteSpace: "nowrap",
+                      pointerEvents: "none",
+                      zIndex: 2
+                    }}>
+                      {formatDuration(Math.floor((exploreVideoTotal > 0 ? exploreHoverPos * exploreVideoTotal : exploreHoverPos * 7200)))}
+                    </div>
+                  </>
+                )}
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "rgba(255,255,255,0.3)", marginTop: 3, fontFamily: "monospace" }}>
-                <span>{formatDuration(exploreSecondsPlayed)}</span>
-                <span>{formatDuration(EXPLORE_PLAY_DURATION)}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
+                <span>{formatDuration(exploreSecondsPlayed)} / {formatDuration(EXPLORE_PLAY_DURATION)}</span>
               </div>
             </div>
 
@@ -1127,53 +1198,85 @@ export default function CityArtistsClient({ initialArtist }: Props) {
               </div>
             )}
 
-            {/* Skip button */}
-            <button
-              onClick={advanceExplore}
-              disabled={isSkipping}
-              style={{
-                background: isSkipping ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.07)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                color: isSkipping ? "rgba(255,255,255,0.4)" : "#fff",
-                padding: "7px 14px",
-                borderRadius: 8,
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: isSkipping ? "wait" : "pointer",
-                flexShrink: 0,
-                transition: "all 0.15s",
-                display: "flex",
-                alignItems: "center",
-                gap: 5
-              }}
-              onMouseEnter={(e) => { if (!isSkipping) e.currentTarget.style.background = "rgba(255,255,255,0.14)"; }}
-              onMouseLeave={(e) => { if (!isSkipping) e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
-            >
-              {isSkipping ? (
-                <><div style={{ width: 8, height: 8, border: "1.5px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> Loading...</>
-              ) : "Skip →"}
-            </button>
+            {/* Player controls */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, order: isMobile ? 12 : undefined, flexShrink: 0 }}>
+              {/* Rewind 30s */}
+              <button
+                onClick={() => handleExploreSeek(exploreVideoCurrent - 30)}
+                style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "rgba(255,255,255,0.5)", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, transition: "all 0.15s" }}
+                title="Back 30s"
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)"; }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+              </button>
 
-            {/* Stop button */}
-            <button
-              onClick={stopExplore}
-              style={{
-                background: "rgba(239,68,68,0.12)",
-                border: "1px solid rgba(239,68,68,0.25)",
-                color: "#fca5a5",
-                padding: "7px 14px",
-                borderRadius: 8,
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: "pointer",
-                flexShrink: 0,
-                transition: "background 0.15s"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.22)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.12)"}
-            >
-              ✕ Stop
-            </button>
+              {/* Skip to next DJ */}
+              <button
+                onClick={advanceExplore}
+                disabled={isSkipping}
+                style={{
+                  background: isSkipping ? "rgba(124,58,237,0.15)" : "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                  border: "none",
+                  color: isSkipping ? "rgba(255,255,255,0.3)" : "#fff",
+                  width: 34,
+                  height: 34,
+                  borderRadius: "50%",
+                  cursor: isSkipping ? "wait" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 14,
+                  transition: "all 0.15s",
+                  boxShadow: isSkipping ? "none" : "0 0 16px rgba(124,58,237,0.4)"
+                }}
+                onMouseEnter={(e) => { if (!isSkipping) { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 0 24px rgba(124,58,237,0.6)"; } }}
+                onMouseLeave={(e) => { if (!isSkipping) { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(124,58,237,0.4)"; } }}
+                title="Next DJ"
+              >
+                {isSkipping ? (
+                  <div style={{ width: 12, height: 12, border: "2px solid rgba(255,255,255,0.2)", borderTopColor: "rgba(255,255,255,0.5)", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                )}
+              </button>
+
+              {/* Forward 30s */}
+              <button
+                onClick={() => handleExploreSeek(exploreVideoCurrent + 30)}
+                style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "rgba(255,255,255,0.5)", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, transition: "all 0.15s" }}
+                title="Forward 30s"
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)"; }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+              </button>
+
+              {/* Stop */}
+              <button
+                onClick={stopExplore}
+                style={{
+                  background: "rgba(239,68,68,0.15)",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  color: "#fca5a5",
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 10,
+                  transition: "all 0.15s",
+                  marginLeft: 4
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.3)"; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.15)"; e.currentTarget.style.color = "#fca5a5"; }}
+                title="Stop exploring"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+              </button>
+            </div>
           </div>
         </>
       )}

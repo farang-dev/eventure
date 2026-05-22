@@ -169,7 +169,10 @@ export default function ExploreClient({ initialCity }: Props) {
         explorePlayerRef.current = new win.YT.Player("explore-page-player", {
           videoId,
           playerVars: { autoplay: 1, start: randomStart, enablejsapi: 1 },
-          events: { onReady: (event: any) => { event.target.setVolume(100); startTimer(); } },
+          events: {
+            onReady: (event: any) => { event.target.setVolume(100); startTimer(); },
+            onError: () => { advanceExploreRef.current(); },
+          },
         });
       } else { setTimeout(doInit, 400); }
     };
