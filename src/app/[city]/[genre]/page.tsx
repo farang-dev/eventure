@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { CITIES } from "@/lib/constants";
 import { GENRE_META } from "@/lib/mock-data";
@@ -38,6 +37,23 @@ export async function generateMetadata(props: { params: Promise<{ city: string; 
       description: `Find ${meta.label.toLowerCase()} parties in ${info.name} on a live map.`,
     },
   };
+}
+
+function getOptimizedImageUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("supabase.co") && u.pathname.includes("/storage/v1/object/public/")) {
+      u.pathname = u.pathname.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
+      u.searchParams.set("width", "200");
+      u.searchParams.set("height", "200");
+      u.searchParams.set("resize", "cover");
+      return u.toString();
+    }
+    return url;
+  } catch {
+    return url;
+  }
 }
 
 function formatDate(dateStr: string) {
@@ -104,8 +120,8 @@ function EventCard({ event }: { event: MusicEvent }) {
       }}
     >
       {event.image_url && (
-        <div style={{ width: 100, height: 100, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "var(--bg)", position: "relative" }}>
-          <Image src={event.image_url} alt={event.title} fill sizes="100px" style={{ objectFit: "cover" }} />
+        <div style={{ width: 100, height: 100, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "var(--bg)" }}>
+          <img src={getOptimizedImageUrl(event.image_url)} alt={event.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
