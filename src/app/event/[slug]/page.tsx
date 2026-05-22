@@ -298,10 +298,33 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
                 <span className="label">Lineup</span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {(event.artists || []).map((artist: string, i: number) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artist}</span>
-                  </div>
+                {(event.artists || []).flatMap((artist: string) => {
+                  if (!artist) return [];
+                  return artist.split(/[,;&]|\s+vs\.?\s+|\s+and\s+/i);
+                })
+                .map((a: string) => (a || "").replace(/[{}""'\[\]]/g, "").trim())
+                .filter((a: string) => a && a.toLowerCase() !== "tba")
+                .map((artistName: string, i: number) => (
+                  <Link 
+                    key={i} 
+                    href={`/?city=${(event.city || "vilnius").toLowerCase()}&view=artists&artist=${encodeURIComponent(artistName)}`}
+                    style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: 8, 
+                      padding: "6px 12px", 
+                      background: "var(--bg-elevated)", 
+                      border: "1px solid var(--border)", 
+                      borderRadius: 8,
+                      textDecoration: "none",
+                      color: "inherit",
+                      transition: "all 0.15s ease",
+                      cursor: "pointer"
+                    }}
+                    className="card-hover-effect"
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artistName}</span>
+                  </Link>
                 ))}
               </div>
             </div>

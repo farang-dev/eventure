@@ -24,4 +24,4 @@ export interface MusicEvent {
   is_featured?: boolean;
 }
 
-export type AppView = "home" | "event-detail" | "search" | "about" | "cities";
+export type AppView = "home" | "event-detail" | "search" | "about" | "cities" | "artists";

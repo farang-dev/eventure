@@ -11,7 +11,7 @@ import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
 import { CITIES } from "@/lib/constants";
-import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, Layers, ChevronDown, ChevronUp, Building2, Menu } from "lucide-react";
+import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, Layers, ChevronDown, ChevronUp, Building2, Menu, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -38,13 +38,89 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
     }
   }, []);
   const [selectedEvent, setSelectedEvent] = useState<MusicEvent | null>(null as MusicEvent | null);
+  const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
+  const [dynamicVideoId, setDynamicVideoId] = useState<string | null>(null);
+  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
+  const [allArtists, setAllArtists] = useState<string[]>([]);
+  const [cityEvents, setCityEvents] = useState<MusicEvent[]>([]);
+  const [artistSearchQuery, setArtistSearchQuery] = useState("");
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchAllCityEvents = async () => {
+      const targetCity = cityFilter || "vilnius"; 
+      const { data, error } = await supabase
+        .from('music_events')
+        .select('*')
+        .eq('city', targetCity.toLowerCase());
+        
+      if (data && !error) {
+        setCityEvents(data as MusicEvent[]);
+        const unique = new Set<string>();
+        data.forEach(e => {
+          const list = e.artists || [];
+          list.forEach((a: string) => {
+            if (!a) return;
+            a.split(/[,;&]|\s+vs\.?\s+|\s+and\s+/i).forEach((name: string) => {
+              const clean = name.replace(/[{}""'\[\]]/g, "").trim();
+              if (clean && clean.toLowerCase() !== "tba") {
+                unique.add(clean);
+              }
+            });
+          });
+        });
+        setAllArtists(Array.from(unique).sort());
+      }
+    };
+    fetchAllCityEvents();
+  }, [cityFilter, supabase]);
+
+  useEffect(() => {
+    if (!selectedArtist) {
+      setDynamicVideoId(null);
+      setIsLoadingVideo(false);
+      return;
+    }
+
+    const fetchVideo = async () => {
+      setIsLoadingVideo(true);
+      setDynamicVideoId(null);
+      try {
+        const key = selectedArtist.replace(/[{}""'\[\]]/g, "").trim().toLowerCase();
+        const videoMap: Record<string, string> = {
+          "manfredas": "TpgU8U09HmM",
+          "roe deers": "yknu7gD5kqs",
+          "saulty": "h0LfZkW3yqA",
+          "anna hanna": "EVJIl98ZKko",
+          "vidis": "0fStWP79Z5A",
+        };
+
+        if (videoMap[key]) {
+          setDynamicVideoId(videoMap[key]);
+        } else {
+          const res = await fetch(`/api/youtube-search?q=${encodeURIComponent(selectedArtist)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.videoId) {
+              setDynamicVideoId(data.videoId);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic video:", err);
+      } finally {
+        setIsLoadingVideo(false);
+      }
+    };
+
+    fetchVideo();
+  }, [selectedArtist]);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [mapBounds, setMapBounds] = useState<[number, number, number, number] | null>(null);
   const [eventsData, setEventsData] = useState<MusicEvent[]>(initialEvents || []);
-  const supabase = createClient();
 
   const { data: session } = useSession();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -161,6 +237,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
     }
 
     if (cityParam) {
+      setCityFilter(cityParam.toLowerCase());
       const fetchCity = async () => {
         try {
           const resp = await fetch(
@@ -198,7 +275,39 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
         (error) => console.warn("Geolocation denied:", error)
       );
     }
+
+    // Parse Artists query params on direct link loading
+    const viewParam = params.get("view");
+    const artistParam = params.get("artist");
+    if (viewParam === "artists") {
+      setView("artists");
+      if (artistParam) {
+        setSelectedArtist(decodeURIComponent(artistParam));
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    const params = new URLSearchParams(window.location.search);
+    const eventParam = params.get("event");
+    if (eventParam && eventsData.length > 0) {
+      const found = eventsData.find(e => e.id === eventParam);
+      if (found) {
+        setSelectedEvent(found);
+        setViewState({
+          longitude: found.lng,
+          latitude: found.lat,
+          zoom: 13.5,
+          pitch: 40,
+          transitionDuration: 1500
+        });
+        // Clear the parameter from URL silently to keep URL clean
+        const newUrl = window.location.pathname + window.location.search.replace(/&?event=[^&]*/, "");
+        window.history.replaceState(null, "", newUrl);
+      }
+    }
+  }, [eventsData, isMounted]);
 
   useEffect(() => {
     const fetchCityCounts = async () => {
@@ -418,6 +527,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
         { id: "home", icon: <MapIcon size={19} />, label: "Map", href: "/" },
         { id: "search", icon: <Search size={19} />, label: "Search" },
         { id: "cities", icon: <Building2 size={19} />, label: "Cities", href: "/cities" },
+        { id: "artists", icon: <Users size={19} />, label: "Artists", href: "/artists" },
         { id: "about", icon: <Info size={19} />, label: "About" },
       ].map((item) => {
         const isActive = view === item.id;
@@ -862,6 +972,11 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
             <MusicEventDetail
               event={events.find((e) => e.id === selectedEvent.id) ?? selectedEvent}
               onBack={() => setSelectedEvent(null)}
+              onArtistClick={(artistName) => {
+                setSelectedEvent(null);
+                setView("artists");
+                setSelectedArtist(artistName);
+              }}
             />
           </div>
         )}
@@ -1042,6 +1157,252 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
           </div>
         )}
 
+        {/* ARTISTS */}
+        {view === "artists" && (
+          <div className="view-panel" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            {/* Header */}
+            <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+              <button 
+                onClick={() => { setSelectedArtist(null); navigate("home"); }} 
+                style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4 }}
+              >
+                <X size={19} />
+              </button>
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 15 }}>
+                {selectedArtist ? `${selectedArtist} (Artist Profile)` : "Artists"}
+              </span>
+              {cityFilter && (
+                <span style={{ fontSize: 11, background: "var(--bg-elevated)", color: "var(--text-secondary)", padding: "2px 8px", borderRadius: 12, marginLeft: "auto" }}>
+                  {cityFilter.toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            {/* Split Screen if an artist is selected */}
+            <div style={{ display: "flex", flex: 1, overflow: "hidden", flexDirection: selectedArtist ? "column" : "row" }} className="scroll-y">
+              
+              {/* Artist List View (When no artist is selected) */}
+              {!selectedArtist ? (
+                <div style={{ flex: 1, padding: "14px", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 4 }}>
+                    DJs and Artists performing in {cityFilter ? cityFilter.toUpperCase() : "all cities"}. Select an artist to view their live set.
+                  </p>
+                  
+                  {/* Dynamic Artist Search Bar */}
+                  <div style={{ position: "relative", width: "100%", marginBottom: 8 }}>
+                    <input
+                      type="text"
+                      placeholder="Search DJs / Artists..."
+                      value={artistSearchQuery}
+                      onChange={(e) => setArtistSearchQuery(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px 10px 36px",
+                        background: "var(--bg-elevated)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        color: "var(--text-primary)",
+                        fontSize: 13,
+                        outline: "none"
+                      }}
+                    />
+                    <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+                    {artistSearchQuery && (
+                      <button 
+                        onClick={() => setArtistSearchQuery("")}
+                        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 0 }}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
+                    {allArtists
+                      .filter(artist => artist.toLowerCase().includes(artistSearchQuery.toLowerCase()))
+                      .map((artistName) => {
+                      // Calculate upcoming gig count
+                      const gigCount = events.filter(e => 
+                        (e.artists || []).some(a => {
+                          const cleanedRaw = (a || "").replace(/[{}""'\[\]]/g, "").trim().toLowerCase();
+                          return cleanedRaw.includes(artistName.toLowerCase());
+                        })
+                      ).length;
+                      
+                      return (
+                        <div 
+                          key={artistName}
+                          onClick={() => setSelectedArtist(artistName)}
+                          style={{ 
+                            background: "var(--card-bg)", 
+                            border: "1px solid var(--border)", 
+                            borderRadius: 12, 
+                            padding: "12px 14px", 
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "space-between",
+                            height: 100
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = "var(--primary)";
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = "var(--border)";
+                            e.currentTarget.style.transform = "translateY(0)";
+                          }}
+                        >
+                          <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                            {artistName}
+                          </span>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                            {gigCount} {gigCount === 1 ? "Upcoming Gig" : "Gigs"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                /* Artist Detail View */
+                <div style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", gap: 16 }}>
+                  <button 
+                    onClick={() => setSelectedArtist(null)} 
+                    style={{ alignSelf: "flex-start", background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 8, padding: "6px 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+                  >
+                    ← Back to Artists list
+                  </button>
+
+                  {/* YouTube iframe or Search Redirect based on actual mapping */}
+                  {isLoadingVideo ? (
+                    <div style={{ 
+                      width: "100%", 
+                      height: 200, 
+                      background: "var(--bg-elevated)", 
+                      borderRadius: 14, 
+                      border: "1px solid var(--border)", 
+                      display: "flex", 
+                      flexDirection: "column", 
+                      justifyContent: "center", 
+                      alignItems: "center",
+                      gap: 12
+                    }}>
+                      <div className="spinner animate-spin" style={{ width: 24, height: 24, border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                      <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>Searching YouTube for {selectedArtist}'s live set...</span>
+                    </div>
+                  ) : dynamicVideoId ? (
+                    <div style={{ width: "100%", position: "relative", paddingTop: "56.25%", background: "#000", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}>
+                      <iframe
+                        key={selectedArtist} // Force iframe reconstruction on click
+                        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                        src={`https://www.youtube.com/embed/${dynamicVideoId}?autoplay=1`}
+                        title={`${selectedArtist} DJ set`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ 
+                      width: "100%", 
+                      height: 180, 
+                      background: "var(--bg-elevated)", 
+                      borderRadius: 14, 
+                      border: "1px solid var(--border)", 
+                      display: "flex", 
+                      flexDirection: "column", 
+                      justifyContent: "center", 
+                      alignItems: "center",
+                      gap: 12,
+                      padding: 20,
+                      textAlign: "center"
+                    }}>
+                      <span style={{ fontSize: 24 }}>🎵</span>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 14 }}>No Preview Video Registered</div>
+                        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>We couldn't auto-fetch a video. You can search directly on YouTube.</div>
+                      </div>
+                      <a 
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(selectedArtist + " dj set")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          background: "var(--primary)",
+                          color: "#fff",
+                          padding: "8px 16px",
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          textDecoration: "none"
+                        }}
+                      >
+                        Search on YouTube ↗
+                      </a>
+                    </div>
+                  )}
+
+                  <div>
+                    <h2 style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>{selectedArtist}</h2>
+                    <p style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: 4 }}>
+                      <span>Preview live performances & see upcoming tour schedule below.</span>
+                      <span style={{ fontSize: 10, color: "var(--text-muted)", opacity: 0.7 }}>
+                        Matched Key: "{(selectedArtist || "").replace(/[{}""'\[\]]/g, "").trim().toLowerCase()}"
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Gig Schedule (Events the DJ plays at) */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>Gigs on Eventure</p>
+                    
+                    {cityEvents
+                      .filter(e => e.artists?.some(a => {
+                        const cleanedRaw = (a || "").replace(/[{}""'\[\]]/g, "").trim().toLowerCase();
+                        return cleanedRaw.includes((selectedArtist || "").toLowerCase().trim());
+                      }))
+                      .map(event => (
+                        <div 
+                          key={event.id}
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setView("home");
+                            // Center the map view to this event's venue
+                            setViewState({
+                              longitude: event.lng,
+                              latitude: event.lat,
+                              zoom: 13.5,
+                              pitch: 40,
+                              transitionDuration: 1500
+                            });
+                          }}
+                          style={{
+                            background: "var(--bg-elevated)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 12,
+                            padding: "12px 14px",
+                            cursor: "pointer",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{event.title}</div>
+                            <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>{event.venue_name} ({event.city})</div>
+                          </div>
+                          <span style={{ fontSize: 11, color: "var(--primary)", fontWeight: 700 }}>
+                            View on Map →
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ABOUT */}
         {view === "about" && (
           <div className="view-panel">
@@ -1119,6 +1480,14 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
                 >
                   <Building2 size={18} />
                   Cities
+                </Link>
+                <Link
+                  href="/artists"
+                  onClick={() => setShowMobileMenu(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 10, color: "var(--text-primary)", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+                >
+                  <Users size={18} />
+                  Artists
                 </Link>
                 <button
                   onClick={() => { setShowMobileMenu(false); setView("about"); }}

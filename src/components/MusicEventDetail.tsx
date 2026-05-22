@@ -9,9 +9,10 @@ import GenreIcon from "@/components/GenreIcon";
 interface Props {
   event: MusicEvent;
   onBack?: () => void;
+  onArtistClick?: (artistName: string) => void;
 }
 
-export default function MusicEventDetail({ event, onBack }: Props) {
+export default function MusicEventDetail({ event, onBack, onArtistClick }: Props) {
   const meta = (event?.genre && GENRE_META[event.genre]) || GENRE_META.other || {
     label: "Other", icon: "Music", color: "#6B7280", bg: "rgba(107,114,128,0.12)"
   };
@@ -155,9 +156,42 @@ export default function MusicEventDetail({ event, onBack }: Props) {
                 <span className="label">Lineup</span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {(event.artists || []).map((artist, i) => (
-                  <div key={`${artist}-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artist}</span>
+                {(event.artists || []).flatMap(artist => {
+                  if (!artist) return [];
+                  // Split nested names just in case they are comma-separated
+                  return artist.split(/[,;&]|\s+vs\.?\s+|\s+and\s+/i);
+                })
+                .map(a => (a || "").replace(/[{}""'\[\]]/g, "").trim())
+                .filter(a => a && a.toLowerCase() !== "tba")
+                .map((artistName, i) => (
+                  <div 
+                    key={`${artistName}-${i}`} 
+                    onClick={() => onArtistClick && onArtistClick(artistName)}
+                    style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: 8, 
+                      padding: "6px 12px", 
+                      background: "var(--bg-elevated)", 
+                      border: "1px solid var(--border)", 
+                      borderRadius: 8,
+                      cursor: onArtistClick ? "pointer" : "default",
+                      transition: "all 0.15s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      if (onArtistClick) {
+                        e.currentTarget.style.borderColor = "var(--primary)";
+                        e.currentTarget.style.background = "var(--bg-secondary)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (onArtistClick) {
+                        e.currentTarget.style.borderColor = "var(--border)";
+                        e.currentTarget.style.background = "var(--bg-elevated)";
+                      }
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artistName}</span>
                   </div>
                 ))}
               </div>

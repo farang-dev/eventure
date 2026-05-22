@@ -48,13 +48,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=localStorage.getItem("eventure-map-style");document.documentElement.setAttribute("data-theme",!s||s.includes("dark")?"dark":"light");}catch(e){}})()`,
-          }}
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -108,6 +103,13 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("eventure-map-style");document.documentElement.setAttribute("data-theme",!s||s.includes("dark")?"dark":"light");}catch(e){}})()`,
+          }}
+        />
         <NextAuthProvider>
           {children}
         </NextAuthProvider>
