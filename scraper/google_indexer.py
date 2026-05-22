@@ -17,6 +17,9 @@ SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY") or os.environ.get
 
 INDEXED_LOG_FILE = os.path.join(os.path.dirname(__file__), "indexed_urls.txt")
 
+WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE") or "818041185473"
+WHATSAPP_API_KEY = os.environ.get("WHATSAPP_API_KEY") or "2645005"
+
 def create_slug(title, city):
     """Helper to match Next.js event slug generation logic"""
     if not title:
@@ -138,6 +141,18 @@ def notify_google_url_detailed(session, url: str, action: str = "URL_UPDATED"):
         print(f"❌ Network error notifying Google for {url}: {e}")
         return "FAILED"
 
+def send_whatsapp(message: str):
+    """Sends a WhatsApp message via CallMeBot API."""
+    url = f"https://api.callmebot.com/whatsapp.php?phone={WHATSAPP_PHONE}&text={urllib.parse.quote(message)}&apikey={WHATSAPP_API_KEY}"
+    try:
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            print(f"WhatsApp notification sent.")
+        else:
+            print(f"WhatsApp API error: {res.status_code}")
+    except Exception as e:
+        print(f"WhatsApp send failed: {e}")
+
 def index_latest_events():
     """
     Fetches upcoming events from Supabase and registers them in Google Search.
@@ -238,10 +253,22 @@ def index_latest_events():
                 break
                 
         print(f"\n🎉 Successfully indexed {success_count} new events in this run!")
-        print("\n[Indexing] Now processing artist pages...")
-        index_artist_pages(sessions_info, current_session_idx, current_session_requests, indexed_urls)
-            
+
+        artist_result = index_artist_pages(sessions_info, current_session_idx, current_session_requests, indexed_urls)
+
+        total_new = success_count + (artist_result or 0)
+        summary = (
+            f"📊 *Indexing Report*\n\n"
+            f"Events indexed: {success_count}\n"
+            f"Artists indexed: {artist_result or 0}\n"
+            f"Total new URLs: {total_new}\n"
+            f"Accounts used: {current_session_idx + 1}/{len(sessions_info)}"
+        )
+        send_whatsapp(summary)
+
     except Exception as e:
+        error_msg = f"❌ *Indexing Error*\n\n{str(e)}"
+        send_whatsapp(error_msg)
         print(f"Error during bulk indexing: {e}")
 
 def index_artist_pages(sessions_info, start_session_idx=0, session_requests=0, already_indexed=None):
@@ -253,7 +280,7 @@ def index_artist_pages(sessions_info, start_session_idx=0, session_requests=0, a
     if not sessions_info:
         sessions_info = get_all_google_auth_sessions()
         if not sessions_info:
-            return
+            return 0
 
     if already_indexed is None:
         already_indexed = load_indexed_urls()
@@ -270,7 +297,7 @@ def index_artist_pages(sessions_info, start_session_idx=0, session_requests=0, a
         res = requests.get(url, headers=headers)
         if res.status_code != 200:
             print(f"Failed to fetch events for artist extraction: {res.status_code}")
-            return
+            return 0
 
         events = res.json()
         
@@ -335,9 +362,11 @@ def index_artist_pages(sessions_info, start_session_idx=0, session_requests=0, a
                 break
 
         print(f"\n🎉 Successfully indexed {success_count} new artist pages in this run!")
+        return success_count
 
     except Exception as e:
         print(f"Error during artist page indexing: {e}")
+        return 0
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
