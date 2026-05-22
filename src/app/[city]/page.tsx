@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { CITIES, CITY_META } from "@/lib/constants";
 import { GENRE_META } from "@/lib/mock-data";
 import type { MusicEvent } from "@/lib/types";
 import { createSlug } from "@/lib/utils";
-import { MapPin, Calendar, Music, ArrowRight, ExternalLink, Building2, Map as MapIcon } from "lucide-react";
+import { MapPin, Calendar, Music, ArrowRight, ExternalLink, Map as MapIcon } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -67,6 +68,32 @@ function formatTime(dateStr: string) {
   } catch { return ""; }
 }
 
+function getDateGroupLabel(dateStr: string): string {
+  try {
+    const d = new Date(dateStr + "T00:00:00");
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+    if (diff === 0) return "Today";
+    if (diff === 1) return "Tomorrow";
+    if (diff > 1 && diff <= 6) return d.toLocaleDateString("en-US", { weekday: "long" });
+    return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
+function groupByDate(events: MusicEvent[]): Map<string, MusicEvent[]> {
+  const groups = new Map<string, MusicEvent[]>();
+  for (const e of events) {
+    const key = e.starts_at ? e.starts_at.split("T")[0] : "unknown";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(e);
+  }
+  return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
+}
+
 function EventCard({ event }: { event: MusicEvent }) {
   const meta = GENRE_META[event.genre] ?? GENRE_META.other;
   const slug = createSlug(event.title, event.city);
@@ -91,8 +118,8 @@ function EventCard({ event }: { event: MusicEvent }) {
       }}
     >
       {event.image_url && (
-        <div style={{ width: 100, height: 100, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "var(--bg)" }}>
-          <img src={event.image_url} alt={event.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <div style={{ width: 100, height: 100, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "var(--bg)", position: "relative" }}>
+          <Image src={event.image_url} alt={event.title} fill sizes="100px" style={{ objectFit: "cover" }} />
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -298,9 +325,24 @@ export default async function CityPage(props: { params: Promise<{ city: string }
               {eventCount > 0 && <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: 15 }}> · {eventCount} total</span>}
             </h2>
             {initialEvents.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {initialEvents.map((event) => (
-                  <EventCard key={event.id || `${event.title}-${event.starts_at}`} event={event} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {[...groupByDate(initialEvents).entries()].map(([dateKey, events]) => (
+                  <div key={dateKey}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10, paddingLeft: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                        {getDateGroupLabel(dateKey)}
+                      </span>
+                      <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+                      <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
+                        {events.length} event{events.length > 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {events.map((event) => (
+                        <EventCard key={event.id || `${event.title}-${event.starts_at}`} event={event} />
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
