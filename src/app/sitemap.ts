@@ -5,9 +5,24 @@ import { createSlug } from '@/lib/utils'
 import { CITIES } from '@/lib/constants'
 import { GENRE_META } from '@/lib/mock-data'
 
-// Force dynamic generation to ensure sitemap is always up-to-date with Supabase
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+function parseArtistNames(rawArtists: unknown): string[] {
+  const names = new Set<string>();
+  if (!rawArtists) return [];
+  const list = Array.isArray(rawArtists) ? rawArtists : [String(rawArtists)];
+  for (const entry of list) {
+    if (!entry) continue;
+    for (const part of String(entry).split(/[,;&]|\s+vs\.?\s+|\s+and\s+/i)) {
+      const clean = part.replace(/[{}""'\[\]]/g, "").trim();
+      if (clean && clean.toLowerCase() !== "tba") {
+        names.add(clean);
+      }
+    }
+  }
+  return Array.from(names);
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.eventurer.online'
@@ -37,20 +52,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   )
 
-  // Fetch all events for dynamic sitemap
   let eventUrls: any[] = []
+  let artistPairs = new Set<string>();
   try {
-    const seenUrls = new Set<string>();
+    const seenEventUrls = new Set<string>();
     const uniqueEvents: any[] = [];
     
     let hasMore = true;
     let offset = 0;
-    const limit = 1000; // Supabase default max_rows limit is 1000
+    const limit = 1000;
     
     while (hasMore) {
       const { data: events, error } = await supabase
         .from('music_events')
-        .select('title, city, updated_at, starts_at')
+        .select('title, city, artists, updated_at, starts_at')
         .order('starts_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -67,8 +82,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       for (const e of events) {
         const slug = createSlug(e.title, e.city);
         const url = `${baseUrl}/event/${slug}`;
-        if (!seenUrls.has(url)) {
-          seenUrls.add(url);
+        if (!seenEventUrls.has(url)) {
+          seenEventUrls.add(url);
           uniqueEvents.push({
             url,
             lastModified: new Date(e.updated_at || new Date()),
@@ -76,11 +91,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.6,
           });
         }
+
+        const eventCity = (e.city || "").toLowerCase().trim();
+        if (eventCity) {
+          for (const name of parseArtistNames(e.artists)) {
+            artistPairs.add(`${eventCity}::${name}`);
+          }
+        }
       }
 
       offset += limit;
 
-      // Safety limit: Google allows up to 50,000 URLs per sitemap
       if (offset >= 45000) {
         break;
       }
@@ -89,6 +110,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     eventUrls = uniqueEvents;
   } catch (err) {
     console.error("Sitemap error:", err)
+  }
+
+  const artistCityUrls = new Set<string>();
+  const artistUrls: any[] = [];
+  for (const pair of artistPairs) {
+    const [city, name] = pair.split("::");
+    artistCityUrls.add(city);
+    const slug = encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-"));
+    artistUrls.push({
+      url: `${baseUrl}/artists/${city}/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
+    });
   }
 
   return [
@@ -104,8 +139,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/artists`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    ...Array.from(artistCityUrls).map((city) => ({
+      url: `${baseUrl}/artists/${city}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    })),
     ...cityUrls,
     ...genreUrls,
-    ...eventUrls
+    ...eventUrls,
+    ...artistUrls,
   ]
 }
