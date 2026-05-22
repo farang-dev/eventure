@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Search, MapPin, ArrowRight, Sparkles, Building2, Map as MapIcon, Info } from "lucide-react";
+import Header from "@/components/Header";
 
 interface CityWithCount {
   id: string;
@@ -122,88 +123,7 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
         fontFamily: "'Inter', sans-serif",
       }}
     >
-      {/* Navigation Header */}
-      <header
-        style={{
-          borderBottom: "1px solid var(--border)",
-          backgroundColor: "var(--bg-secondary)",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            padding: "16px 20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 24,
-                fontWeight: 800,
-                background: "linear-gradient(135deg, var(--primary), var(--purple))",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                fontFamily: "'Poppins', sans-serif",
-              }}
-            >
-              Eventure ⚡️
-            </span>
-          </Link>
-
-          <nav style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Link
-              href="/"
-              style={{
-                color: "var(--text-secondary)",
-                textDecoration: "none",
-                fontSize: 13,
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-              }}
-              className="nav-link-hover"
-            >
-              <MapIcon size={16} /> Map
-            </Link>
-            <Link
-              href="/cities"
-              style={{
-                color: "var(--primary)",
-                textDecoration: "none",
-                fontSize: 13,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-              }}
-            >
-              <Building2 size={16} /> Cities
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header activePage="cities" />
 
       {/* Main Content Area */}
       <main style={{ flex: 1, maxWidth: 1200, width: "100%", margin: "0 auto", padding: "40px 20px" }}>

@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { CITIES } from "@/lib/constants";
 import { Search, ArrowLeft, Users, X, Building2, Map as MapIcon, ChevronRight } from "lucide-react";
+import Header from "@/components/Header";
 import type { MusicEvent } from "@/lib/types";
 import { EXPLORE_PLAY_DURATION, EXPLORE_FADE_DURATION, fetchVideoForArtist } from "@/lib/youtube";
 
@@ -529,28 +530,7 @@ export default function CityArtistsClient({ initialArtist }: Props) {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text-primary)", display: "flex", flexDirection: "column", fontFamily: "'Inter', sans-serif" }}>
-      {/* Header */}
-      <header style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--bg-secondary)", position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 24, fontWeight: 800, background: "linear-gradient(135deg, var(--primary), var(--purple))", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Poppins', sans-serif" }}>
-              Eventure ⚡️
-            </span>
-          </Link>
-
-          <nav style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <Link href="/" style={{ color: "var(--text-secondary)", textDecoration: "none", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-              <MapIcon size={16} /> Map
-            </Link>
-            <Link href="/cities" style={{ color: "var(--text-secondary)", textDecoration: "none", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-              <Building2 size={16} /> Cities
-            </Link>
-            <Link href="/artists" style={{ color: "var(--primary)", textDecoration: "none", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-              <Users size={16} /> Artists
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header activePage="artists" />
 
       {/* Main Content (Split view) */}
       <main style={{ flex: 1, maxWidth: 1200, width: "100%", margin: "0 auto", padding: "30px 20px", display: "flex", flexDirection: "column", gap: 20 }}>

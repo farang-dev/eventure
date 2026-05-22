@@ -6,6 +6,7 @@ import { GENRE_META } from "@/lib/mock-data";
 import type { MusicEvent } from "@/lib/types";
 import { createSlug } from "@/lib/utils";
 import { MapPin, Calendar, Music, ArrowRight, ExternalLink, Map as MapIcon } from "lucide-react";
+import Header from "@/components/Header";
 
 export const revalidate = 60;
 
@@ -204,21 +205,7 @@ export default async function CityGenrePage(props: { params: Promise<{ city: str
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventLd) }} />
       <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text-primary)", fontFamily: "'Inter', sans-serif" }}>
-        {/* Nav Header */}
-        <header style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--bg-secondary)", position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 24, fontWeight: 800, background: "linear-gradient(135deg, var(--primary), var(--purple))", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Poppins', sans-serif" }}>
-                Eventure
-              </span>
-            </Link>
-            <nav style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <Link href="/" style={{ color: "var(--text-secondary)", textDecoration: "none", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-                <MapIcon size={16} /> Map
-              </Link>
-            </nav>
-          </div>
-        </header>
+        <Header activePage="map" />
 
         <main style={{ maxWidth: 1200, width: "100%", margin: "0 auto", padding: "40px 20px" }}>
           {/* Breadcrumbs */}
