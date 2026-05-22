@@ -5,16 +5,12 @@ interface PageProps {
   params: Promise<{ city: string; artist: string }>;
 }
 
-// Capitalize helper to display beautiful artist names in search engine results
 function formatArtistSlug(slug: string): string {
   if (!slug) return "";
   const decoded = decodeURIComponent(slug);
-  
-  // Convert hyphens back to spaces/points appropriately for the UI search matching
   return decoded
     .split("-")
     .map(word => {
-      // Keep certain lowercase articles if any, otherwise capitalize first letter
       if (["and", "vs", "live"].includes(word.toLowerCase())) return word;
       return word.charAt(0).toUpperCase() + word.slice(1);
     })
@@ -26,18 +22,32 @@ export async function generateMetadata({ params }: PageProps) {
   const cityMeta = CITIES.find((c) => c.id === city.toLowerCase());
   const cityName = cityMeta ? cityMeta.name : city;
   const artistName = formatArtistSlug(artist);
+  const canonicalUrl = `https://www.eventurer.online/artists/${city.toLowerCase()}/${encodeURIComponent(artist.toLowerCase())}`;
 
   return {
     title: `${artistName} Live DJ Sets & Upcoming Gig Schedule in ${cityName} | Eventure`,
     description: `Watch live video sets from ${artistName} performing in ${cityName}. Discover their HÖR sets, Boiler Room performances and get direct tickets to their upcoming gigs on Eventure.`,
+    keywords: [`${artistName}`, `${artistName} ${cityName}`, `${cityName} DJ`, `${artistName} live set`, `${artistName} HÖR`, `${artistName} Boiler Room`, "electronic music", "club events"],
+    robots: {
+      index: true,
+      follow: true,
+    },
     alternates: {
-      canonical: `https://www.eventurer.online/artists/${city.toLowerCase()}/${encodeURIComponent(artist.toLowerCase())}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
       title: `${artistName} in ${cityName} | Eventure`,
       description: `Watch live video performances and find upcoming club gigs for ${artistName} in ${cityName}.`,
-      url: `https://www.eventurer.online/artists/${city.toLowerCase()}/${encodeURIComponent(artist.toLowerCase())}`,
-    }
+      url: canonicalUrl,
+      type: "profile",
+      siteName: "Eventure",
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${artistName} in ${cityName} | Eventure`,
+      description: `Watch live video performances and find upcoming club gigs for ${artistName} in ${cityName}.`,
+    },
   };
 }
 

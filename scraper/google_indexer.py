@@ -1,6 +1,8 @@
 import os
 import sys
 import json
+import re
+import urllib.parse
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
@@ -17,7 +19,6 @@ INDEXED_LOG_FILE = os.path.join(os.path.dirname(__file__), "indexed_urls.txt")
 
 def create_slug(title, city):
     """Helper to match Next.js event slug generation logic"""
-    import re
     if not title:
         return ""
     # Lowercase, replace non-alphanumeric with hyphen
@@ -25,6 +26,35 @@ def create_slug(title, city):
     clean = re.sub(r'[^a-z0-9\s-]', '', clean)
     clean = re.sub(r'[\s-]+', '-', clean)
     return clean.strip('-')
+
+def create_artist_slug(artist_name):
+    """Create URL slug for an artist page, matching Next.js CityArtistsClient logic."""
+    slug = artist_name.lower().replace(" ", "-")
+    return urllib.parse.quote(slug)
+
+def parse_artist_names(raw_artists):
+    """
+    Parse the artists field from a music_event row.
+    Handles array-of-strings or single string, splitting on separators.
+    Returns a list of clean artist names.
+    """
+    names = set()
+    if not raw_artists:
+        return []
+    if isinstance(raw_artists, list):
+        for entry in raw_artists:
+            if not entry:
+                continue
+            for part in re.split(r'[,;&]|\s+vs\.?\s+|\s+and\s+', str(entry)):
+                clean = re.sub(r'[{}""\'\[\]]', '', part).strip()
+                if clean and clean.lower() != "tba":
+                    names.add(clean)
+    elif isinstance(raw_artists, str):
+        for part in re.split(r'[,;&]|\s+vs\.?\s+|\s+and\s+', raw_artists):
+            clean = re.sub(r'[{}""\'\[\]]', '', part).strip()
+            if clean and clean.lower() != "tba":
+                names.add(clean)
+    return sorted(names)
 
 def load_indexed_urls():
     """Loads already indexed URLs from the local log file into a set"""
@@ -208,9 +238,106 @@ def index_latest_events():
                 break
                 
         print(f"\n🎉 Successfully indexed {success_count} new events in this run!")
+        print("\n[Indexing] Now processing artist pages...")
+        index_artist_pages(sessions_info, current_session_idx, current_session_requests, indexed_urls)
             
     except Exception as e:
         print(f"Error during bulk indexing: {e}")
+
+def index_artist_pages(sessions_info, start_session_idx=0, session_requests=0, already_indexed=None):
+    """
+    Fetches unique artist–city pairs from upcoming events and submits
+    individual artist page URLs to the Google Indexing API.
+    Shares quota rotation with the event indexer.
+    """
+    if not sessions_info:
+        sessions_info = get_all_google_auth_sessions()
+        if not sessions_info:
+            return
+
+    if already_indexed is None:
+        already_indexed = load_indexed_urls()
+
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}"
+    }
+
+    now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    url = f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now_iso}&order=starts_at.asc&limit=2000"
+
+    try:
+        res = requests.get(url, headers=headers)
+        if res.status_code != 200:
+            print(f"Failed to fetch events for artist extraction: {res.status_code}")
+            return
+
+        events = res.json()
+        
+        # Extract unique (city, artist_name) pairs
+        artist_pairs = set()
+        for event in events:
+            city = (event.get("city") or "").lower().strip()
+            if not city:
+                continue
+            raw = event.get("artists")
+            for name in parse_artist_names(raw):
+                artist_pairs.add((city, name))
+
+        # Build page URLs and filter already-indexed
+        to_index = []
+        for city, name in sorted(artist_pairs):
+            slug = create_artist_slug(name)
+            page_url = f"https://www.eventurer.online/artists/{city}/{slug}"
+            if page_url not in already_indexed:
+                to_index.append((page_url, city, name))
+
+        print(f"Found {len(artist_pairs)} unique artist–city pairs ({len(to_index)} need indexing).")
+
+        if not to_index:
+            print("🎉 All artist pages are already indexed! Nothing to do.")
+            return
+
+        success_count = 0
+        current_session_idx = start_session_idx
+        current_session_requests = session_requests
+
+        for idx, (page_url, city, name) in enumerate(to_index):
+            submitted = False
+            while current_session_idx < len(sessions_info):
+                filename, session = sessions_info[current_session_idx]
+                if current_session_requests >= 200:
+                    print(f"Reached 200 request limit for {filename}. Switching to next account...")
+                    current_session_idx += 1
+                    current_session_requests = 0
+                    continue
+
+                print(f"[Artist {idx+1}/{len(to_index)}] (Using {filename}) Indexing: {name} ({city})")
+                current_session_requests += 1
+                res_status = notify_google_url_detailed(session, page_url, "URL_UPDATED")
+
+                if res_status == "SUCCESS":
+                    log_indexed_url(page_url)
+                    success_count += 1
+                    submitted = True
+                    break
+                elif res_status == "QUOTA_EXCEEDED":
+                    print(f"⚠️ Account {filename} quota exceeded. Switching to next account...")
+                    current_session_idx += 1
+                    current_session_requests = 0
+                    continue
+                else:
+                    submitted = True
+                    break
+
+            if not submitted:
+                print("\nAll available service accounts exhausted for artist pages.")
+                break
+
+        print(f"\n🎉 Successfully indexed {success_count} new artist pages in this run!")
+
+    except Exception as e:
+        print(f"Error during artist page indexing: {e}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
