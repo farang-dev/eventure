@@ -31,6 +31,13 @@ jobs:
           echo "Waiting for $DELAY seconds before starting scraper..."
           sleep $DELAY
 
+      - name: Setup Google Service Accounts
+        run: |
+          echo '${{ secrets.SERVICE_ACCOUNT_1 }}' > service-account.json
+          echo '${{ secrets.SERVICE_ACCOUNT_2 }}' > service-account2.json
+          echo '${{ secrets.SERVICE_ACCOUNT_3 }}' > service-account3.json
+          echo '${{ secrets.SERVICE_ACCOUNT_4 }}' > service-account4.json
+
       - name: Run Scraper
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
