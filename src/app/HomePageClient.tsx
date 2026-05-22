@@ -11,7 +11,7 @@ import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
 import { CITIES } from "@/lib/constants";
-import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, Layers, ChevronDown, ChevronUp, Building2 } from "lucide-react";
+import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, Layers, ChevronDown, ChevronUp, Building2, Menu } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -41,6 +41,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [mapBounds, setMapBounds] = useState<[number, number, number, number] | null>(null);
   const [eventsData, setEventsData] = useState<MusicEvent[]>(initialEvents || []);
   const supabase = createClient();
@@ -583,6 +584,19 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
                   >
                     {mapStyle.includes("dark") ? <Sun size={18} /> : <Moon size={18} />}
                   </button>
+                  <button
+                    className="btn-icon mobile-only"
+                    id="home-menu-btn"
+                    onClick={() => setShowMobileMenu(true)}
+                    style={{
+                      width: 38, height: 38, borderRadius: 10,
+                      background: "var(--bg-elevated)",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <Menu size={20} />
+                  </button>
                 </div>
               </div>
 
@@ -1087,50 +1101,34 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
           </div>
         )}
 
-        {/* Mobile bottom nav */}
-        {!(view === "home" && selectedEvent) && (
-          <div className="mobile-only bottom-nav">
-            {[
-              { id: "home", icon: <MapIcon size={19} />, label: "Map", href: "/" },
-              { id: "search", icon: <Search size={19} />, label: "Search" },
-              { id: "cities", icon: <Building2 size={19} />, label: "Cities", href: "/cities" },
-              { id: "about", icon: <Info size={19} />, label: "About" },
-            ].map((item) => {
-              const isActive = view === item.id;
-              const className = `nav-item ${isActive ? "active" : ""}`;
-              
-              if (item.href) {
-                return (
-                  <Link
-                    key={item.id}
-                    id={`bottom-nav-${item.id}`}
-                    href={item.href}
-                    onClick={() => {
-                      if (item.id === "home") {
-                        handleReset();
-                      }
-                    }}
-                    className={className}
-                    style={{ textDecoration: "none" }}
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              }
-              
-              return (
-                <button
-                  key={item.id}
-                  id={`bottom-nav-${item.id}`}
-                  onClick={() => navigate(item.id as AppView)}
-                  className={className}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
+        {/* Mobile menu drawer */}
+        {showMobileMenu && (
+          <div className="overlay animate-fadein" onClick={() => setShowMobileMenu(false)} style={{ zIndex: 200, alignItems: "flex-start", justifyContent: "flex-end", paddingTop: 70 }}>
+            <div className="mobile-menu-drawer animate-slideleft" onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Menu</span>
+                <button onClick={() => setShowMobileMenu(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4 }}>
+                  <X size={18} />
                 </button>
-              );
-            })}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <Link
+                  href="/cities"
+                  onClick={() => setShowMobileMenu(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 10, color: "var(--text-primary)", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+                >
+                  <Building2 size={18} />
+                  Cities
+                </Link>
+                <button
+                  onClick={() => { setShowMobileMenu(false); setView("about"); }}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 10, color: "var(--text-primary)", fontSize: 14, fontWeight: 600, cursor: "pointer", textAlign: "left", background: "none", border: "none" }}
+                >
+                  <Info size={18} />
+                  About
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
