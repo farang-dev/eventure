@@ -37,6 +37,7 @@ jobs:
           echo '${{ secrets.SERVICE_ACCOUNT_2 }}' > service-account2.json
           echo '${{ secrets.SERVICE_ACCOUNT_3 }}' > service-account3.json
           echo '${{ secrets.SERVICE_ACCOUNT_4 }}' > service-account4.json
+          echo '${{ secrets.SERVICE_ACCOUNT_5 }}' > service-account5.json
 
       - name: Run Scraper
         env:
