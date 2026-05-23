@@ -37,8 +37,8 @@ export default function ArtistSearchBar() {
         const { data, error } = await supabase
           .from("music_events")
           .select("artists, city")
-          .ilike("artists", `%${q}%`)
-          .limit(200);
+          .not("artists", "is", null)
+          .limit(500);
 
         if (error) throw error;
 
