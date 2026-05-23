@@ -52,6 +52,11 @@ const CITY_GRADIENTS: Record<string, string> = {
   "los-angeles": "linear-gradient(135deg, #FB923C 0%, #A855F7 100%)",
   chicago: "linear-gradient(135deg, #3B82F6 0%, #EF4444 100%)",
   miami: "linear-gradient(135deg, #06B6D4 0%, #F43F5E 100%)",
+  manchester: "linear-gradient(135deg, #F97316 0%, #DC2626 100%)",
+  liverpool: "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)",
+  birmingham: "linear-gradient(135deg, #F59E0B 0%, #EAB308 100%)",
+  bristol: "linear-gradient(135deg, #14B8A6 0%, #10B981 100%)",
+  brighton: "linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)",
 };
 
 function getOptimizedImageUrl(url: string | null | undefined): string {
