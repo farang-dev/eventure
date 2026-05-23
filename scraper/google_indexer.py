@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import re
+import time
 import urllib.parse
 import requests
 from datetime import datetime
@@ -188,6 +189,8 @@ def index_latest_events():
     # We query up to 1000 items to search for unindexed events
     url = f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now_iso}&order=starts_at.asc&limit=1000"
     
+    RETRY_DELAYS_MIN = [30, 60, 120]  # retry delays in minutes
+
     try:
         res = requests.get(url, headers=headers)
         if res.status_code != 200:
@@ -198,71 +201,100 @@ def index_latest_events():
         print(f"Found {len(events)} active events in database.")
         
         # Filter down to events that haven't been indexed yet
-        unindexed_events = []
+        initial_unindexed = []
         for event in events:
             slug = create_slug(event.get("title"), event.get("city"))
             event_url = f"https://www.eventurer.online/event/{slug}"
             if event_url not in indexed_urls:
-                unindexed_events.append((event_url, event))
+                initial_unindexed.append((event_url, event))
 
-        print(f"Found {len(unindexed_events)} events that need indexing.")
+        print(f"Found {len(initial_unindexed)} events that need indexing.")
         
-        if not unindexed_events:
+        if not initial_unindexed:
             print("🎉 All upcoming events are already indexed! Nothing to do.")
             return
 
         success_count = 0
-        current_session_idx = 0
-        current_session_requests = 0
+        indexed_set = set()
 
-        for idx, (event_url, event) in enumerate(unindexed_events):
-            event_submitted = False
-            
-            while current_session_idx < len(sessions_info):
-                filename, session = sessions_info[current_session_idx]
-                
-                # Check if we hit the 200 limit on this script run
-                if current_session_requests >= 200:
-                    print(f"Reached 200 request limit for {filename}. Switching to next account...")
-                    current_session_idx += 1
-                    current_session_requests = 0
+        def run_indexing_pass(pending, session_infos):
+            nonlocal success_count, indexed_set
+            if not pending:
+                return []
+            current_session_idx = 0
+            current_session_requests = 0
+            remaining = []
+
+            for idx, (event_url, event) in enumerate(pending):
+                if event_url in indexed_set:
                     continue
+                event_submitted = False
                 
-                print(f"[{idx+1}/{len(unindexed_events)}] (Using {filename}) Indexing: {event.get('title')} ({event.get('city')})")
-                current_session_requests += 1
+                while current_session_idx < len(session_infos):
+                    filename, session = session_infos[current_session_idx]
+                    
+                    if current_session_requests >= 200:
+                        print(f"Reached 200 request limit for {filename}. Switching to next account...")
+                        current_session_idx += 1
+                        current_session_requests = 0
+                        continue
+                    
+                    print(f"[{idx+1}/{len(pending)}] (Using {filename}) Indexing: {event.get('title')} ({event.get('city')})")
+                    current_session_requests += 1
+                    
+                    res_status = notify_google_url_detailed(session, event_url, "URL_UPDATED")
+                    
+                    if res_status == "SUCCESS":
+                        log_indexed_url(event_url)
+                        indexed_set.add(event_url)
+                        success_count += 1
+                        event_submitted = True
+                        break
+                    elif res_status == "QUOTA_EXCEEDED":
+                        print(f"⚠️ Account {filename} returned Quota Exceeded (429). Switching to next account...")
+                        current_session_idx += 1
+                        current_session_requests = 0
+                        continue
+                    else:
+                        event_submitted = True
+                        break
                 
-                res_status = notify_google_url_detailed(session, event_url, "URL_UPDATED")
-                
-                if res_status == "SUCCESS":
-                    log_indexed_url(event_url)
-                    success_count += 1
-                    event_submitted = True
-                    break  # Success! Proceed to the next event
-                elif res_status == "QUOTA_EXCEEDED":
-                    print(f"⚠️ Account {filename} returned Quota Exceeded (429). Switching to next account...")
-                    current_session_idx += 1
-                    current_session_requests = 0
-                    continue  # Loop again with the new current_session_idx for the same event
-                else:
-                    # General failure (403, 500, etc.)
-                    event_submitted = True
-                    break  # Move to next event to avoid infinite loop on bad URL
+                if not event_submitted:
+                    remaining.append((event_url, event))
             
-            if not event_submitted:
-                print("\nAll available service accounts have been exhausted or failed.")
-                break
-                
-        print(f"\n🎉 Successfully indexed {success_count} new events in this run!")
+            return remaining
 
-        artist_result = index_artist_pages(sessions_info, current_session_idx, current_session_requests, indexed_urls)
+        remaining = run_indexing_pass(initial_unindexed, sessions_info)
+
+        # Retry loop for any URLs that were not indexed (e.g., quota exhausted mid-run)
+        for retry_num, delay_min in enumerate(RETRY_DELAYS_MIN):
+            if not remaining:
+                break
+            print(f"\n⏳ Retry {retry_num + 1}/{len(RETRY_DELAYS_MIN)}: {len(remaining)} URLs left. Waiting {delay_min} min...")
+            time.sleep(delay_min * 60)
+            # Re-initialize sessions to get fresh quota tracking
+            fresh_sessions = get_all_google_auth_sessions()
+            if not fresh_sessions:
+                print("No service accounts available for retry.")
+                break
+            print(f"Retrying with {len(fresh_sessions)} account(s)...")
+            remaining = run_indexing_pass(remaining, fresh_sessions)
+
+        print(f"\n🎉 Successfully indexed {success_count} new events in this run!")
+        if remaining:
+            print(f"⚠️ {len(remaining)} events could not be indexed after all retries (quota may be fully exhausted).")
+
+        artist_sessions = get_all_google_auth_sessions()
+        artist_result = index_artist_pages(artist_sessions if artist_sessions else sessions_info, 0, 0, indexed_urls)
 
         total_new = success_count + (artist_result or 0)
+        remaining_count = len(remaining) if remaining else 0
         summary = (
             f"📊 *Indexing Report*\n\n"
             f"Events indexed: {success_count}\n"
             f"Artists indexed: {artist_result or 0}\n"
             f"Total new URLs: {total_new}\n"
-            f"Accounts used: {current_session_idx + 1}/{len(sessions_info)}"
+            f"Remaining (quota): {remaining_count}"
         )
         send_whatsapp(summary)
 
