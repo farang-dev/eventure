@@ -23,6 +23,11 @@ CITY_TIMEZONES = {
     "tokyo": "Asia/Tokyo",
     "osaka": "Asia/Tokyo",
     "london": "Europe/London",
+    "manchester": "Europe/London",
+    "liverpool": "Europe/London",
+    "birmingham": "Europe/London",
+    "bristol": "Europe/London",
+    "brighton": "Europe/London",
     "vilnius": "Europe/Vilnius",
     "belgrade": "Europe/Belgrade",
     "tbilisi": "Asia/Tbilisi",
@@ -70,6 +75,11 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
     headers = RA_HEADERS.copy()
     referer_map = {
         "london": "uk",
+        "manchester": "uk",
+        "liverpool": "uk",
+        "birmingham": "uk",
+        "bristol": "uk",
+        "brighton": "uk",
         "tokyo": "jp",
         "osaka": "jp",
         "vilnius": "lt",
@@ -143,6 +153,16 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = -37.8136, 144.9631
                 elif city_name == "perth":
                     lat_base, lng_base = -31.9505, 115.8605
+                elif city_name == "manchester":
+                    lat_base, lng_base = 53.4808, -2.2426
+                elif city_name == "liverpool":
+                    lat_base, lng_base = 53.4084, -2.9916
+                elif city_name == "birmingham":
+                    lat_base, lng_base = 52.4862, -1.8904
+                elif city_name == "bristol":
+                    lat_base, lng_base = 51.4545, -2.5879
+                elif city_name == "brighton":
+                    lat_base, lng_base = 50.8225, -0.1372
                 elif city_name == "los-angeles":
                     lat_base, lng_base = 34.0522, -118.2437
                 elif city_name == "chicago":
@@ -403,6 +423,11 @@ if __name__ == "__main__":
         {"name": "tokyo", "id": 27},
         {"name": "osaka", "id": 66},
         {"name": "london", "id": 13},
+        {"name": "manchester", "id": 344},
+        {"name": "liverpool", "id": 343},
+        {"name": "birmingham", "id": 516},
+        {"name": "bristol", "id": 446},
+        {"name": "brighton", "id": 535},
         {"name": "vilnius", "id": 561},
         {"name": "belgrade", "id": 562},
         {"name": "tbilisi", "id": 188},

@@ -12,6 +12,11 @@ export const CITIES: CityInfo[] = [
   { id: "tokyo", name: "Tokyo", country: "Japan", lat: 35.6580, lng: 139.7016, areaId: 27 },
   { id: "osaka", name: "Osaka", country: "Japan", lat: 34.6937, lng: 135.5023, areaId: 66 },
   { id: "london", name: "London", country: "UK", lat: 51.5074, lng: -0.1278, areaId: 13 },
+  { id: "manchester", name: "Manchester", country: "UK", lat: 53.4808, lng: -2.2426, areaId: 344 },
+  { id: "liverpool", name: "Liverpool", country: "UK", lat: 53.4084, lng: -2.9916, areaId: 343 },
+  { id: "birmingham", name: "Birmingham", country: "UK", lat: 52.4862, lng: -1.8904, areaId: 516 },
+  { id: "bristol", name: "Bristol", country: "UK", lat: 51.4545, lng: -2.5879, areaId: 446 },
+  { id: "brighton", name: "Brighton", country: "UK", lat: 50.8225, lng: -0.1372, areaId: 535 },
   { id: "vilnius", name: "Vilnius", country: "Lithuania", lat: 54.6872, lng: 25.2797, areaId: 561 },
   { id: "belgrade", name: "Belgrade", country: "Serbia", lat: 44.8125, lng: 20.4612, areaId: 562 },
   { id: "tbilisi", name: "Tbilisi", country: "Georgia", lat: 41.7151, lng: 44.8271, areaId: 188 },
@@ -40,6 +45,26 @@ export const CITY_META: Record<string, { description: string; keywords: string[]
   london: {
     description: "London club events & underground parties on a live map. Techno, house, D&B in Shoreditch, Fabric, and more.",
     keywords: ["London club events", "London techno", "Shoreditch parties", "Fabric London", "UK rave map"],
+  },
+  manchester: {
+    description: "Manchester club events & underground parties on a live map. Techno, house, D&B in the northern UK club capital.",
+    keywords: ["Manchester club events", "Manchester techno", "Manchester nightlife", "Manchester parties", "UK rave map"],
+  },
+  liverpool: {
+    description: "Liverpool club nights & electronic music events. Discover techno, house & underground parties in the maritime city.",
+    keywords: ["Liverpool club events", "Liverpool techno", "Liverpool nightlife", "Liverpool parties", "UK rave map"],
+  },
+  birmingham: {
+    description: "Birmingham club events & underground parties on a live map. Techno, house, D&B in the UK's second city.",
+    keywords: ["Birmingham club events", "Birmingham techno", "Birmingham nightlife", "Birmingham parties", "UK rave map"],
+  },
+  bristol: {
+    description: "Bristol club events & underground parties on a live map. Techno, house, D&B in the UK's southwest music hub.",
+    keywords: ["Bristol club events", "Bristol techno", "Bristol nightlife", "Bristol parties", "UK rave map"],
+  },
+  brighton: {
+    description: "Brighton club events & electronic music map. Discover techno, house & underground parties on the south coast.",
+    keywords: ["Brighton club events", "Brighton techno", "Brighton nightlife", "Brighton parties", "UK rave map"],
   },
   vilnius: {
     description: "Vilnius club nights & electronic music events. Discover techno, house & underground parties in Lithuania.",
