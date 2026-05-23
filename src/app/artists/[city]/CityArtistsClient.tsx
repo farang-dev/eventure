@@ -632,7 +632,7 @@ export default function CityArtistsClient({ initialArtist }: Props) {
                 <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>Loading artists directory...</span>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, overflowY: "auto", maxHeight: 600, paddingBottom: 40 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, overflowY: isMobile ? "visible" : "auto", maxHeight: isMobile ? "none" : 600, paddingBottom: 40 }}>
                 {filteredArtists.map((artist) => {
                   const gigCount = cityEvents.filter(e =>
                     (e.artists || []).some(a => {
