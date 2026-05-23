@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { CITIES, CITY_META } from "@/lib/constants";
-import { GENRE_META } from "@/lib/mock-data";
+import { GENRE_META, CITY_TZS } from "@/lib/mock-data";
 import type { MusicEvent } from "@/lib/types";
 import { createSlug } from "@/lib/utils";
 import { MapPin, Calendar, Music, ArrowRight, ExternalLink, Map as MapIcon } from "lucide-react";
@@ -71,47 +71,60 @@ function getOptimizedImageUrl(url: string | null | undefined): string {
   }
 }
 
-function formatDate(dateStr: string) {
+function getLocalDateStr(isoStr: string, city?: string): string {
+  try {
+    const d = new Date(isoStr);
+    const tz = city ? CITY_TZS[city] : "UTC";
+    return d.toLocaleDateString("en-CA", { timeZone: tz });
+  } catch { return isoStr.split("T")[0]; }
+}
+
+function formatDate(dateStr: string, city?: string) {
   try {
     const d = new Date(dateStr);
-    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const tz = city ? CITY_TZS[city] : undefined;
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: tz });
   } catch { return dateStr; }
 }
 
-function formatTime(dateStr: string) {
+function formatTime(dateStr: string, city?: string) {
   try {
     const d = new Date(dateStr);
-    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const tz = city ? CITY_TZS[city] : undefined;
+    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz });
   } catch { return ""; }
 }
 
-function getDateGroupLabel(dateStr: string): string {
+function getDateGroupLabel(dateStr: string, city?: string): string {
   try {
-    const d = new Date(dateStr + "T00:00:00");
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+    const tz = city ? CITY_TZS[city] : "UTC";
+    const todayLocal = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(now);
+    const [ty, tm, td] = todayLocal.split("-").map(Number);
+    const [dy, dm, dd] = dateStr.split("-").map(Number);
+    const todayDate = new Date(ty, tm - 1, td);
+    const targetDate = new Date(dy, dm - 1, dd);
+    const diff = Math.round((targetDate.getTime() - todayDate.getTime()) / 86400000);
     if (diff === 0) return "Today";
     if (diff === 1) return "Tomorrow";
-    if (diff > 1 && diff <= 6) return d.toLocaleDateString("en-US", { weekday: "long" });
-    return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+    if (diff > 1 && diff <= 6) return targetDate.toLocaleDateString("en-US", { weekday: "long" });
+    return targetDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   } catch {
     return dateStr;
   }
 }
 
-function groupByDate(events: MusicEvent[]): Map<string, MusicEvent[]> {
+function groupByDate(events: MusicEvent[], city?: string): Map<string, MusicEvent[]> {
   const groups = new Map<string, MusicEvent[]>();
   for (const e of events) {
-    const key = e.starts_at ? e.starts_at.split("T")[0] : "unknown";
+    const key = e.starts_at ? getLocalDateStr(e.starts_at, city) : "unknown";
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(e);
   }
   return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
 }
 
-function EventCard({ event }: { event: MusicEvent }) {
+function EventCard({ event, city }: { event: MusicEvent; city?: string }) {
   const meta = GENRE_META[event.genre] ?? GENRE_META.other;
   const slug = createSlug(event.title, event.city);
   const genreColor = meta.color;
@@ -155,7 +168,7 @@ function EventCard({ event }: { event: MusicEvent }) {
         </h3>
         <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--text-secondary)", fontSize: 12, marginBottom: 6 }}>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <Calendar size={11} /> {formatDate(event.starts_at)} · {formatTime(event.starts_at)}
+            <Calendar size={11} /> {formatDate(event.starts_at, city)} · {formatTime(event.starts_at, city)}
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <MapPin size={11} /> {event.venue_name}
@@ -329,11 +342,11 @@ export default async function CityPage(props: { params: Promise<{ city: string }
             </h2>
             {initialEvents.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {[...groupByDate(initialEvents).entries()].map(([dateKey, events]) => (
+                {[...groupByDate(initialEvents, city).entries()].map(([dateKey, events]) => (
                   <div key={dateKey}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10, paddingLeft: 4 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                        {getDateGroupLabel(dateKey)}
+                        {getDateGroupLabel(dateKey, city)}
                       </span>
                       <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
                       <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
@@ -342,7 +355,7 @@ export default async function CityPage(props: { params: Promise<{ city: string }
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                       {events.map((event) => (
-                        <EventCard key={event.id || `${event.title}-${event.starts_at}`} event={event} />
+                        <EventCard key={event.id || `${event.title}-${event.starts_at}`} event={event} city={city} />
                       ))}
                     </div>
                   </div>
