@@ -57,6 +57,11 @@ const CITY_GRADIENTS: Record<string, string> = {
   birmingham: "linear-gradient(135deg, #F59E0B 0%, #EAB308 100%)",
   bristol: "linear-gradient(135deg, #14B8A6 0%, #10B981 100%)",
   brighton: "linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)",
+  glasgow: "linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)",
+  edinburgh: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+  newcastle: "linear-gradient(135deg, #06B6D4 0%, #0D9488 100%)",
+  leeds: "linear-gradient(135deg, #84CC16 0%, #22C55E 100%)",
+  sheffield: "linear-gradient(135deg, #EF4444 0%, #F97316 100%)",
 };
 
 function getOptimizedImageUrl(url: string | null | undefined): string {

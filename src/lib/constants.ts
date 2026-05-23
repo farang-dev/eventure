@@ -17,6 +17,11 @@ export const CITIES: CityInfo[] = [
   { id: "birmingham", name: "Birmingham", country: "UK", lat: 52.4862, lng: -1.8904, areaId: 516 },
   { id: "bristol", name: "Bristol", country: "UK", lat: 51.4545, lng: -2.5879, areaId: 446 },
   { id: "brighton", name: "Brighton", country: "UK", lat: 50.8225, lng: -0.1372, areaId: 535 },
+  { id: "glasgow", name: "Glasgow", country: "UK", lat: 55.8642, lng: -4.2518, areaId: 340 },
+  { id: "edinburgh", name: "Edinburgh", country: "UK", lat: 55.9533, lng: -3.1883, areaId: 341 },
+  { id: "newcastle", name: "Newcastle", country: "UK", lat: 54.9783, lng: -1.6178, areaId: 345 },
+  { id: "leeds", name: "Leeds", country: "UK", lat: 53.8008, lng: -1.5491, areaId: 346 },
+  { id: "sheffield", name: "Sheffield", country: "UK", lat: 53.3811, lng: -1.4701, areaId: 520 },
   { id: "vilnius", name: "Vilnius", country: "Lithuania", lat: 54.6872, lng: 25.2797, areaId: 561 },
   { id: "belgrade", name: "Belgrade", country: "Serbia", lat: 44.8125, lng: 20.4612, areaId: 562 },
   { id: "tbilisi", name: "Tbilisi", country: "Georgia", lat: 41.7151, lng: 44.8271, areaId: 188 },
@@ -65,6 +70,26 @@ export const CITY_META: Record<string, { description: string; keywords: string[]
   brighton: {
     description: "Brighton club events & electronic music map. Discover techno, house & underground parties on the south coast.",
     keywords: ["Brighton club events", "Brighton techno", "Brighton nightlife", "Brighton parties", "UK rave map"],
+  },
+  glasgow: {
+    description: "Glasgow club events & underground parties on a live map. Discover techno, house & electronic music in Scotland's biggest city.",
+    keywords: ["Glasgow club events", "Glasgow techno", "Glasgow nightlife", "Scotland rave map", "UK rave map"],
+  },
+  edinburgh: {
+    description: "Edinburgh club nights & electronic music events. Find techno, house & underground parties in Scotland's historic capital.",
+    keywords: ["Edinburgh club events", "Edinburgh techno", "Edinburgh nightlife", "Scotland rave map", "UK rave map"],
+  },
+  newcastle: {
+    description: "Newcastle club events & electronic music map. Discover techno, house & underground parties in the north-east UK.",
+    keywords: ["Newcastle club events", "Newcastle techno", "Newcastle nightlife", "North East rave", "UK rave map"],
+  },
+  leeds: {
+    description: "Leeds club events & underground parties on a live map. Techno, house & electronic music in the Yorkshire club capital.",
+    keywords: ["Leeds club events", "Leeds techno", "Leeds nightlife", "Yorkshire rave", "UK rave map"],
+  },
+  sheffield: {
+    description: "Sheffield club events & electronic music map. Discover techno, house & underground parties in South Yorkshire's steel city.",
+    keywords: ["Sheffield club events", "Sheffield techno", "Sheffield nightlife", "Yorkshire rave", "UK rave map"],
   },
   vilnius: {
     description: "Vilnius club nights & electronic music events. Discover techno, house & underground parties in Lithuania.",

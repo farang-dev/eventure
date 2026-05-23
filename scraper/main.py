@@ -28,6 +28,11 @@ CITY_TIMEZONES = {
     "birmingham": "Europe/London",
     "bristol": "Europe/London",
     "brighton": "Europe/London",
+    "glasgow": "Europe/London",
+    "edinburgh": "Europe/London",
+    "newcastle": "Europe/London",
+    "leeds": "Europe/London",
+    "sheffield": "Europe/London",
     "vilnius": "Europe/Vilnius",
     "belgrade": "Europe/Belgrade",
     "tbilisi": "Asia/Tbilisi",
@@ -80,6 +85,11 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
         "birmingham": "uk",
         "bristol": "uk",
         "brighton": "uk",
+        "glasgow": "uk",
+        "edinburgh": "uk",
+        "newcastle": "uk",
+        "leeds": "uk",
+        "sheffield": "uk",
         "tokyo": "jp",
         "osaka": "jp",
         "vilnius": "lt",
@@ -163,6 +173,16 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = 51.4545, -2.5879
                 elif city_name == "brighton":
                     lat_base, lng_base = 50.8225, -0.1372
+                elif city_name == "glasgow":
+                    lat_base, lng_base = 55.8642, -4.2518
+                elif city_name == "edinburgh":
+                    lat_base, lng_base = 55.9533, -3.1883
+                elif city_name == "newcastle":
+                    lat_base, lng_base = 54.9783, -1.6178
+                elif city_name == "leeds":
+                    lat_base, lng_base = 53.8008, -1.5491
+                elif city_name == "sheffield":
+                    lat_base, lng_base = 53.3811, -1.4701
                 elif city_name == "los-angeles":
                     lat_base, lng_base = 34.0522, -118.2437
                 elif city_name == "chicago":
@@ -428,6 +448,11 @@ if __name__ == "__main__":
         {"name": "birmingham", "id": 516},
         {"name": "bristol", "id": 446},
         {"name": "brighton", "id": 535},
+        {"name": "glasgow", "id": 340},
+        {"name": "edinburgh", "id": 341},
+        {"name": "newcastle", "id": 345},
+        {"name": "leeds", "id": 346},
+        {"name": "sheffield", "id": 520},
         {"name": "vilnius", "id": 561},
         {"name": "belgrade", "id": 562},
         {"name": "tbilisi", "id": 188},

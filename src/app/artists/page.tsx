@@ -113,6 +113,16 @@ export default async function ArtistsHubPage() {
         return "linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)";
       case "brighton":
         return "linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)";
+      case "glasgow":
+        return "linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)";
+      case "edinburgh":
+        return "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%)";
+      case "newcastle":
+        return "linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(13, 148, 136, 0.15) 100%)";
+      case "leeds":
+        return "linear-gradient(135deg, rgba(132, 204, 22, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)";
+      case "sheffield":
+        return "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%)";
       default:
         return "linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)";
     }
@@ -131,6 +141,11 @@ export default async function ArtistsHubPage() {
       case "birmingham": return "rgba(245, 158, 11, 0.15)";
       case "bristol": return "rgba(20, 184, 166, 0.15)";
       case "brighton": return "rgba(6, 182, 212, 0.15)";
+      case "glasgow": return "rgba(139, 92, 246, 0.15)";
+      case "edinburgh": return "rgba(245, 158, 11, 0.15)";
+      case "newcastle": return "rgba(6, 182, 212, 0.15)";
+      case "leeds": return "rgba(132, 204, 22, 0.15)";
+      case "sheffield": return "rgba(239, 68, 68, 0.15)";
       default: return "rgba(255, 255, 255, 0.1)";
     }
   };
