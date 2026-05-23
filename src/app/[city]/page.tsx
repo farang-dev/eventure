@@ -44,7 +44,7 @@ const CITY_GRADIENTS: Record<string, string> = {
   paris: "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)",
   osaka: "linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)",
   vilnius: "linear-gradient(135deg, #0EA5E9 0%, #10B981 100%)",
-  belgrade: "linear-gradient(135deg, #64748B 0%, #475569 100%)",
+  belgrade: "linear-gradient(135deg, #F59E0B 0%, #DC2626 100%)",
   tbilisi: "linear-gradient(135deg, #DC2626 0%, #0EA5E9 100%)",
   sydney: "linear-gradient(135deg, #06B6D4 0%, #6366F1 100%)",
   melbourne: "linear-gradient(135deg, #F43F5E 0%, #A855F7 100%)",

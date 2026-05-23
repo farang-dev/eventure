@@ -51,7 +51,7 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
       case "vilnius":
         return "linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)";
       case "belgrade":
-        return "linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.15) 100%)";
+        return "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)";
       case "tbilisi":
         return "linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%)";
       case "sydney":
@@ -118,7 +118,7 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
       case "vilnius":
         return "rgba(14, 165, 233, 0.15)";
       case "belgrade":
-        return "rgba(100, 116, 139, 0.15)";
+        return "rgba(245, 158, 11, 0.15)";
       case "tbilisi":
         return "rgba(220, 38, 38, 0.15)";
       case "los-angeles":

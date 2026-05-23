@@ -88,7 +88,7 @@ export default async function ArtistsHubPage() {
       case "vilnius":
         return "linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)";
       case "belgrade":
-        return "linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.15) 100%)";
+        return "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)";
       case "tbilisi":
         return "linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%)";
       case "sydney":
@@ -135,6 +135,7 @@ export default async function ArtistsHubPage() {
       case "london": return "rgba(59, 130, 246, 0.15)";
       case "barcelona": return "rgba(245, 158, 11, 0.15)";
       case "vilnius": return "rgba(14, 165, 233, 0.15)";
+      case "belgrade": return "rgba(245, 158, 11, 0.15)";
       case "tbilisi": return "rgba(220, 38, 38, 0.15)";
       case "manchester": return "rgba(249, 115, 22, 0.15)";
       case "liverpool": return "rgba(168, 85, 247, 0.15)";
