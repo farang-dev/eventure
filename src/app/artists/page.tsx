@@ -3,6 +3,7 @@ import { CITIES, CITY_META } from "@/lib/constants";
 import Link from "next/link";
 import { Search, MapPin, ArrowRight, Users, Music, Building2, Map as MapIcon } from "lucide-react";
 import Header from "@/components/Header";
+import ArtistSearchBar from "@/components/ArtistSearchBar";
 
 export const revalidate = 60;
 
@@ -156,6 +157,11 @@ export default async function ArtistsHubPage() {
             Explore local residents, international headliners, and up-and-coming DJs playing across underground club venues. Select any city to view profiles, play sets, and check their gig schedules.
           </p>
         </section>
+
+        {/* Search */}
+        <div style={{ marginBottom: 40 }}>
+          <ArtistSearchBar />
+        </div>
 
         {/* Grid */}
         <section>
