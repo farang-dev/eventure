@@ -160,7 +160,7 @@ export default async function EventPage(props: { params: Promise<{ slug: string 
     description: event.description || `${event.title} at ${event.venue_name} in ${event.city}. Featuring ${(event.artists || []).length > 0 ? event.artists.slice(0, 5).join(", ") : "various artists"}.`,
     startDate: event.starts_at,
     endDate: event.ends_at,
-    image: event.image_url || "https://www.eventurer.online/favicon.ico",
+    image: event.image_url || "https://www.eventurer.online/favicon.svg",
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {

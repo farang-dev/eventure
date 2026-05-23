@@ -16,11 +16,13 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Eventure",
     locale: "en_US",
+    images: [{ url: "https://www.eventurer.online/apple-touch-icon.svg", width: 180, height: 180 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Eventure — Find Techno, House & Club Events Worldwide",
     description: "Discover the best club & music events happening right now globally.",
+    images: ["https://www.eventurer.online/apple-touch-icon.svg"],
   },
   appleWebApp: {
     capable: true,
@@ -60,7 +62,7 @@ export default function RootLayout({
                   "@type": "Organization",
                   name: "Eventure",
                   url: "https://www.eventurer.online",
-                  logo: "https://www.eventurer.online/favicon.ico",
+                  logo: "https://www.eventurer.online/favicon.svg",
                   description: "Live interactive map of club events worldwide.",
                 },
                 {
