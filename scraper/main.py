@@ -69,7 +69,8 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
     start_date = datetime.now()
     end_date = start_date + timedelta(days=days_ahead)
     
-    with open("scraper/graphql_query_template.json", "r") as file:
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(_dir, "graphql_query_template.json"), "r") as file:
         payload = json.load(file)
         
     payload["variables"]["filters"]["areas"]["eq"] = area_id
