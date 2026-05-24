@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { CITIES } from "@/lib/constants";
 import { GENRE_META, CITY_TZS } from "@/lib/mock-data";
 import type { MusicEvent } from "@/lib/types";
-import { createSlug } from "@/lib/utils";
+import { createEventUrl, createSlug } from "@/lib/utils";
 import { MapPin, Calendar, Music, ArrowRight, ExternalLink, Map as MapIcon } from "lucide-react";
 import Header from "@/components/Header";
 
@@ -112,13 +112,13 @@ function groupByDate(events: MusicEvent[], city?: string): Map<string, MusicEven
 
 function EventCard({ event, city }: { event: MusicEvent; city?: string }) {
   const meta = GENRE_META[event.genre] ?? GENRE_META.other;
-  const slug = createSlug(event.title, event.city);
+  const eventUrl = createEventUrl(event.title, event.city);
   const genreColor = meta.color;
   const genreBg = meta.bg;
 
   return (
     <Link
-      href={`/event/${slug}`}
+      href={eventUrl}
       className="card-hover-effect"
       style={{
         textDecoration: "none",

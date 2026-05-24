@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 import { createClient } from '@supabase/supabase-js'
-import { createSlug } from '@/lib/utils'
+import { createEventUrl, createSlug } from '@/lib/utils'
 import { CITIES } from '@/lib/constants'
 import { GENRE_META } from '@/lib/mock-data'
 
@@ -63,8 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
 
       for (const e of events) {
-        const slug = createSlug(e.title, e.city)
-        const url = `${baseUrl}/event/${slug}`
+        const url = `${baseUrl}${createEventUrl(e.title, e.city)}`
         if (!seenEventUrls.has(url)) {
           seenEventUrls.add(url)
           uniqueEvents.push({

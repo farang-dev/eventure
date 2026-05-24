@@ -1,6 +1,6 @@
 "use client";
 import { useState, useCallback } from "react";
-import { createSlug } from "@/lib/utils";
+import { createEventUrl } from "@/lib/utils";
 import type { MusicEvent } from "@/lib/types";
 import { GENRE_META, formatEventTime, getDaysUntil, CITY_TZS } from "@/lib/mock-data";
 import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check } from "lucide-react";
@@ -24,10 +24,10 @@ export default function MusicEventDetail({ event, onBack, onArtistClick }: Props
   const [copied, setCopied] = useState(false);
   const [imgFit, setImgFit] = useState<"contain" | "cover">("contain");
 
-  const slug = createSlug(event?.title, event?.city || "event");
+  const eventUrl = createEventUrl(event?.title, event?.city || "event");
   const shareUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/event/${slug}`
-    : `/event/${slug}`;
+    ? `${window.location.origin}${eventUrl}`
+    : eventUrl;
 
   const handleShare = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {

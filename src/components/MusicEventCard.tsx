@@ -3,7 +3,7 @@ import type { MusicEvent } from "@/lib/types";
 import { GENRE_META, formatEventTime, getDaysUntil } from "@/lib/mock-data";
 import { MapPin } from "lucide-react";
 import GenreIcon from "@/components/GenreIcon";
-import { createSlug } from "@/lib/utils";
+import { createEventUrl } from "@/lib/utils";
 
 interface Props {
   event: MusicEvent;
@@ -17,7 +17,7 @@ export default function MusicEventCard({ event, onClick, compact }: Props) {
   const isLive = event.status === "happening_now";
   const isToday = event.status === "today";
   const daysUntil = getDaysUntil(event.starts_at);
-  const slug = createSlug(event.title, event.city);
+  const eventUrl = createEventUrl(event.title, event.city);
 
   const urgencyColor = isLive
     ? "var(--primary)"
@@ -35,7 +35,7 @@ export default function MusicEventCard({ event, onClick, compact }: Props) {
   if (compact) {
     return (
       <a
-        href={`/event/${slug}`}
+        href={eventUrl}
         onClick={handleClick}
         id={`event-card-compact-${event.id}`}
         className="card-hover-effect"
@@ -131,7 +131,7 @@ export default function MusicEventCard({ event, onClick, compact }: Props) {
 
   return (
     <a
-      href={`/event/${slug}`}
+      href={eventUrl}
       onClick={handleClick}
       id={`event-card-${event.id}`}
       className="card-hover-effect"

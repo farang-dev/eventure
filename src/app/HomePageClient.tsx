@@ -15,6 +15,7 @@ import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, La
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createEventUrl } from "@/lib/utils";
 
 interface ViewState {
   longitude: number;
@@ -202,15 +203,8 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
     if (!isMounted) return;
     
     if (selectedEvent) {
-      const createSlug = (title: string, city: string) => {
-        return `${city || "event"}-${title}`
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/[\s_]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-      };
-      const slug = createSlug(selectedEvent.title, selectedEvent.city || "event");
-      window.history.pushState(null, "", `/event/${slug}`);
+      const url = createEventUrl(selectedEvent.title, selectedEvent.city || "event");
+      window.history.pushState(null, "", url);
     } else {
       const params = new URLSearchParams(window.location.search);
       const url = params.toString() ? `/?${params.toString()}` : "/";

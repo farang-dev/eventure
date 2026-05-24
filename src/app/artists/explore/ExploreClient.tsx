@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase";
 import { CITIES } from "@/lib/constants";
 import { ArrowLeft, Calendar, ChevronRight } from "lucide-react";
 import type { MusicEvent } from "@/lib/types";
+import { createEventUrl } from "@/lib/utils";
 import { EXPLORE_PLAY_DURATION, EXPLORE_FADE_DURATION, fetchVideoForArtist } from "@/lib/youtube";
 
 interface Props {
@@ -349,7 +350,7 @@ export default function ExploreClient({ initialCity }: Props) {
             {!isSkipping && currentDJEvents.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {currentDJEvents.map(event => (
-                  <div key={event.id} onClick={() => router.push(`/event/${(event as any).slug || event.id}`)}
+                  <div key={event.id} onClick={() => router.push(createEventUrl(event.title, event.city))}
                     style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "border-color 0.15s" }}
                     onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--primary)")}
                     onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}>
