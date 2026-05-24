@@ -126,15 +126,14 @@ function getDateGroupLabel(dateStr: string, city?: string): string {
     const now = new Date();
     const tz = city ? CITY_TZS[city] : "UTC";
     const todayLocal = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(now);
-    const [ty, tm, td] = todayLocal.split("-").map(Number);
-    const [dy, dm, dd] = dateStr.split("-").map(Number);
-    const todayDate = new Date(ty, tm - 1, td);
-    const targetDate = new Date(dy, dm - 1, dd);
-    const diff = Math.round((targetDate.getTime() - todayDate.getTime()) / 86400000);
-    if (diff === 0) return "Today";
+    if (dateStr === todayLocal) return "Today";
+    const todayMs = new Date(todayLocal + "T00:00:00").getTime();
+    const targetMs = new Date(dateStr + "T00:00:00").getTime();
+    const diff = Math.round((targetMs - todayMs) / 86400000);
     if (diff === 1) return "Tomorrow";
-    if (diff > 1 && diff <= 6) return targetDate.toLocaleDateString("en-US", { weekday: "long" });
-    return targetDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+    if (diff === -1) return "Yesterday";
+    if (diff > 1 && diff <= 6) return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   } catch {
     return dateStr;
   }
