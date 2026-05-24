@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 import { createClient } from '@supabase/supabase-js'
-import { createEventUrl, createSlug } from '@/lib/utils'
+import { createEventUrl } from '@/lib/utils'
 import { CITIES } from '@/lib/constants'
 import { GENRE_META } from '@/lib/mock-data'
 
@@ -25,7 +25,7 @@ function parseArtistNames(rawArtists: unknown): string[] {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.eventurer.online'
-  const cities = CITIES.map((c) => c.id)
+  const cityIds = CITIES.map((c) => c.id)
   const genreKeys = Object.keys(GENRE_META)
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
@@ -92,11 +92,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Sitemap error:', err)
   }
 
-  const artistCityUrls = new Set<string>()
   const artistUrls: any[] = []
   for (const pair of artistPairs) {
     const [city, name] = pair.split('::')
-    artistCityUrls.add(city)
     const slug = encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'))
     artistUrls.push({
       url: `${baseUrl}/artists/${city}/${slug}`,
@@ -106,45 +104,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   }
 
+  // Static pages: home + directories
+  const staticUrls: MetadataRoute.Sitemap = [
+    { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
+    { url: `${baseUrl}/cities`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/artists`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+  ]
+
+  // City-level pages (highest priority after home — these must always be indexed)
+  const cityPageUrls: MetadataRoute.Sitemap = cityIds.map((city) => ({
+    url: `${baseUrl}/${city}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 1,
+  }))
+
+  // City artists directory pages — always generated for every city
+  const artistCityUrls: MetadataRoute.Sitemap = cityIds.map((city) => ({
+    url: `${baseUrl}/artists/${city}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.9,
+  }))
+
+  // City + genre filter pages
+  const genrePageUrls: MetadataRoute.Sitemap = cityIds.flatMap((city) =>
+    genreKeys.map((genre) => ({
+      url: `${baseUrl}/${city}/${genre}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }))
+  )
+
   return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/cities`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/artists`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    ...Array.from(artistCityUrls).map((city) => ({
-      url: `${baseUrl}/artists/${city}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.6,
-    })),
-    ...cities.map((city) => ({
-      url: `${baseUrl}/${city}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 0.8,
-    })),
-    ...cities.flatMap((city) =>
-      genreKeys.map((genre) => ({
-        url: `${baseUrl}/${city}/${genre}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.7,
-      }))
-    ),
+    ...staticUrls,
+    ...cityPageUrls,
+    ...artistCityUrls,
+    ...genrePageUrls,
     ...eventUrls,
     ...artistUrls,
   ]
