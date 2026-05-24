@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Eventure",
   },
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/apple-touch-icon.svg",
+  },
 };
 
 export const viewport = {
@@ -99,6 +103,9 @@ export default function RootLayout({
         </Script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+        <link rel="shortcut icon" href="/favicon.svg" />
         <link
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap"
           rel="stylesheet"
