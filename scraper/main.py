@@ -412,33 +412,71 @@ def cleanup_expired_events():
     except Exception as e:
         print(f"❌ Error during cleanup: {e}")
 
-def clear_city_events(city_name):
-    if not SUPABASE_URL or not SUPABASE_KEY: return
-    
-    print(f"\n[Refresh] Clearing all events for {city_name.upper()} to ensure accurate data...")
-    
+def smart_sync_city_events(city_name, new_events):
+    """
+    Smart incremental sync:
+    1. Delete only past/expired events for this city.
+    2. Delete events that have been cancelled on RA (in DB but not in new scrape).
+    3. Upsert all newly scraped events (insert new + update changed).
+    """
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return
+
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
-    
+
+    # Cutoff: anything that ended more than 3 hours ago is considered past
+    cutoff = (datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    # ── Step 1: Remove past events for this city ──────────────────────────────
     try:
-        # Delete all events for this city
-        res = requests.delete(f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}", headers=headers)
+        res = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}&ends_at=lt.{cutoff}",
+            headers=headers,
+        )
         if res.status_code in [200, 204]:
-            print(f"✅ Events for {city_name.upper()} cleared.")
+            print(f"🗑️  Cleared past events for {city_name.upper()}.")
         else:
-            print(f"⚠️ Refresh returned status {res.status_code}")
+            print(f"⚠️ Past-event cleanup returned {res.status_code} for {city_name.upper()}")
     except Exception as e:
-        print(f"❌ Error during refresh: {e}")
+        print(f"❌ Error clearing past events for {city_name}: {e}")
+
+    # ── Step 2: Remove cancelled events (in DB but absent from new scrape) ────
+    new_source_ids = {e["source_id"] for e in new_events if e.get("source_id")}
+    if new_source_ids:
+        try:
+            res = requests.get(
+                f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}&ends_at=gte.{cutoff}&select=source_id",
+                headers=headers,
+            )
+            if res.status_code == 200:
+                existing_ids = {row["source_id"] for row in res.json() if row.get("source_id")}
+                cancelled = existing_ids - new_source_ids
+                if cancelled:
+                    print(f"[Sync] {len(cancelled)} cancelled/removed events detected for {city_name.upper()}, deleting...")
+                    for sid in cancelled:
+                        try:
+                            requests.delete(
+                                f"{SUPABASE_URL}/rest/v1/music_events?source_id=eq.{sid}",
+                                headers=headers,
+                            )
+                        except Exception as e:
+                            print(f"  ⚠️ Could not delete cancelled event {sid}: {e}")
+                else:
+                    print(f"[Sync] No cancelled events for {city_name.upper()}.")
+        except Exception as e:
+            print(f"❌ Error checking cancelled events for {city_name}: {e}")
+
+    # ── Step 3: Upsert new + updated events ───────────────────────────────────
+    if new_events:
+        insert_into_supabase(new_events)
 
 if __name__ == "__main__":
     print("--- Eventure Scraping Pipeline (2 Weeks) ---")
-    
-    # Cleanup first to save space
-    cleanup_expired_events()
-    
+
     cities = [
         {"name": "tokyo", "id": 27},
         {"name": "osaka", "id": 66},
@@ -470,14 +508,11 @@ if __name__ == "__main__":
     ]
 
     for city in cities:
-        # Clear all events to ensure no duplicates or inaccurate locations remain
-        clear_city_events(city["name"])
-        
         events = fetch_ra_graphql(area_id=city["id"], city_name=city["name"], days_ahead=14)
-        if events:
-            insert_into_supabase(events)
+        # Smart sync: expire past → remove cancelled → upsert new/updated
+        smart_sync_city_events(city["name"], events or [])
 
-    # Run cleanup one last time to remove any events whose capped ends_at are in the past
+    # Final pass: remove any events (across all cities) whose ends_at slipped past
     cleanup_expired_events()
 
     # Trigger Google Search Indexing API
