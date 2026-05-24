@@ -42,11 +42,13 @@ export async function generateMetadata({ params }: PageProps) {
       type: "profile",
       siteName: "Eventure",
       locale: "en_US",
+      images: [{ url: "https://www.eventurer.online/apple-touch-icon.svg", width: 180, height: 180 }],
     },
     twitter: {
       card: "summary_large_image",
       title: `${artistName} in ${cityName} | Eventure`,
       description: `Watch live video performances and find upcoming club gigs for ${artistName} in ${cityName}.`,
+      images: ["https://www.eventurer.online/apple-touch-icon.svg"],
     },
   };
 }
