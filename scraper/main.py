@@ -49,6 +49,8 @@ CITY_TIMEZONES = {
     "los-angeles": "America/Los_Angeles",
     "chicago": "America/Chicago",
     "miami": "America/New_York",
+    "san-francisco": "America/Los_Angeles",
+    "detroit": "America/Detroit",
     "amsterdam": "Europe/Amsterdam",
     "paris": "Europe/Paris",
     "barcelona": "Europe/Madrid",
@@ -117,6 +119,8 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
         "los-angeles": "us",
         "chicago": "us",
         "miami": "us",
+        "san-francisco": "us",
+        "detroit": "us",
         "amsterdam": "nl",
         "paris": "fr",
         "barcelona": "es",
@@ -222,6 +226,10 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = 41.8781, -87.6298
                 elif city_name == "miami":
                     lat_base, lng_base = 25.7617, -80.1918
+                elif city_name == "san-francisco":
+                    lat_base, lng_base = 37.7749, -122.4194
+                elif city_name == "detroit":
+                    lat_base, lng_base = 42.3314, -83.0458
                 else:
                     lat_base, lng_base = 51.5074, -0.1278
                 
@@ -540,6 +548,8 @@ if __name__ == "__main__":
         {"name": "los-angeles", "id": 23},
         {"name": "chicago",     "id": 17},
         {"name": "miami", "id": 38},
+        {"name": "san-francisco", "id": 218},
+        {"name": "detroit", "id": 19},
         {"name": "amsterdam", "id": 29},
         {"name": "paris", "id": 44},
         {"name": "barcelona", "id": 20},

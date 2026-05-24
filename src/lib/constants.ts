@@ -38,6 +38,8 @@ export const CITIES: CityInfo[] = [
   { id: "los-angeles", name: "Los Angeles", country: "USA", lat: 34.0522, lng: -118.2437, areaId: 23 },
   { id: "chicago",     name: "Chicago",     country: "USA", lat: 41.8781, lng: -87.6298,  areaId: 17 },
   { id: "miami", name: "Miami", country: "USA", lat: 25.7617, lng: -80.1918, areaId: 38 },
+  { id: "san-francisco", name: "San Francisco", country: "USA", lat: 37.7749, lng: -122.4194, areaId: 218 },
+  { id: "detroit", name: "Detroit", country: "USA", lat: 42.3314, lng: -83.0458, areaId: 19 },
   { id: "amsterdam", name: "Amsterdam", country: "Netherlands", lat: 52.3676, lng: 4.9041, areaId: 29 },
   { id: "paris", name: "Paris", country: "France", lat: 48.8566, lng: 2.3522, areaId: 44 },
   { id: "barcelona", name: "Barcelona", country: "Spain", lat: 41.3874, lng: 2.1686, areaId: 20 },
@@ -186,5 +188,13 @@ export const CITY_META: Record<string, { description: string; keywords: string[]
   miami: {
     description: "Miami club events & electronic music map. Find techno, house & underground parties in Miami Beach & Wynwood.",
     keywords: ["Miami club events", "Miami techno", "Miami nightlife", "Miami Beach parties", "Miami rave map"],
+  },
+  "san-francisco": {
+    description: "San Francisco & Bay Area club events on a live map. Find techno, house & underground parties in SF, Oakland & beyond.",
+    keywords: ["San Francisco club events", "SF techno", "Bay Area nightlife", "San Francisco rave map", "Oakland parties"],
+  },
+  detroit: {
+    description: "Detroit club events & electronic music map. The birthplace of techno — find house, techno & underground parties in the D.",
+    keywords: ["Detroit club events", "Detroit techno", "Detroit house music", "Detroit nightlife", "Detroit rave map"],
   },
 };

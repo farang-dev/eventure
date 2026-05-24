@@ -76,6 +76,8 @@ const CITY_GRADIENTS: Record<string, string> = {
   adelaide: "linear-gradient(135deg, #14B8A6 0%, #22C55E 100%)",
   hobart: "linear-gradient(135deg, #6366F1 0%, #A855F7 100%)",
   brisbane: "linear-gradient(135deg, #F97316 0%, #EAB308 100%)",
+  "san-francisco": "linear-gradient(135deg, #F43F5E 0%, #3B82F6 100%)",
+  detroit: "linear-gradient(135deg, #EF4444 0%, #6B7280 100%)",
 };
 
 function getOptimizedImageUrl(url: string | null | undefined): string {

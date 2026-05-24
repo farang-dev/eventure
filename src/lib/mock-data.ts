@@ -264,6 +264,8 @@ export const CITY_TZS: Record<string, string> = {
   "los-angeles": "America/Los_Angeles",
   chicago: "America/Chicago",
   miami: "America/New_York",
+  "san-francisco": "America/Los_Angeles",
+  detroit: "America/Detroit",
   amsterdam: "Europe/Amsterdam",
   paris: "Europe/Paris",
   barcelona: "Europe/Madrid",
