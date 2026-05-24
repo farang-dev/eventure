@@ -139,6 +139,10 @@ export default async function ArtistsHubPage() {
         return "linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)";
       case "brisbane":
         return "linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(234, 179, 8, 0.15) 100%)";
+      case "san-francisco":
+        return "linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)";
+      case "detroit":
+        return "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(107, 114, 128, 0.15) 100%)";
       default:
         return "linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)";
     }
@@ -171,6 +175,8 @@ export default async function ArtistsHubPage() {
       case "adelaide": return "rgba(20, 184, 166, 0.15)";
       case "hobart": return "rgba(99, 102, 241, 0.15)";
       case "brisbane": return "rgba(249, 115, 22, 0.15)";
+      case "san-francisco": return "rgba(244, 63, 94, 0.15)";
+      case "detroit": return "rgba(239, 68, 68, 0.15)";
       default: return "rgba(255, 255, 255, 0.1)";
     }
   };

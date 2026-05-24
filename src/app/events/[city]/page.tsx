@@ -245,7 +245,13 @@ export default async function CityEventsPage(props: { params: Promise<{ city: st
         .order("starts_at", { ascending: true })
         .limit(500);
       if (data) {
-        initialEvents = data as MusicEvent[];
+        const seen = new Set<string>();
+        initialEvents = (data as MusicEvent[]).filter((e) => {
+          const key = `${e.title}::${e.starts_at}::${e.venue_name}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
       }
     } catch (e) {
       console.error(`Failed to fetch events for ${city}:`, e);

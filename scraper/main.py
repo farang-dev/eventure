@@ -397,37 +397,62 @@ def insert_into_supabase(events):
         print("Supabase not configured. Skipping DB insert.")
         return
         
-    print(f"Inserting {len(events)} events into Supabase...")
+    print(f"Upserting {len(events)} events into Supabase...")
     
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json",
-        "Prefer": "return=minimal"
     }
     
-    success_count = 0
+    # Build lookup of existing events by (title, starts_at) to avoid duplicates
+    city = events[0].get("city", "").lower()
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city}&select=id,title,starts_at,venue_name",
+            headers=headers,
+        )
+        existing = {}
+        if res.status_code == 200:
+            for row in res.json():
+                key = (row.get("title",""), row.get("starts_at",""), row.get("venue_name",""))
+                existing[key] = row["id"]
+        print(f"  Found {len(existing)} existing events for {city.upper()}")
+    except Exception as e:
+        print(f"  ⚠️ Could not fetch existing events: {e}")
+        existing = {}
+    
+    inserted = 0
+    updated = 0
     for event in events:
         try:
-            # Attempt UPSERT (requires source_id column and unique constraint)
-            headers["Prefer"] = "resolution=merge-duplicates"
-            res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=event, headers=headers)
+            key = (event.get("title",""), event.get("starts_at",""), event.get("venue_name",""))
+            existing_id = existing.get(key)
             
-            if res.status_code == 400 and "source_id" in res.text:
-                # Fallback: source_id column doesn't exist yet
-                # We must remove it from the payload otherwise it will still fail
-                headers.pop("Prefer", None)
-                fallback_event = event.copy()
-                fallback_event.pop("source_id", None)
-                res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=fallback_event, headers=headers)
-
-            if res.status_code in [201, 204]:
-                success_count += 1
+            if existing_id:
+                headers["Prefer"] = "return=minimal"
+                res = requests.patch(
+                    f"{SUPABASE_URL}/rest/v1/music_events?id=eq.{existing_id}",
+                    json=event,
+                    headers=headers,
+                )
+                if res.status_code in [200, 204]:
+                    updated += 1
             else:
-                print(f"Failed to insert event {event.get('title')}: {res.status_code} - {res.text}")
+                headers["Prefer"] = "return=minimal"
+                # Strip source_id if column doesn't exist
+                payload = event.copy()
+                res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=payload, headers=headers)
+                if res.status_code == 400 and "source_id" in res.text:
+                    payload.pop("source_id", None)
+                    res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=payload, headers=headers)
+                if res.status_code in [201, 204]:
+                    inserted += 1
+                else:
+                    print(f"  Failed to insert {event.get('title')}: {res.status_code} - {res.text[:100]}")
         except Exception as e:
-            print(f"Error inserting event: {e}")
-    print(f"🎉 Successfully inserted {success_count} / {len(events)} events!")
+            print(f"  Error processing event: {e}")
+    print(f"🎉 Done: {inserted} inserted, {updated} updated / {len(events)} total")
 
 def cleanup_expired_events():
     if not SUPABASE_URL or not SUPABASE_KEY: return
