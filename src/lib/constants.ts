@@ -22,6 +22,14 @@ export const CITIES: CityInfo[] = [
   { id: "newcastle", name: "Newcastle", country: "UK", lat: 54.9783, lng: -1.6178, areaId: 345 },
   { id: "leeds", name: "Leeds", country: "UK", lat: 53.8008, lng: -1.5491, areaId: 346 },
   { id: "sheffield", name: "Sheffield", country: "UK", lat: 53.3811, lng: -1.4701, areaId: 520 },
+  { id: "munich", name: "Munich", country: "Germany", lat: 48.1351, lng: 11.5820, areaId: 151 },
+  { id: "hamburg", name: "Hamburg", country: "Germany", lat: 53.5511, lng: 9.9937, areaId: 148 },
+  { id: "cologne", name: "Cologne", country: "Germany", lat: 50.9375, lng: 6.9603, areaId: 143 },
+  { id: "stuttgart", name: "Stuttgart", country: "Germany", lat: 48.7758, lng: 9.1829, areaId: 152 },
+  { id: "frankfurt", name: "Frankfurt", country: "Germany", lat: 50.1109, lng: 8.6821, areaId: 147 },
+  { id: "adelaide", name: "Adelaide", country: "Australia", lat: -34.9285, lng: 138.6007, areaId: 5 },
+  { id: "hobart", name: "Hobart", country: "Australia", lat: -42.8821, lng: 147.3272, areaId: 6 },
+  { id: "brisbane", name: "Brisbane", country: "Australia", lat: -27.4698, lng: 153.0251, areaId: 12 },
   { id: "vilnius", name: "Vilnius", country: "Lithuania", lat: 54.6872, lng: 25.2797, areaId: 561 },
   { id: "belgrade", name: "Belgrade", country: "Serbia", lat: 44.8125, lng: 20.4612, areaId: 562 },
   { id: "tbilisi", name: "Tbilisi", country: "Georgia", lat: 41.7151, lng: 44.8271, areaId: 188 },
@@ -29,7 +37,7 @@ export const CITIES: CityInfo[] = [
   { id: "new-york", name: "New York", country: "USA", lat: 40.7128, lng: -74.0060, areaId: 8 },
   { id: "los-angeles", name: "Los Angeles", country: "USA", lat: 34.0522, lng: -118.2437, areaId: 23 },
   { id: "chicago",     name: "Chicago",     country: "USA", lat: 41.8781, lng: -87.6298,  areaId: 17 },
-  { id: "miami", name: "Miami", country: "USA", lat: 25.7617, lng: -80.1918, areaId: 12 },
+  { id: "miami", name: "Miami", country: "USA", lat: 25.7617, lng: -80.1918, areaId: 38 },
   { id: "amsterdam", name: "Amsterdam", country: "Netherlands", lat: 52.3676, lng: 4.9041, areaId: 29 },
   { id: "paris", name: "Paris", country: "France", lat: 48.8566, lng: 2.3522, areaId: 44 },
   { id: "barcelona", name: "Barcelona", country: "Spain", lat: 41.3874, lng: 2.1686, areaId: 20 },
@@ -90,6 +98,38 @@ export const CITY_META: Record<string, { description: string; keywords: string[]
   sheffield: {
     description: "Sheffield club events & electronic music map. Discover techno, house & underground parties in South Yorkshire's steel city.",
     keywords: ["Sheffield club events", "Sheffield techno", "Sheffield nightlife", "Yorkshire rave", "UK rave map"],
+  },
+  munich: {
+    description: "Munich club events & electronic music map. Find techno, house & underground parties in Bavaria's vibrant capital.",
+    keywords: ["Munich club events", "Munich techno", "Munich nightlife", "Bavaria rave", "Germany rave map"],
+  },
+  hamburg: {
+    description: "Hamburg club events & electronic music map. Discover techno, house & underground parties in Germany's northern harbor city.",
+    keywords: ["Hamburg club events", "Hamburg techno", "Hamburg nightlife", "Germany rave map", "Germany nightlife"],
+  },
+  cologne: {
+    description: "Cologne club events & underground parties on a live map. Techno, house & electronic music in the Rhine metropolis.",
+    keywords: ["Cologne club events", "Cologne techno", "Cologne nightlife", "Germany rave map", "Germany nightlife"],
+  },
+  stuttgart: {
+    description: "Stuttgart club events & electronic music map. Discover techno, house & underground parties in Baden-Württemberg.",
+    keywords: ["Stuttgart club events", "Stuttgart techno", "Stuttgart nightlife", "Germany rave map", "Germany nightlife"],
+  },
+  frankfurt: {
+    description: "Frankfurt club events & electronic music map. Find techno, house & underground parties in Germany's financial hub.",
+    keywords: ["Frankfurt club events", "Frankfurt techno", "Frankfurt nightlife", "Germany rave map", "Germany nightlife"],
+  },
+  adelaide: {
+    description: "Adelaide club events & electronic music map. Discover techno, house & underground parties in South Australia.",
+    keywords: ["Adelaide club events", "Adelaide techno", "Adelaide nightlife", "Australia rave map", "Australia nightlife"],
+  },
+  hobart: {
+    description: "Hobart club events & electronic music map. Find techno, house & underground parties in Tasmania's capital.",
+    keywords: ["Hobart club events", "Hobart techno", "Hobart nightlife", "Australia rave map", "Australia nightlife"],
+  },
+  brisbane: {
+    description: "Brisbane club events & electronic music map. Discover techno, house & underground parties in Queensland's capital.",
+    keywords: ["Brisbane club events", "Brisbane techno", "Brisbane nightlife", "Australia rave map", "Australia nightlife"],
   },
   vilnius: {
     description: "Vilnius club nights & electronic music events. Discover techno, house & underground parties in Lithuania.",

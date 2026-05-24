@@ -86,6 +86,22 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
         return "linear-gradient(135deg, rgba(132, 204, 22, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)";
       case "sheffield":
         return "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%)";
+      case "munich":
+        return "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.15) 100%)";
+      case "hamburg":
+        return "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.15) 100%)";
+      case "cologne":
+        return "linear-gradient(135deg, rgba(31, 41, 55, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)";
+      case "stuttgart":
+        return "linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(31, 41, 55, 0.15) 100%)";
+      case "frankfurt":
+        return "linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)";
+      case "adelaide":
+        return "linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)";
+      case "hobart":
+        return "linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)";
+      case "brisbane":
+        return "linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(234, 179, 8, 0.15) 100%)";
       default:
         return "linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)";
     }
@@ -147,6 +163,22 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
         return "rgba(132, 204, 22, 0.15)";
       case "sheffield":
         return "rgba(239, 68, 68, 0.15)";
+      case "munich":
+        return "rgba(59, 130, 246, 0.15)";
+      case "hamburg":
+        return "rgba(239, 68, 68, 0.15)";
+      case "cologne":
+        return "rgba(31, 41, 55, 0.15)";
+      case "stuttgart":
+        return "rgba(251, 191, 36, 0.15)";
+      case "frankfurt":
+        return "rgba(37, 99, 235, 0.15)";
+      case "adelaide":
+        return "rgba(20, 184, 166, 0.15)";
+      case "hobart":
+        return "rgba(99, 102, 241, 0.15)";
+      case "brisbane":
+        return "rgba(249, 115, 22, 0.15)";
       default:
         return "rgba(255, 255, 255, 0.1)";
     }

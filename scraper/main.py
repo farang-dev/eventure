@@ -33,6 +33,14 @@ CITY_TIMEZONES = {
     "newcastle": "Europe/London",
     "leeds": "Europe/London",
     "sheffield": "Europe/London",
+    "munich": "Europe/Berlin",
+    "hamburg": "Europe/Berlin",
+    "cologne": "Europe/Berlin",
+    "stuttgart": "Europe/Berlin",
+    "frankfurt": "Europe/Berlin",
+    "adelaide": "Australia/Adelaide",
+    "hobart": "Australia/Hobart",
+    "brisbane": "Australia/Brisbane",
     "vilnius": "Europe/Vilnius",
     "belgrade": "Europe/Belgrade",
     "tbilisi": "Asia/Tbilisi",
@@ -91,6 +99,14 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
         "newcastle": "uk",
         "leeds": "uk",
         "sheffield": "uk",
+        "munich": "de",
+        "hamburg": "de",
+        "cologne": "de",
+        "stuttgart": "de",
+        "frankfurt": "de",
+        "adelaide": "au",
+        "hobart": "au",
+        "brisbane": "au",
         "tokyo": "jp",
         "osaka": "jp",
         "vilnius": "lt",
@@ -184,6 +200,22 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     lat_base, lng_base = 53.8008, -1.5491
                 elif city_name == "sheffield":
                     lat_base, lng_base = 53.3811, -1.4701
+                elif city_name == "munich":
+                    lat_base, lng_base = 48.1351, 11.5820
+                elif city_name == "hamburg":
+                    lat_base, lng_base = 53.5511, 9.9937
+                elif city_name == "cologne":
+                    lat_base, lng_base = 50.9375, 6.9603
+                elif city_name == "stuttgart":
+                    lat_base, lng_base = 48.7758, 9.1829
+                elif city_name == "frankfurt":
+                    lat_base, lng_base = 50.1109, 8.6821
+                elif city_name == "adelaide":
+                    lat_base, lng_base = -34.9285, 138.6007
+                elif city_name == "hobart":
+                    lat_base, lng_base = -42.8821, 147.3272
+                elif city_name == "brisbane":
+                    lat_base, lng_base = -27.4698, 153.0251
                 elif city_name == "los-angeles":
                     lat_base, lng_base = 34.0522, -118.2437
                 elif city_name == "chicago":
@@ -492,6 +524,14 @@ if __name__ == "__main__":
         {"name": "newcastle", "id": 345},
         {"name": "leeds", "id": 346},
         {"name": "sheffield", "id": 520},
+        {"name": "munich", "id": 151},
+        {"name": "hamburg", "id": 148},
+        {"name": "cologne", "id": 143},
+        {"name": "stuttgart", "id": 152},
+        {"name": "frankfurt", "id": 147},
+        {"name": "adelaide", "id": 5},
+        {"name": "hobart", "id": 6},
+        {"name": "brisbane", "id": 12},
         {"name": "vilnius", "id": 561},
         {"name": "belgrade", "id": 562},
         {"name": "tbilisi", "id": 188},
@@ -499,7 +539,7 @@ if __name__ == "__main__":
         {"name": "new-york", "id": 8},
         {"name": "los-angeles", "id": 23},
         {"name": "chicago",     "id": 17},
-        {"name": "miami", "id": 12},
+        {"name": "miami", "id": 38},
         {"name": "amsterdam", "id": 29},
         {"name": "paris", "id": 44},
         {"name": "barcelona", "id": 20},
