@@ -290,7 +290,7 @@ export default function CitiesClient({ cities }: CitiesClientProps) {
             {filteredCities.map((city) => (
               <Link
                 key={city.id}
-                href={`/${city.id}`}
+                href={`/events/${city.id}`}
                 style={{ textDecoration: "none", display: "block" }}
               >
                 <div

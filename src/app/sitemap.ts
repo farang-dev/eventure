@@ -113,7 +113,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // City-level pages (highest priority after home — these must always be indexed)
   const cityPageUrls: MetadataRoute.Sitemap = cityIds.map((city) => ({
-    url: `${baseUrl}/${city}`,
+    url: `${baseUrl}/events/${city}`,
     lastModified: new Date(),
     changeFrequency: 'daily',
     priority: 1,

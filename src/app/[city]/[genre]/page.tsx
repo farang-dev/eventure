@@ -209,7 +209,7 @@ export default async function CityGenrePage(props: { params: Promise<{ city: str
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Eventure", item: "https://www.eventurer.online" },
-      { "@type": "ListItem", position: 2, name: info.name, item: `https://www.eventurer.online/${city}` },
+      { "@type": "ListItem", position: 2, name: info.name, item: `https://www.eventurer.online/events/${city}` },
       { "@type": "ListItem", position: 3, name: `${genreMeta.label} Events`, item: `https://www.eventurer.online/${city}/${genre}` },
     ],
   };
@@ -227,7 +227,7 @@ export default async function CityGenrePage(props: { params: Promise<{ city: str
             <span>/</span>
             <Link href="/cities" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Cities</Link>
             <span>/</span>
-            <Link href={`/${city}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>{info.name}</Link>
+            <Link href={`/events/${city}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>{info.name}</Link>
             <span>/</span>
             <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>{genreMeta.label}</span>
           </nav>
@@ -248,7 +248,7 @@ export default async function CityGenrePage(props: { params: Promise<{ city: str
                   : `Explore ${genreMeta.label.toLowerCase()} events in ${info.name}.`}
               </p>
               <Link
-                href={`/${city}`}
+                href={`/events/${city}`}
                 style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", color: "#fff", borderRadius: 10, fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
               >
                 All Events in {info.name} <ArrowRight size={14} />
@@ -291,7 +291,7 @@ export default async function CityGenrePage(props: { params: Promise<{ city: str
                 <p style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
                   Events are updated daily. Check back soon or browse all events in {info.name}.
                 </p>
-                <Link href={`/${city}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", background: "var(--primary)", color: "#fff", borderRadius: 10, fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+                <Link href={`/events/${city}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", background: "var(--primary)", color: "#fff", borderRadius: 10, fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
                   Browse All {info.name} Events <ArrowRight size={14} />
                 </Link>
               </div>

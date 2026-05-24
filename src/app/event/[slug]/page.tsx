@@ -59,7 +59,7 @@ export default async function OldEventPage(props: { params: Promise<{ slug: stri
           Looking for events in <strong>{cityName}</strong>?
         </p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-          <Link href={`/${city.toLowerCase()}`} style={{ padding: '12px 24px', background: '#E63946', color: 'white', borderRadius: 12, textDecoration: 'none', fontWeight: 700 }}>
+          <Link href={`/events/${city.toLowerCase()}`} style={{ padding: '12px 24px', background: '#E63946', color: 'white', borderRadius: 12, textDecoration: 'none', fontWeight: 700 }}>
             Browse Events in {cityName}
           </Link>
           <Link href="/" style={{ padding: '12px 24px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderRadius: 12, textDecoration: 'none', fontWeight: 600, border: '1px solid var(--border)' }}>
