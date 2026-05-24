@@ -62,18 +62,73 @@ async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
   return null;
 }
 
+function formatEventDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  } catch { return ""; }
+}
+
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await props.params;
   const event = await getEventBySlugOrId(slug);
-  if (!event) return { title: "Event Detail | Eventure" };
+  const fallbackImage = "https://www.eventurer.online/apple-touch-icon.svg";
+
+  if (!event) {
+    const city = slug.split("-")[0] || "your city";
+    const cityName = city.charAt(0).toUpperCase() + city.slice(1);
+    return {
+      title: `Club Events & DJ Gigs in ${cityName} | Eventure`,
+      description: `Find club events, techno parties and DJ gigs in ${cityName}. Browse lineups, venues, dates and get tickets on Eventure.`,
+      openGraph: {
+        title: `Club Events & DJ Gigs in ${cityName} | Eventure`,
+        description: `Find club events, techno parties and DJ gigs in ${cityName}. Browse lineups, venues, dates and get tickets on Eventure.`,
+        images: [{ url: fallbackImage, width: 180, height: 180 }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `Club Events & DJ Gigs in ${cityName} | Eventure`,
+        description: `Find club events, techno parties and DJ gigs in ${cityName}. Browse lineups, venues, dates and get tickets on Eventure.`,
+        images: [fallbackImage],
+      },
+    };
+  }
+
   const canonicalSlug = createSlug(event.title, event.city);
-  const desc = event.description?.slice(0, 160) || `${event.title} at ${event.venue_name} in ${event.city}. ${event.artists?.length ? `Featuring ${event.artists.slice(0, 3).join(", ")}.` : ""} Get tickets and event info on Eventure.`;
-  return { 
-    title: `${event.title} | Eventure`,
-    description: desc,
-    openGraph: { 
-      images: event.image_url ? [event.image_url] : [],
+  const venuePart = event.venue_name ? ` at ${event.venue_name}` : "";
+  const artistsPart = event.artists?.length ? ` — ${event.artists.slice(0, 4).join(", ")}` : "";
+  const dateStr = formatEventDate(event.starts_at);
+  const datePart = dateStr ? ` on ${dateStr}` : "";
+  const ogImage = event.image_url || fallbackImage;
+
+  const pageTitle = `${event.title}${venuePart} in ${event.city}${artistsPart} | Eventure`;
+  const ogTitle = `${event.title}${venuePart} in ${event.city} | Eventure`;
+
+  const descParts = [
+    `${event.title}${venuePart} in ${event.city}${datePart}.`,
+    event.artists?.length ? `Featuring ${event.artists.slice(0, 5).join(", ")}.` : "",
+    event.description?.slice(0, 100) || `Get tickets and event info on Eventure.`,
+  ].filter(Boolean);
+  const pageDesc = descParts.join(" ").slice(0, 160);
+
+  return {
+    title: pageTitle.slice(0, 70),
+    description: pageDesc,
+    keywords: [event.title, event.venue_name, event.city, ...(event.artists || [])].filter(Boolean) as string[],
+    robots: { index: true, follow: true },
+    openGraph: {
+      title: ogTitle.slice(0, 70),
+      description: pageDesc,
+      images: [{ url: ogImage, width: 180, height: 180 }],
       url: `https://www.eventurer.online/event/${canonicalSlug}`,
+      type: "website",
+      siteName: "Eventure",
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: ogTitle.slice(0, 70),
+      description: pageDesc,
+      images: [ogImage],
     },
     alternates: {
       canonical: `https://www.eventurer.online/event/${canonicalSlug}`,
