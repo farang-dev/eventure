@@ -103,12 +103,12 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const pageTitle = `${event.title}${venuePart} in ${event.city}${artistsPart} | Eventure`;
   const ogTitle = `${event.title}${venuePart} in ${event.city} | Eventure`;
 
-  const descParts = [
-    `${event.title}${venuePart} in ${event.city}${datePart}.`,
-    event.artists?.length ? `Featuring ${event.artists.slice(0, 5).join(", ")}.` : "",
-    event.description?.slice(0, 100) || `Get tickets and event info on Eventure.`,
-  ].filter(Boolean);
-  const pageDesc = descParts.join(" ").slice(0, 160);
+  // CTR-optimized meta description: artists first (search keywords), then event/date/venue, then CTA
+  const topArtists = event.artists?.slice(0, 3) ?? [];
+  const artistLead = topArtists.length > 0
+    ? `See ${topArtists.join(", ")}${event.artists.length > 3 ? " and more" : ""} at `
+    : "";
+  const pageDesc = `${artistLead}${event.title}${datePart}${venuePart} in ${event.city}. Grab tickets on Eventure.`.slice(0, 160);
 
   return {
     title: pageTitle.slice(0, 70),
@@ -117,7 +117,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     robots: { index: true, follow: true },
     openGraph: {
       title: ogTitle.slice(0, 70),
-      description: pageDesc,
+      description: `${topArtists.length > 0 ? `${topArtists.join(", ")}${event.artists.length > 3 ? " and more" : ""} — ` : ""}${event.title} at ${event.venue_name || event.city}${datePart}. Secure your spot on Eventure.`.slice(0, 160),
       images: [{ url: ogImage, width: 180, height: 180 }],
       url: `https://www.eventurer.online/event/${canonicalSlug}`,
       type: "website",
@@ -127,7 +127,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     twitter: {
       card: "summary_large_image",
       title: ogTitle.slice(0, 70),
-      description: pageDesc,
+      description: `${topArtists.length > 0 ? `${topArtists.join(", ")}${event.artists.length > 3 ? " and more" : ""} — ` : ""}${event.title} at ${event.venue_name || event.city}${datePart}. Secure your spot on Eventure.`.slice(0, 160),
       images: [ogImage],
     },
     alternates: {

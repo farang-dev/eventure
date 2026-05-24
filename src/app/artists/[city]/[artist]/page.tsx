@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   return {
     title: `${artistName} Live DJ Sets & Upcoming Gig Schedule in ${cityName} | Eventure`,
-    description: `Watch live video sets from ${artistName} performing in ${cityName}. Discover their HÖR sets, Boiler Room performances and get direct tickets to their upcoming gigs on Eventure.`,
+    description: `${artistName} in ${cityName}: live DJ sets, Boiler Room & HÖR performances. Find upcoming club gigs and grab tickets on Eventure.`,
     keywords: [`${artistName}`, `${artistName} ${cityName}`, `${cityName} DJ`, `${artistName} live set`, `${artistName} HÖR`, `${artistName} Boiler Room`, "electronic music", "club events"],
     robots: {
       index: true,
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: PageProps) {
     },
     openGraph: {
       title: `${artistName} in ${cityName} | Eventure`,
-      description: `Watch live video performances and find upcoming club gigs for ${artistName} in ${cityName}.`,
+      description: `Watch ${artistName}'s live DJ sets in ${cityName}. Explore Boiler Room & HÖR performances, find upcoming club gigs, and grab tickets on Eventure.`,
       url: canonicalUrl,
       type: "profile",
       siteName: "Eventure",
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageProps) {
     twitter: {
       card: "summary_large_image",
       title: `${artistName} in ${cityName} | Eventure`,
-      description: `Watch live video performances and find upcoming club gigs for ${artistName} in ${cityName}.`,
+      description: `Watch ${artistName}'s live DJ sets in ${cityName}. Explore Boiler Room & HÖR performances, find upcoming club gigs, and grab tickets on Eventure.`,
       images: ["https://www.eventurer.online/apple-touch-icon.svg"],
     },
   };
