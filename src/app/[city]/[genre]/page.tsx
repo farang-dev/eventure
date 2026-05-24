@@ -225,7 +225,7 @@ export default async function CityGenrePage(props: { params: Promise<{ city: str
           <nav aria-label="Breadcrumb" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-secondary)", marginBottom: 24 }}>
             <Link href="/" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Home</Link>
             <span>/</span>
-            <Link href="/cities" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Cities</Link>
+            <Link href="/events/cities" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>Cities</Link>
             <span>/</span>
             <Link href={`/events/${city}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>{info.name}</Link>
             <span>/</span>

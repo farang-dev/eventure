@@ -520,7 +520,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
       {[
         { id: "home", icon: <MapIcon size={19} />, label: "Map", href: "/" },
         { id: "search", icon: <Search size={19} />, label: "Search" },
-        { id: "cities", icon: <Building2 size={19} />, label: "Cities", href: "/cities" },
+        { id: "cities", icon: <Building2 size={19} />, label: "Cities", href: "/events/cities" },
         { id: "artists", icon: <Users size={19} />, label: "Artists", href: "/artists" },
         { id: "about", icon: <Info size={19} />, label: "About" },
       ].map((item) => {
@@ -1468,7 +1468,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <Link
-                  href="/cities"
+                  href="/events/cities"
                   onClick={() => setShowMobileMenu(false)}
                   style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 10, color: "var(--text-primary)", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
                 >

@@ -10,7 +10,7 @@ interface HeaderProps {
 
 const navLinks = [
   { id: "map" as const, href: "/", label: "Map", icon: <MapIcon size={16} /> },
-  { id: "cities" as const, href: "/cities", label: "Cities", icon: <Building2 size={16} /> },
+  { id: "cities" as const, href: "/events/cities", label: "Cities", icon: <Building2 size={16} /> },
   { id: "artists" as const, href: "/artists", label: "Artists", icon: <Users size={16} /> },
 ];
 
