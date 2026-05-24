@@ -331,7 +331,7 @@ export default async function CityEventsPage(props: { params: Promise<{ city: st
               </p>
               <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
                 <Link
-                  href="/"
+                  href={`/?city=${city}`}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "var(--primary)", color: "#fff", borderRadius: 10, fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
                 >
                   <MapIcon size={15} /> Open Live Map
