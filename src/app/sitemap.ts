@@ -5,8 +5,7 @@ import { createSlug } from '@/lib/utils'
 import { CITIES } from '@/lib/constants'
 import { GENRE_META } from '@/lib/mock-data'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const revalidate = 3600
 
 function parseArtistNames(rawArtists: unknown): string[] {
   const names = new Set<string>()
