@@ -200,15 +200,47 @@ def index_latest_events():
         events = res.json()
         print(f"Found {len(events)} active events in database.")
         
-        # Filter down to events that haven't been indexed yet
+        # Define structural URLs (SEO-critical landing pages)
+        cities = [
+            "tokyo", "osaka", "london", "manchester", "liverpool", "birmingham", "bristol", "brighton", 
+            "glasgow", "edinburgh", "newcastle", "leeds", "sheffield", "vilnius", "belgrade", "tbilisi", 
+            "berlin", "new-york", "los-angeles", "chicago", "miami", "amsterdam", "paris", "barcelona", 
+            "sydney", "melbourne", "perth"
+        ]
+        genres = ["techno", "house", "tech-house", "trance", "drum-and-bass", "dubstep", "disco", "funk", "hiphop"]
+
+        structural_urls = [
+            "https://www.eventurer.online",
+            "https://www.eventurer.online/cities",
+            "https://www.eventurer.online/artists"
+        ]
+        for city in cities:
+            structural_urls.append(f"https://www.eventurer.online/{city}")
+            structural_urls.append(f"https://www.eventurer.online/artists/{city}")
+            for genre in genres:
+                structural_urls.append(f"https://www.eventurer.online/{city}/{genre}")
+
+        # Filter down to URLs that haven't been indexed yet
         initial_unindexed = []
+        
+        # Load structural URLs first with priority
+        structural_added = 0
+        for s_url in structural_urls:
+            if s_url not in indexed_urls:
+                mock_event = {"title": s_url.replace("https://www.eventurer.online", ""), "city": "SEO_SYSTEM"}
+                initial_unindexed.append((s_url, mock_event))
+                structural_added += 1
+                
+        if structural_added > 0:
+            print(f"Added {structural_added} unindexed structural (City/Genre) URLs to queue.")
+
         for event in events:
             slug = create_slug(event.get("title"), event.get("city"))
             event_url = f"https://www.eventurer.online/event/{slug}"
             if event_url not in indexed_urls:
                 initial_unindexed.append((event_url, event))
 
-        print(f"Found {len(initial_unindexed)} events that need indexing.")
+        print(f"Found {len(initial_unindexed)} total URLs (structural + events) that need indexing.")
         
         if not initial_unindexed:
             print("🎉 All upcoming events are already indexed! Nothing to do.")
@@ -289,12 +321,17 @@ def index_latest_events():
 
         total_new = success_count + (artist_result or 0)
         remaining_count = len(remaining) if remaining else 0
+        
+        # Load up-to-date all-time indexed count
+        all_time_total = len(load_indexed_urls())
+        
         summary = (
             f"📊 *Indexing Report*\n\n"
             f"Events indexed: {success_count}\n"
             f"Artists indexed: {artist_result or 0}\n"
             f"Total new URLs: {total_new}\n"
-            f"Remaining (quota): {remaining_count}"
+            f"Remaining (quota): {remaining_count}\n"
+            f"All-time Total Indexed: {all_time_total}"
         )
         send_whatsapp(summary)
 
