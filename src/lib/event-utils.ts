@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { MusicEvent } from "@/lib/types";
 import { MOCK_EVENTS, CITY_TZS } from "@/lib/mock-data";
 import { createSlug } from "@/lib/utils";
+import { CITIES } from "./constants";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -12,7 +13,7 @@ try {
   }
 } catch (e) {}
 
-export const EVENT_CITIES = ["tokyo", "osaka", "london", "vilnius", "belgrade", "tbilisi", "berlin", "new-york", "los-angeles", "chicago", "miami", "amsterdam", "paris", "barcelona", "sydney", "melbourne", "perth"];
+export const EVENT_CITIES = CITIES.map((c) => c.id);
 
 export async function getEventBySlugOrId(slug: string): Promise<MusicEvent | null> {
   if (!slug) return null;
