@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { createEventUrl } from "@/lib/utils";
 import type { MusicEvent } from "@/lib/types";
 import { GENRE_META, formatEventTime, getDaysUntil, CITY_TZS } from "@/lib/mock-data";
-import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Ticket, ExternalLink, Music, Star, Share2, Check, Headphones } from "lucide-react";
 import GenreIcon from "@/components/GenreIcon";
 
 interface Props {
@@ -23,6 +23,37 @@ export default function MusicEventDetail({ event, onBack, onArtistClick }: Props
   const daysUntil = getDaysUntil(event?.starts_at || "");
   const [copied, setCopied] = useState(false);
   const [imgFit, setImgFit] = useState<"contain" | "cover">("contain");
+  const [activeListenArtist, setActiveListenArtist] = useState<string | null>(null);
+  const [videoIds, setVideoIds] = useState<Record<string, string>>({});
+  const [loadingArtists, setLoadingArtists] = useState<Record<string, boolean>>({});
+
+  const handleListenClick = async (artistName: string) => {
+    if (activeListenArtist === artistName) {
+      setActiveListenArtist(null);
+      return;
+    }
+
+    if (videoIds[artistName]) {
+      setActiveListenArtist(artistName);
+      return;
+    }
+
+    setLoadingArtists(prev => ({ ...prev, [artistName]: true }));
+    try {
+      const res = await fetch(`/api/youtube-search?q=${encodeURIComponent(artistName)}`);
+      const data = await res.json();
+      if (data.videoId) {
+        setVideoIds(prev => ({ ...prev, [artistName]: data.videoId }));
+        setActiveListenArtist(artistName);
+      } else {
+        alert(`Could not find a DJ set for ${artistName} on YouTube.`);
+      }
+    } catch (e) {
+      console.error("Failed to find DJ set:", e);
+    } finally {
+      setLoadingArtists(prev => ({ ...prev, [artistName]: false }));
+    }
+  };
 
   const eventUrl = createEventUrl(event?.title, event?.city || "event");
   const shareUrl = typeof window !== "undefined"
@@ -151,11 +182,11 @@ export default function MusicEventDetail({ event, onBack, onArtistClick }: Props
 
           {(event.artists || []).length > 0 && (
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
                 <Music size={13} color="var(--text-muted)" />
                 <span className="label">Lineup</span>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {(event.artists || []).flatMap(artist => {
                   if (!artist) return [];
                   // Split nested names just in case they are comma-separated
@@ -163,73 +194,112 @@ export default function MusicEventDetail({ event, onBack, onArtistClick }: Props
                 })
                 .map(a => (a || "").replace(/[{}""'\[\]]/g, "").trim())
                 .filter(a => a && a.toLowerCase() !== "tba")
-                .map((artistName, i) => (
-                  <div 
-                    key={`${artistName}-${i}`} 
-                    onClick={() => onArtistClick && onArtistClick(artistName)}
-                    style={{ 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: 12, 
-                      padding: "6px 12px", 
-                      background: "var(--bg-elevated)", 
-                      border: "1px solid var(--border)", 
-                      borderRadius: 8,
-                      cursor: onArtistClick ? "pointer" : "default",
-                      transition: "all 0.15s ease"
-                    }}
-                    onMouseEnter={(e) => {
-                      if (onArtistClick) {
-                        e.currentTarget.style.borderColor = "var(--primary)";
-                        e.currentTarget.style.background = "var(--bg-secondary)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (onArtistClick) {
-                        e.currentTarget.style.borderColor = "var(--border)";
-                        e.currentTarget.style.background = "var(--bg-elevated)";
-                      }
-                    }}
-                  >
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artistName}</span>
-                    
-                    {/* Audio Links */}
-                    <div 
-                      style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto", borderLeft: "1px solid var(--border)", paddingLeft: 10 }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {/* SoundCloud */}
-                      <a 
-                        href={`https://soundcloud.com/search?q=${encodeURIComponent(artistName)}`}
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        title={`Listen to ${artistName} on SoundCloud`}
-                        style={{ display: "flex", alignItems: "center", color: "#FF5500", transition: "transform 0.1s ease", cursor: "pointer" }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.18)"}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                .map((artistName, i) => {
+                  const isPlaying = activeListenArtist === artistName;
+                  const isLoading = loadingArtists[artistName] || false;
+                  const videoId = videoIds[artistName];
+                  return (
+                    <div key={`${artistName}-${i}`} style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+                      <div 
+                        style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "space-between",
+                          padding: "8px 14px", 
+                          background: "var(--bg-elevated)", 
+                          border: `1px solid ${isPlaying ? "var(--primary)" : "var(--border)"}`, 
+                          borderRadius: 10,
+                          transition: "all 0.15s ease",
+                        }}
                       >
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-                        </svg>
-                      </a>
-                      
-                      {/* MixCloud */}
-                      <a 
-                        href={`https://www.mixcloud.com/search/?q=${encodeURIComponent(artistName)}`}
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        title={`Listen to ${artistName} on MixCloud`}
-                        style={{ display: "flex", alignItems: "center", color: "#00E2B2", transition: "transform 0.1s ease", cursor: "pointer" }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.18)"}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                      >
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z" />
-                        </svg>
-                      </a>
+                        <span 
+                          onClick={() => onArtistClick && onArtistClick(artistName)}
+                          style={{ 
+                            fontSize: 13, 
+                            fontWeight: 700, 
+                            color: "var(--text-primary)", 
+                            cursor: onArtistClick ? "pointer" : "default" 
+                          }}
+                        >
+                          {artistName}
+                        </span>
+                        
+                        <div 
+                          style={{ display: "flex", alignItems: "center", gap: 12 }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {/* Listen Button */}
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleListenClick(artistName);
+                            }}
+                            disabled={isLoading}
+                            style={{ 
+                              display: "inline-flex", 
+                              alignItems: "center", 
+                              gap: 6, 
+                              background: isPlaying ? "var(--primary)" : "rgba(255,255,255,0.04)", 
+                              color: isPlaying ? "#fff" : "var(--text-primary)", 
+                              border: `1px solid ${isPlaying ? "var(--primary)" : "var(--border)"}`, 
+                              borderRadius: "20px", 
+                              padding: "4px 10px", 
+                              fontSize: 11, 
+                              fontWeight: 700, 
+                              cursor: isLoading ? "not-allowed" : "pointer",
+                              transition: "all 0.15s ease",
+                              opacity: isLoading ? 0.7 : 1
+                            }}
+                          >
+                            <Headphones size={11} className={isLoading ? "animate-pulse" : ""} />
+                            {isLoading ? "Searching..." : isPlaying ? "Close" : "Listen Live"}
+                          </button>
+
+                          {/* SoundCloud Link */}
+                          <a 
+                            href={`https://soundcloud.com/search?q=${encodeURIComponent(artistName)}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            title={`Search ${artistName} on SoundCloud`}
+                            style={{ display: "flex", alignItems: "center", color: "#FF5500", transition: "transform 0.1s ease", cursor: "pointer" }}
+                            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.15)"}
+                            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                          >
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Expandable Player Widget */}
+                      {isPlaying && videoId && (
+                        <div 
+                          style={{ 
+                            width: "100%", 
+                            height: 160, 
+                            marginTop: 8, 
+                            borderRadius: 10, 
+                            overflow: "hidden", 
+                            border: "1px solid var(--primary)", 
+                            boxShadow: "0 4px 12px rgba(124, 58, 237, 0.15)", 
+                            background: "#000" 
+                          }}
+                        >
+                          <iframe
+                            width="100%"
+                            height="100%"
+                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                            title={`${artistName} DJ Set`}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

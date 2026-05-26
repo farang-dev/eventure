@@ -11,6 +11,8 @@ interface LineupListProps {
 
 export default function LineupList({ artists, city }: LineupListProps) {
   const [activeListenArtist, setActiveListenArtist] = useState<string | null>(null);
+  const [videoIds, setVideoIds] = useState<Record<string, string>>({});
+  const [loadingArtists, setLoadingArtists] = useState<Record<string, boolean>>({});
 
   if (!artists || artists.length === 0) return null;
 
@@ -23,6 +25,34 @@ export default function LineupList({ artists, city }: LineupListProps) {
 
   if (splitArtists.length === 0) return null;
 
+  const handleListenClick = async (artistName: string) => {
+    if (activeListenArtist === artistName) {
+      setActiveListenArtist(null);
+      return;
+    }
+
+    if (videoIds[artistName]) {
+      setActiveListenArtist(artistName);
+      return;
+    }
+
+    setLoadingArtists(prev => ({ ...prev, [artistName]: true }));
+    try {
+      const res = await fetch(`/api/youtube-search?q=${encodeURIComponent(artistName)}`);
+      const data = await res.json();
+      if (data.videoId) {
+        setVideoIds(prev => ({ ...prev, [artistName]: data.videoId }));
+        setActiveListenArtist(artistName);
+      } else {
+        alert(`Could not find a DJ set for ${artistName} on YouTube.`);
+      }
+    } catch (e) {
+      console.error("Failed to find DJ set:", e);
+    } finally {
+      setLoadingArtists(prev => ({ ...prev, [artistName]: false }));
+    }
+  };
+
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
@@ -33,6 +63,9 @@ export default function LineupList({ artists, city }: LineupListProps) {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {splitArtists.map((artistName: string, i: number) => {
           const isPlaying = activeListenArtist === artistName;
+          const isLoading = loadingArtists[artistName] || false;
+          const videoId = videoIds[artistName];
+
           return (
             <div key={`${artistName}-${i}`} style={{ display: "flex", flexDirection: "column", width: "100%" }}>
               <div 
@@ -64,8 +97,9 @@ export default function LineupList({ artists, city }: LineupListProps) {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      setActiveListenArtist(isPlaying ? null : artistName);
+                      handleListenClick(artistName);
                     }}
+                    disabled={isLoading}
                     style={{ 
                       display: "inline-flex", 
                       alignItems: "center", 
@@ -77,12 +111,13 @@ export default function LineupList({ artists, city }: LineupListProps) {
                       padding: "4px 10px", 
                       fontSize: 11, 
                       fontWeight: 700, 
-                      cursor: "pointer",
-                      transition: "all 0.15s ease" 
+                      cursor: isLoading ? "not-allowed" : "pointer",
+                      transition: "all 0.15s ease",
+                      opacity: isLoading ? 0.7 : 1
                     }}
                   >
-                    <Headphones size={11} />
-                    {isPlaying ? "Close" : "Listen Live"}
+                    <Headphones size={11} className={isLoading ? "animate-pulse" : ""} />
+                    {isLoading ? "Searching..." : isPlaying ? "Close" : "Listen Live"}
                   </button>
 
                   {/* SoundCloud Link */}
@@ -103,7 +138,7 @@ export default function LineupList({ artists, city }: LineupListProps) {
               </div>
 
               {/* Expandable Player Widget */}
-              {isPlaying && (
+              {isPlaying && videoId && (
                 <div 
                   style={{ 
                     width: "100%", 
@@ -119,7 +154,7 @@ export default function LineupList({ artists, city }: LineupListProps) {
                   <iframe
                     width="100%"
                     height="100%"
-                    src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(artistName + " dj set")}&autoplay=1`}
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
                     title={`${artistName} DJ Set`}
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
