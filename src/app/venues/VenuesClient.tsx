@@ -65,6 +65,46 @@ export default function VenuesClient({ cities }: VenuesClientProps) {
         return "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(239, 68, 68, 0.15) 100%)";
       case "miami":
         return "linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(244, 63, 94, 0.15) 100%)";
+      case "manchester":
+        return "linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)";
+      case "liverpool":
+        return "linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%)";
+      case "birmingham":
+        return "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(234, 179, 8, 0.15) 100%)";
+      case "bristol":
+        return "linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)";
+      case "brighton":
+        return "linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)";
+      case "glasgow":
+        return "linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)";
+      case "edinburgh":
+        return "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%)";
+      case "newcastle":
+        return "linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(13, 148, 136, 0.15) 100%)";
+      case "leeds":
+        return "linear-gradient(135deg, rgba(132, 204, 22, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)";
+      case "sheffield":
+        return "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%)";
+      case "munich":
+        return "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.15) 100%)";
+      case "hamburg":
+        return "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.15) 100%)";
+      case "cologne":
+        return "linear-gradient(135deg, rgba(31, 41, 55, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)";
+      case "stuttgart":
+        return "linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(31, 41, 55, 0.15) 100%)";
+      case "frankfurt":
+        return "linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)";
+      case "adelaide":
+        return "linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)";
+      case "hobart":
+        return "linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)";
+      case "brisbane":
+        return "linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(234, 179, 8, 0.15) 100%)";
+      case "san-francisco":
+        return "linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)";
+      case "detroit":
+        return "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(107, 114, 128, 0.15) 100%)";
       default:
         return "linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)";
     }
@@ -106,6 +146,46 @@ export default function VenuesClient({ cities }: VenuesClientProps) {
         return "rgba(59, 130, 246, 0.15)";
       case "miami":
         return "rgba(6, 182, 212, 0.15)";
+      case "manchester":
+        return "rgba(249, 115, 22, 0.15)";
+      case "liverpool":
+        return "rgba(168, 85, 247, 0.15)";
+      case "birmingham":
+        return "rgba(245, 158, 11, 0.15)";
+      case "bristol":
+        return "rgba(20, 184, 166, 0.15)";
+      case "brighton":
+        return "rgba(6, 182, 212, 0.15)";
+      case "glasgow":
+        return "rgba(139, 92, 246, 0.15)";
+      case "edinburgh":
+        return "rgba(245, 158, 11, 0.15)";
+      case "newcastle":
+        return "rgba(6, 182, 212, 0.15)";
+      case "leeds":
+        return "rgba(132, 204, 22, 0.15)";
+      case "sheffield":
+        return "rgba(239, 68, 68, 0.15)";
+      case "munich":
+        return "rgba(59, 130, 246, 0.15)";
+      case "hamburg":
+        return "rgba(239, 68, 68, 0.15)";
+      case "cologne":
+        return "rgba(31, 41, 55, 0.15)";
+      case "stuttgart":
+        return "rgba(251, 191, 36, 0.15)";
+      case "frankfurt":
+        return "rgba(37, 99, 235, 0.15)";
+      case "adelaide":
+        return "rgba(20, 184, 166, 0.15)";
+      case "hobart":
+        return "rgba(99, 102, 241, 0.15)";
+      case "brisbane":
+        return "rgba(249, 115, 22, 0.15)";
+      case "san-francisco":
+        return "rgba(244, 63, 94, 0.15)";
+      case "detroit":
+        return "rgba(239, 68, 68, 0.15)";
       default:
         return "rgba(255, 255, 255, 0.1)";
     }
