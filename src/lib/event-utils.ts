@@ -68,8 +68,27 @@ export async function getRelatedEvents(event: MusicEvent): Promise<MusicEvent[]>
       .gte("ends_at", now)
       .or("is_approved.eq.true,is_approved.is.null")
       .order("starts_at", { ascending: true })
-      .limit(6);
-    if (data) return data as MusicEvent[];
+      .limit(30);
+    
+    if (data) {
+      const seenTitles = new Set<string>();
+      if (event.title) {
+        seenTitles.add(event.title.toLowerCase().trim());
+      }
+      const filtered: MusicEvent[] = [];
+      for (const item of (data as MusicEvent[])) {
+        if (!item.title) continue;
+        const titleKey = item.title.toLowerCase().trim();
+        if (!seenTitles.has(titleKey)) {
+          seenTitles.add(titleKey);
+          filtered.push(item);
+        }
+        if (filtered.length >= 6) {
+          break;
+        }
+      }
+      return filtered;
+    }
   } catch (e) {}
   return [];
 }
