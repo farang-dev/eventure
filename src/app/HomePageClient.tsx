@@ -11,7 +11,7 @@ import GenreIcon from "@/components/GenreIcon";
 import type { MusicEvent, AppView } from "@/lib/types";
 import { GENRE_META, getDaysUntil } from "@/lib/mock-data";
 import { CITIES } from "@/lib/constants";
-import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, Layers, ChevronDown, ChevronUp, Building2, Menu, Users } from "lucide-react";
+import { Search, SlidersHorizontal, X, Map as MapIcon, Info, Plus, Moon, Sun, Layers, ChevronDown, ChevronUp, Building2, Menu, Users, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -522,6 +522,7 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
         { id: "search", icon: <Search size={19} />, label: "Search" },
         { id: "cities", icon: <Building2 size={19} />, label: "Cities", href: "/events/cities" },
         { id: "artists", icon: <Users size={19} />, label: "Artists", href: "/artists" },
+        { id: "venues", icon: <MapPin size={19} />, label: "Venues", href: "/venues" },
         { id: "about", icon: <Info size={19} />, label: "About" },
       ].map((item) => {
         const isActive = view === item.id;
@@ -1482,6 +1483,14 @@ export default function HomePageClient({ initialEvents, initialCity, initialGenr
                 >
                   <Users size={18} />
                   Artists
+                </Link>
+                <Link
+                  href="/venues"
+                  onClick={() => setShowMobileMenu(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 10, color: "var(--text-primary)", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+                >
+                  <MapPin size={18} />
+                  Venues
                 </Link>
                 <button
                   onClick={() => { setShowMobileMenu(false); setView("about"); }}
