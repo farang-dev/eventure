@@ -236,6 +236,43 @@ export default async function EventPage(props: { params: Promise<{ city: string;
 
         {/* CONTENT AREA */}
         <div style={{ padding: "24px 20px" }}>
+          {/* Past Event Banner */}
+          {event.ends_at && new Date(event.ends_at) < new Date() && (
+            <div style={{ 
+              background: "rgba(230, 57, 70, 0.08)", 
+              border: "1px solid rgba(230, 57, 70, 0.2)", 
+              borderRadius: 12, 
+              padding: "12px 16px", 
+              marginBottom: 20, 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "space-between",
+              gap: 12
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>📅</span>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>
+                  This event took place in the past.
+                </span>
+              </div>
+              <Link 
+                href={`/events/${event.city.toLowerCase()}`}
+                style={{ 
+                  fontSize: 12, 
+                  fontWeight: 700, 
+                  color: "#E63946", 
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                  padding: "6px 12px",
+                  background: "rgba(230, 57, 70, 0.12)",
+                  borderRadius: 8
+                }}
+              >
+                Find upcoming events
+              </Link>
+            </div>
+          )}
+
           {/* Genre Tag */}
           <div style={{ marginBottom: 16 }}>
             <span style={{ background: meta.bg, border: `1px solid ${meta.color}44`, color: meta.color, fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.07em", display: "inline-flex", alignItems: "center" }}>

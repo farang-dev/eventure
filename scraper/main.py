@@ -391,6 +391,17 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
     print(f"✅ Found {len(all_parsed_events)} events in {city_name.upper()}.")
     return all_parsed_events
 
+def normalize_date_string(dt_str):
+    if not dt_str:
+        return ""
+    # Standardize 'Z', '+00:00', '.000Z' etc.
+    cleaned = dt_str.replace("Z", "").replace("+00:00", "")
+    if " " in cleaned:
+        cleaned = cleaned.replace(" ", "T")
+    if "." in cleaned:
+        cleaned = cleaned.split(".")[0]
+    return cleaned
+
 def insert_into_supabase(events):
     if not events: return
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -414,10 +425,21 @@ def insert_into_supabase(events):
         )
         existing = {}
         if res.status_code == 200:
+            seen_keys = set()
             for row in res.json():
-                key = (row.get("title",""), row.get("starts_at",""), row.get("venue_name",""))
-                existing[key] = row["id"]
-        print(f"  Found {len(existing)} existing events for {city.upper()}")
+                starts_at_norm = normalize_date_string(row.get("starts_at", ""))
+                key = (row.get("title",""), starts_at_norm, row.get("venue_name",""))
+                if key in seen_keys:
+                    # Duplicate found! Delete it to clean up the DB on the fly
+                    try:
+                        requests.delete(f"{SUPABASE_URL}/rest/v1/music_events?id=eq.{row['id']}", headers=headers)
+                        print(f"  🗑️ Cleaned up existing duplicate row: {row.get('title')} ({row.get('id')})")
+                    except Exception as del_err:
+                        print(f"  ⚠️ Failed to delete duplicate: {del_err}")
+                else:
+                    seen_keys.add(key)
+                    existing[key] = row["id"]
+        print(f"  Found {len(existing)} unique existing events for {city.upper()}")
     except Exception as e:
         print(f"  ⚠️ Could not fetch existing events: {e}")
         existing = {}
@@ -426,7 +448,8 @@ def insert_into_supabase(events):
     updated = 0
     for event in events:
         try:
-            key = (event.get("title",""), event.get("starts_at",""), event.get("venue_name",""))
+            starts_at_norm = normalize_date_string(event.get("starts_at", ""))
+            key = (event.get("title",""), starts_at_norm, event.get("venue_name",""))
             existing_id = existing.get(key)
             
             if existing_id:
@@ -448,6 +471,8 @@ def insert_into_supabase(events):
                     res = requests.post(f"{SUPABASE_URL}/rest/v1/music_events", json=payload, headers=headers)
                 if res.status_code in [201, 204]:
                     inserted += 1
+                    # Add newly inserted event to lookup to prevent duplicate creation during this run
+                    existing[key] = payload.get("id") or "newly_inserted"
                 else:
                     print(f"  Failed to insert {event.get('title')}: {res.status_code} - {res.text[:100]}")
         except Exception as e:
@@ -457,10 +482,10 @@ def insert_into_supabase(events):
 def cleanup_expired_events():
     if not SUPABASE_URL or not SUPABASE_KEY: return
     
-    print("\n[Cleanup] Removing expired events (older than 3 hours)...")
+    print("\n[Cleanup] Removing expired events (older than 30 days)...")
     
-    # Calculate cutoff (current time - 3 hours)
-    cutoff = (datetime.now() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    # Calculate cutoff (current time - 30 days) for SEO-optimized page retention
+    cutoff = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     
     headers = {
         "apikey": SUPABASE_KEY,
@@ -472,7 +497,7 @@ def cleanup_expired_events():
         # Delete events where ends_at is less than the cutoff
         res = requests.delete(f"{SUPABASE_URL}/rest/v1/music_events?ends_at=lt.{cutoff}", headers=headers)
         if res.status_code in [200, 204]:
-            print("✅ Expired events cleaned up successfully.")
+            print("✅ Expired events (older than 30 days) cleaned up successfully.")
         else:
             print(f"⚠️ Cleanup returned status {res.status_code}")
     except Exception as e:
@@ -481,8 +506,8 @@ def cleanup_expired_events():
 def smart_sync_city_events(city_name, new_events):
     """
     Smart incremental sync:
-    1. Delete only past/expired events for this city.
-    2. Delete events that have been cancelled on RA (in DB but not in new scrape).
+    1. Delete only events that ended more than 30 days ago for this city.
+    2. Delete events that have been cancelled on RA (in DB and ending in future, but absent from new scrape).
     3. Upsert all newly scraped events (insert new + update changed).
     """
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -494,17 +519,20 @@ def smart_sync_city_events(city_name, new_events):
         "Content-Type": "application/json",
     }
 
-    # Cutoff: anything that ended more than 3 hours ago is considered past
-    cutoff = (datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    # Cutoffs:
+    # 1. past_cutoff: events ended more than 30 days ago (for SEO crawl stability)
+    past_cutoff = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    # 2. active_cutoff: events ending in future/near-future to detect cancellations
+    active_cutoff = (datetime.utcnow() - timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
-    # ── Step 1: Remove past events for this city ──────────────────────────────
+    # ── Step 1: Remove past events (older than 30 days) for this city ─────────
     try:
         res = requests.delete(
-            f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}&ends_at=lt.{cutoff}",
+            f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}&ends_at=lt.{past_cutoff}",
             headers=headers,
         )
         if res.status_code in [200, 204]:
-            print(f"🗑️  Cleared past events for {city_name.upper()}.")
+            print(f"🗑️  Cleared past events (older than 30 days) for {city_name.upper()}.")
         else:
             print(f"⚠️ Past-event cleanup returned {res.status_code} for {city_name.upper()}")
     except Exception as e:
@@ -514,8 +542,9 @@ def smart_sync_city_events(city_name, new_events):
     new_source_ids = {e["source_id"] for e in new_events if e.get("source_id")}
     if new_source_ids:
         try:
+            # We only look for cancellation among active/upcoming events
             res = requests.get(
-                f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}&ends_at=gte.{cutoff}&select=source_id",
+                f"{SUPABASE_URL}/rest/v1/music_events?city=eq.{city_name.lower()}&ends_at=gte.{active_cutoff}&select=source_id",
                 headers=headers,
             )
             if res.status_code == 200:
@@ -600,3 +629,4 @@ if __name__ == "__main__":
         print(f"\n[Indexing] Skip automatic submission: {e}")
         
     print("\nDone.")
+3. 
