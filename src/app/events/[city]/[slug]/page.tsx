@@ -310,26 +310,61 @@ export default async function EventPage(props: { params: Promise<{ city: string;
                 .map((a: string) => (a || "").replace(/[{}""'\[\]]/g, "").trim())
                 .filter((a: string) => a && a.toLowerCase() !== "tba")
                 .map((artistName: string, i: number) => (
-                  <Link 
+                  <div 
                     key={i} 
-                    href={`/?city=${(event.city || "vilnius").toLowerCase()}&view=artists&artist=${encodeURIComponent(artistName)}`}
                     style={{ 
                       display: "flex", 
                       alignItems: "center", 
-                      gap: 8, 
+                      gap: 12, 
                       padding: "6px 12px", 
                       background: "var(--bg-elevated)", 
                       border: "1px solid var(--border)", 
                       borderRadius: 8,
-                      textDecoration: "none",
-                      color: "inherit",
                       transition: "all 0.15s ease",
-                      cursor: "pointer"
                     }}
                     className="card-hover-effect"
                   >
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{artistName}</span>
-                  </Link>
+                    <Link 
+                      href={`/?city=${(event.city || "vilnius").toLowerCase()}&view=artists&artist=${encodeURIComponent(artistName)}`}
+                      style={{ 
+                        textDecoration: "none",
+                        color: "inherit",
+                        fontWeight: 600,
+                        fontSize: 13,
+                      }}
+                    >
+                      {artistName}
+                    </Link>
+                    
+                    {/* Audio Links */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, borderLeft: "1px solid var(--border)", paddingLeft: 10, marginLeft: 2 }}>
+                      {/* SoundCloud */}
+                      <a 
+                        href={`https://soundcloud.com/search?q=${encodeURIComponent(artistName)}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        title={`Listen to ${artistName} on SoundCloud`}
+                        style={{ display: "flex", alignItems: "center", color: "#FF5500", transition: "transform 0.1s ease" }}
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+                        </svg>
+                      </a>
+                      
+                      {/* MixCloud */}
+                      <a 
+                        href={`https://www.mixcloud.com/search/?q=${encodeURIComponent(artistName)}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        title={`Listen to ${artistName} on MixCloud`}
+                        style={{ display: "flex", alignItems: "center", color: "#00E2B2", transition: "transform 0.1s ease" }}
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
