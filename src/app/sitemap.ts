@@ -84,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       offset += limit
 
-      if (offset >= 45000) break
+      if (offset >= 3000) break
     }
 
     eventUrls = uniqueEvents
