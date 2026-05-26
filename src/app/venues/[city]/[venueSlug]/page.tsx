@@ -124,15 +124,27 @@ export default async function VenueDetailPage(props: { params: Promise<{ city: s
           notFound();
         }
 
+        // Deduplicate matched events on the fly to prevent duplicates from showing
+        const seenEvents = new Set<string>();
+        const uniqueMatchedEvents: MusicEvent[] = [];
+        matchedEvents.forEach((e) => {
+          if (!e.title) return;
+          const key = `${e.title.toLowerCase().trim()}::${e.starts_at}`;
+          if (!seenEvents.has(key)) {
+            seenEvents.add(key);
+            uniqueMatchedEvents.push(e);
+          }
+        });
+
         // Get venue info from the first matched event
-        const first = matchedEvents[0];
+        const first = uniqueMatchedEvents[0];
         venueName = first.venue_name || "";
         venueAddress = first.venue_address || "Address unavailable";
         latitude = first.lat || null;
         longitude = first.lng || null;
 
         const now = new Date();
-        matchedEvents.forEach((e) => {
+        uniqueMatchedEvents.forEach((e) => {
           const isUpcoming = e.ends_at && new Date(e.ends_at) >= now;
           if (isUpcoming) {
             upcomingEvents.push(e);

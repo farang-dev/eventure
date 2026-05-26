@@ -225,10 +225,10 @@ export default function VenuesClient({ cities }: VenuesClientProps) {
                 }}
               >
                 <div
-                  className="card-hover-effect"
+                  className="card card-hover-effect"
                   style={{
-                    backgroundColor: "var(--bg-elevated)",
-                    border: "1px solid var(--border)",
+                    background: getCityGradient(city.id),
+                    border: `1px solid ${getCityBorderGlow(city.id)}`,
                     borderRadius: "16px",
                     padding: "24px",
                     height: "100%",
@@ -240,23 +240,6 @@ export default function VenuesClient({ cities }: VenuesClientProps) {
                     boxShadow: "var(--shadow-sm)",
                   }}
                 >
-                  {/* Decorative Subtle Gradient Background */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: "150px",
-                      background: getCityGradient(city.id),
-                      opacity: 0.8,
-                      zIndex: 0,
-                      pointerEvents: "none",
-                      maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)",
-                      WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)",
-                    }}
-                  />
-
                   {/* Content container */}
                   <div style={{ position: "relative", zIndex: 1 }}>
                     <div
