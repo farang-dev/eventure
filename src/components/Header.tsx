@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Map as MapIcon, Building2, Users, Menu, X } from "lucide-react";
+import { Map as MapIcon, Building2, Users, Menu, X, MapPin } from "lucide-react";
 
 interface HeaderProps {
-  activePage?: "map" | "cities" | "artists";
+  activePage?: "map" | "cities" | "artists" | "venues";
 }
 
 const navLinks = [
   { id: "map" as const, href: "/", label: "Map", icon: <MapIcon size={16} /> },
   { id: "cities" as const, href: "/events/cities", label: "Cities", icon: <Building2 size={16} /> },
   { id: "artists" as const, href: "/artists", label: "Artists", icon: <Users size={16} /> },
+  { id: "venues" as const, href: "/venues", label: "Venues", icon: <MapPin size={16} /> },
 ];
 
 export default function Header({ activePage }: HeaderProps) {
