@@ -5,7 +5,7 @@ import { createEventUrl } from '@/lib/utils'
 import { CITIES } from '@/lib/constants'
 import { GENRE_META } from '@/lib/mock-data'
 
-export const revalidate = 3600
+export const revalidate = 86400
 
 function parseArtistNames(rawArtists: unknown): string[] {
   const names = new Set<string>()
@@ -84,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       offset += limit
 
-      if (offset >= 3000) break
+      if (offset >= 45000) break
     }
 
     eventUrls = uniqueEvents
