@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { CITIES } from "@/lib/constants";
 import CityVenuesClient from "./CityVenuesClient";
 
-export const revalidate = 60;
+export const revalidate = 43200;
 
 export async function generateStaticParams() {
   return CITIES.map((c) => ({ city: c.id }));

@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import { createVenueSlug } from "../page";
 import type { MusicEvent } from "@/lib/types";
 
-export const revalidate = 60;
+export const revalidate = 43200;
 
 // Since it's dynamic, we can generate dynamic paths if needed, but Next.js will dynamically compile it as ISR if static params aren't fully generated. Let's omit generateStaticParams for the venue slugs because they depend on transient database rows, allowing Next.js to compile them purely on demand (on-demand ISR/SSR), which is perfect for dynamic database-driven pages!
 

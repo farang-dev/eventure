@@ -8,7 +8,7 @@ import { createEventUrl } from "@/lib/utils";
 import { MapPin, Calendar, Music, ArrowRight, ExternalLink, Map as MapIcon } from "lucide-react";
 import Header from "@/components/Header";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return CITIES.map((c) => ({ city: c.id }));

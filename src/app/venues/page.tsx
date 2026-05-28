@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { CITIES, CITY_META } from "@/lib/constants";
 import VenuesClient from "./VenuesClient";
 
-export const revalidate = 60;
+export const revalidate = 43200;
 
 export async function generateMetadata() {
   return {

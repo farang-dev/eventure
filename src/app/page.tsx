@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import HomePageClient from "./HomePageClient";
 import type { MusicEvent } from "@/lib/types";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export default async function Page() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";

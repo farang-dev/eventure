@@ -5,7 +5,7 @@ import { Search, MapPin, ArrowRight, Users, Music, Building2, Map as MapIcon } f
 import Header from "@/components/Header";
 import ArtistSearchBar from "@/components/ArtistSearchBar";
 
-export const revalidate = 60;
+export const revalidate = 43200;
 
 export async function generateMetadata() {
   return {

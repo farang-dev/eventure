@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { CITIES } from "@/lib/constants";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return CITIES.map((c) => ({ city: c.id }));
