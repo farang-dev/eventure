@@ -321,9 +321,21 @@ export default function MusicEventDetail({ event, onBack, onArtistClick }: Props
           </a>
 
           {event.description && (
-            <div>
-              <label className="label">About</label>
-              <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{event.description}</p>
+            <div style={{ marginBottom: 32 }}>
+              <label className="label" style={{ fontSize: 13, letterSpacing: "0.1em", marginBottom: 12 }}>About This Event</label>
+              <div style={{ 
+                fontSize: 15, 
+                color: "var(--text-primary)", 
+                lineHeight: 1.8,
+                background: "rgba(255,255,255,0.02)",
+                padding: "20px 24px",
+                borderRadius: 16,
+                border: "1px solid var(--border)",
+                whiteSpace: "pre-wrap",
+                letterSpacing: "0.01em"
+              }}>
+                {event.description}
+              </div>
             </div>
           )}
 
