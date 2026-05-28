@@ -200,15 +200,15 @@ export default async function EventPage(props: { params: Promise<{ city: string;
   };
 
   return (
-    <div className="app-shell" style={{ maxWidth: 600, margin: "0 auto", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", background: 'var(--bg)', color: 'var(--text-primary)', minHeight: '100vh' }}>
+    <div className="app-shell" style={{ width: "100vw", maxWidth: "100%", margin: 0, background: 'var(--bg)', color: 'var(--text-primary)', minHeight: '100vh', display: 'flex' }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbLd, eventLd, faqLd]) }}
       />
-      <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)", display: "flex", flexDirection: "column", position: "relative" }}>
+      <div className="detail-layout" style={{ flex: 1, width: "100%", position: "relative" }}>
         
         {/* HERO AREA */}
-        <div style={{ width: "100%", height: 400, background: "#000", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="detail-hero" style={{ background: "#0a0a0a", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {event.image_url ? (
             <img src={event.image_url} alt={event.title} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           ) : (
@@ -236,7 +236,7 @@ export default async function EventPage(props: { params: Promise<{ city: string;
         </div>
 
         {/* CONTENT AREA */}
-        <div style={{ padding: "24px 20px" }}>
+        <div className="detail-content">
           {/* Past Event Banner */}
           {event.ends_at && new Date(event.ends_at) < new Date() && (
             <div style={{ 
@@ -316,11 +316,21 @@ export default async function EventPage(props: { params: Promise<{ city: string;
           </a>
 
           {/* Description */}
-          <div style={{ marginBottom: 24 }}>
-            <label className="label">About This Event</label>
-            <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>
+          <div style={{ marginBottom: 32 }}>
+            <label className="label" style={{ fontSize: 13, letterSpacing: "0.1em", marginBottom: 12 }}>About This Event</label>
+            <div style={{ 
+              fontSize: 15, 
+              color: "var(--text-primary)", 
+              lineHeight: 1.8,
+              background: "rgba(255,255,255,0.02)",
+              padding: "20px 24px",
+              borderRadius: 16,
+              border: "1px solid var(--border)",
+              whiteSpace: "pre-wrap",
+              letterSpacing: "0.01em"
+            }}>
               {event.description || `${event.title} is an upcoming ${meta.label.toLowerCase()} event at ${event.venue_name} in ${event.city}.${(event.artists || []).length > 0 ? ` Featuring performances by ${event.artists.slice(0, 10).join(", ")}.` : ""} Check the event page for the full lineup, ticket details, and venue information on Eventure.`}
-            </p>
+            </div>
           </div>
 
           {/* Price */}
