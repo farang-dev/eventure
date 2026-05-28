@@ -596,7 +596,7 @@ select.input { cursor: pointer; }
   }
 
   .event-detail-panel {
-    width: 1060px;
+    width: 100%;
   }
 
   .bottom-sheet-container {
