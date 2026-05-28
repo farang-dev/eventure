@@ -30,7 +30,8 @@ create table public.music_events (
   source_url text, -- To track where we scraped this from
   source_id text unique, -- Unique identifier from the source (e.g., RA ID) to prevent duplicates
   is_featured boolean default false,
-  
+  is_approved boolean default null, -- null = auto-approved (scraper), false = pending, true = approved
+
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
