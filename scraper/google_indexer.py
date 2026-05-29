@@ -22,14 +22,22 @@ WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE") or "818041185473"
 WHATSAPP_API_KEY = os.environ.get("WHATSAPP_API_KEY") or "2645005"
 
 def create_slug(title, city):
-    """Helper to match Next.js event slug generation logic"""
+    """Helper to match Next.js createSlug logic: returns '{city}-{title}' slug"""
     if not title:
         return ""
-    # Lowercase, replace non-alphanumeric with hyphen
+    city = city or "various"
     clean = f"{city}-{title}".lower()
-    clean = re.sub(r'[^a-z0-9\s-]', '', clean)
-    clean = re.sub(r'[\s-]+', '-', clean)
+    clean = re.sub(r'[^\w\s-]', '', clean)
+    clean = re.sub(r'[\s_]+', '-', clean)
     return clean.strip('-')
+
+def create_event_url(title, city):
+    """Matches Next.js createEventUrl exactly: /events/{city}/{title-slug}"""
+    city = (city or "various").lower().replace(' ', '-')
+    full_slug = create_slug(title, city)
+    # Strip city prefix to get title-only slug
+    title_slug = full_slug[len(city) + 1:] if full_slug.startswith(city + '-') else full_slug
+    return f"https://www.eventurer.online/events/{city}/{title_slug}"
 
 def create_artist_slug(artist_name):
     """Create URL slug for an artist page, matching Next.js CityArtistsClient logic."""
@@ -235,8 +243,7 @@ def index_latest_events():
             print(f"Added {structural_added} unindexed structural (City/Genre) URLs to queue.")
 
         for event in events:
-            slug = create_slug(event.get("title"), event.get("city"))
-            event_url = f"https://www.eventurer.online/event/{slug}"
+            event_url = create_event_url(event.get("title"), event.get("city"))
             if event_url not in indexed_urls:
                 initial_unindexed.append((event_url, event))
 
