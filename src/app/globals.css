@@ -714,6 +714,9 @@ select.input { cursor: pointer; }
   .detail-hero {
     height: 300px;
   }
+  .detail-hero img {
+    object-fit: cover !important;
+  }
   .detail-hero::after {
     background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 25%);
   }
