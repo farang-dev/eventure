@@ -3,3 +3,7 @@ https://www.eventurer.online/cities
 https://www.eventurer.online/artists
 https://www.eventurer.online/tokyo
 https://www.eventurer.online/artists/tokyo
+https://www.eventurer.online/tokyo/techno
+https://www.eventurer.online/tokyo/house
+https://www.eventurer.online/tokyo/tech-house
+https://www.eventurer.online/tokyo/trance
