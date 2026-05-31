@@ -1,0 +1,53 @@
+name: Submit URLs to Google Index
+
+on:
+  workflow_dispatch:
+    # manual trigger only — no schedule
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r scraper/requirements.txt
+
+      - name: Setup Google Service Accounts
+        run: |
+          echo '${{ secrets.SERVICE_ACCOUNT_1 }}' > service-account.json
+          echo '${{ secrets.SERVICE_ACCOUNT_2 }}' > service-account2.json
+          echo '${{ secrets.SERVICE_ACCOUNT_3 }}' > service-account3.json
+          echo '${{ secrets.SERVICE_ACCOUNT_4 }}' > service-account4.json
+          echo '${{ secrets.SERVICE_ACCOUNT_5 }}' > service-account5.json
+
+      - name: Run Google Indexer Only
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          python scraper/google_indexer.py
+
+      - name: Commit and push indexed URLs cache
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f scraper/indexed_urls.txt
+          if git diff --staged --quiet; then
+            echo "No changes in indexed_urls.txt"
+          else
+            git commit -m "chore: update google indexer cache [skip ci]"
+            git pull --rebase origin main
+            git push
+          fi
