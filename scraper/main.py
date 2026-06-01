@@ -254,8 +254,8 @@ def fetch_ra_graphql(area_id, city_name, days_ahead=14):
                     else:
                         print(f"  🗑️ Discarded RA coordinates for {venue_name}: {raw_ra_lat},{raw_ra_lng} ({km_from_city(raw_ra_lat, raw_ra_lng):.0f}km from {city_name})")
 
-                # 2. Get Mapbox geocoded coordinates using full address
-                if venue_name != "TBA":
+                # 2. Get Mapbox geocoded coordinates using full address (skip if RA already has coords)
+                if venue_name != "TBA" and not ra_lat:
                     try:
                         exact_address = venue.get("address") or venue_location.get("address")
                         search_query = f"{venue_name}, {exact_address}, {city_name}" if exact_address else f"{venue_name}, {city_name}"
