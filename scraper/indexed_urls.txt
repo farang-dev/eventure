@@ -38,3 +38,10 @@ https://www.eventurer.online/manchester
 https://www.eventurer.online/artists/manchester
 https://www.eventurer.online/manchester/techno
 https://www.eventurer.online/artists/adelaide/citizen1
+https://www.eventurer.online/manchester/house
+https://www.eventurer.online/manchester/tech-house
+https://www.eventurer.online/manchester/trance
+https://www.eventurer.online/manchester/drum-and-bass
+https://www.eventurer.online/manchester/dubstep
+https://www.eventurer.online/manchester/disco
+https://www.eventurer.online/manchester/funk
