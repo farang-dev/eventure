@@ -11,7 +11,7 @@ if not os.environ.get("NEXT_PUBLIC_SUPABASE_URL"):
     load_dotenv(dotenv_path=".env.local")
 
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
 RA_GRAPHQL_URL = 'https://ra.co/graphql'
 RA_HEADERS = {
