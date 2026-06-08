@@ -1,8 +1,11 @@
 name: Submit URLs to Google Index
 
 on:
+  schedule:
+    # Run daily at 12:00 UTC to submit new URLs to Google Indexing API
+    - cron: '0 12 * * *'
   workflow_dispatch:
-    # manual trigger only — no schedule
+    # Allows manual triggering
 
 jobs:
   index:
@@ -26,11 +29,21 @@ jobs:
 
       - name: Setup Google Service Accounts
         run: |
-          echo '${{ secrets.SERVICE_ACCOUNT_1 }}' > service-account.json
-          echo '${{ secrets.SERVICE_ACCOUNT_2 }}' > service-account2.json
-          echo '${{ secrets.SERVICE_ACCOUNT_3 }}' > service-account3.json
-          echo '${{ secrets.SERVICE_ACCOUNT_4 }}' > service-account4.json
-          echo '${{ secrets.SERVICE_ACCOUNT_5 }}' > service-account5.json
+          cat > service-account.json << 'EOF'
+          ${{ secrets.SERVICE_ACCOUNT_1 }}
+          EOF
+          cat > service-account2.json << 'EOF'
+          ${{ secrets.SERVICE_ACCOUNT_2 }}
+          EOF
+          cat > service-account3.json << 'EOF'
+          ${{ secrets.SERVICE_ACCOUNT_3 }}
+          EOF
+          cat > service-account4.json << 'EOF'
+          ${{ secrets.SERVICE_ACCOUNT_4 }}
+          EOF
+          cat > service-account5.json << 'EOF'
+          ${{ secrets.SERVICE_ACCOUNT_5 }}
+          EOF
 
       - name: Run Google Indexer Only
         env:

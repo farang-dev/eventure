@@ -629,4 +629,3 @@ if __name__ == "__main__":
         print(f"\n[Indexing] Skip automatic submission: {e}")
         
     print("\nDone.")
-3. 

@@ -195,7 +195,10 @@ def index_latest_events():
     
     # Query future approved events order by start date
     # We query up to 1000 items to search for unindexed events
-    url = f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now_iso}&order=starts_at.asc&limit=1000"
+    # Filter: is_approved = true OR is_approved IS NULL (matching app queries)
+    url = (f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now_iso}"
+           f"&order=starts_at.asc&limit=1000"
+           f"&or=(is_approved.eq.true,is_approved.is.null)")
     
     RETRY_DELAYS_MIN = [30, 60, 120]  # retry delays in minutes
 
@@ -367,7 +370,9 @@ def index_artist_pages(sessions_info, start_session_idx=0, session_requests=0, a
     }
 
     now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
-    url = f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now_iso}&order=starts_at.asc&limit=2000"
+    url = (f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now_iso}"
+           f"&order=starts_at.asc&limit=2000"
+           f"&or=(is_approved.eq.true,is_approved.is.null)")
 
     try:
         res = requests.get(url, headers=headers)
@@ -399,7 +404,7 @@ def index_artist_pages(sessions_info, start_session_idx=0, session_requests=0, a
 
         if not to_index:
             print("🎉 All artist pages are already indexed! Nothing to do.")
-            return
+            return 0
 
         success_count = 0
         current_session_idx = start_session_idx
