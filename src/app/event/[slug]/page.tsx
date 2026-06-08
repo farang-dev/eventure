@@ -37,7 +37,6 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   return {
     title: `${event.title} | Eventure`,
     description: `${event.title} at ${event.venue_name} in ${event.city}. Get tickets on Eventure.`,
-    robots: { index: false, follow: true },
     alternates: {
       canonical: `https://www.eventurer.online${canonicalUrl}`,
     },

@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import HomePageClient from "./HomePageClient";
 import type { MusicEvent } from "@/lib/types";
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://www.eventurer.online",
+  },
+};
 
 export default async function Page() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";

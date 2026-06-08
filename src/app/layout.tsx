@@ -7,9 +7,6 @@ export const metadata: Metadata = {
   description:
     "Live interactive map of club events worldwide. Discover the best techno, house, and electronic music events in London, Tokyo, Osaka, Tbilisi, and more. Real-time schedules and ticket links.",
   keywords: ["club events", "techno parties", "house music events", "rave map", "Tbilisi nightlife", "Tokyo clubs", "Osaka techno", "London raves", "music events map"],
-  alternates: {
-    canonical: "https://www.eventurer.online",
-  },
   openGraph: {
     title: "Eventure — Find Techno, House & Club Events Worldwide",
     description: "Discover the best club & music events happening right now globally.",
@@ -38,8 +35,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#0D1117" },
     { media: "(prefers-color-scheme: light)", color: "#F8F9FA" },

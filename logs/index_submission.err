@@ -1,0 +1,578 @@
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 211, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-05-31T07:04:30.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 169, in <module>
+    main()
+    ~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 100, in main
+    res = http.get(
+        f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now}&order=starts_at.asc&limit=1000",
+        headers=headers,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-05-31T07:04:30.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 211, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-01T07:10:05.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 169, in <module>
+    main()
+    ~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 100, in main
+    res = http.get(
+        f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now}&order=starts_at.asc&limit=1000",
+        headers=headers,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-01T07:10:05.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 211, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-02T07:06:06.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 169, in <module>
+    main()
+    ~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 100, in main
+    res = http.get(
+        f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now}&order=starts_at.asc&limit=1000",
+        headers=headers,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-02T07:06:06.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 211, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-04T07:12:17.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 169, in <module>
+    main()
+    ~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 100, in main
+    res = http.get(
+        f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now}&order=starts_at.asc&limit=1000",
+        headers=headers,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-04T07:12:17.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 211, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-05T07:00:25.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 169, in <module>
+    main()
+    ~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 100, in main
+    res = http.get(
+        f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now}&order=starts_at.asc&limit=1000",
+        headers=headers,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-05T07:00:25.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 211, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-06T07:01:59.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 169, in <module>
+    main()
+    ~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 100, in main
+    res = http.get(
+        f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now}&order=starts_at.asc&limit=1000",
+        headers=headers,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-06T07:01:59.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connection.py", line 211, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-07T07:10:38.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 169, in <module>
+    main()
+    ~~~~^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py", line 100, in main
+    res = http.get(
+        f"{SUPABASE_URL}/rest/v1/music_events?ends_at=gte.{now}&order=starts_at.asc&limit=1000",
+        headers=headers,
+    )
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/fuminozawa/code/farang-dev/eventure/scraper/venv/lib/python3.13/site-packages/requests/adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Max retries exceeded with url: /rest/v1/music_events?ends_at=gte.2026-06-07T07:10:38.000Z&order=starts_at.asc&limit=1000 (Caused by NameResolutionError("HTTPSConnection(host='lsvwowkrhzwqeoovpzih.supabase.co', port=443): Failed to resolve 'lsvwowkrhzwqeoovpzih.supabase.co' ([Errno 8] nodename nor servname provided, or not known)"))
+/Users/fuminozawa/code/farang-dev/eventure/daily_submit_urls.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")

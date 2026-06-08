@@ -31,80 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-  if (!supabaseUrl || !supabaseKey) return []
-
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  let eventUrls: any[] = []
-  let artistPairs = new Set<string>()
-  try {
-    const seenEventUrls = new Set<string>()
-    const uniqueEvents: any[] = []
-
-    let hasMore = true
-    let offset = 0
-    const limit = 1000
-
-    while (hasMore) {
-      const { data: events, error } = await supabase
-        .from('music_events')
-        .select('title, city, artists, updated_at, starts_at')
-        .order('starts_at', { ascending: false })
-        .range(offset, offset + limit - 1)
-
-      if (error) {
-        console.error('Sitemap error:', error)
-        break
-      }
-
-      if (!events || events.length === 0) {
-        hasMore = false
-        break
-      }
-
-      for (const e of events) {
-        const url = `${baseUrl}${createEventUrl(e.title, e.city)}`
-        if (!seenEventUrls.has(url)) {
-          seenEventUrls.add(url)
-          uniqueEvents.push({
-            url,
-            lastModified: new Date(e.updated_at || new Date()),
-            changeFrequency: 'weekly' as const,
-            priority: 0.6,
-          })
-        }
-
-        const eventCity = (e.city || '').toLowerCase().trim()
-        if (eventCity) {
-          for (const name of parseArtistNames(e.artists)) {
-            artistPairs.add(`${eventCity}::${name}`)
-          }
-        }
-      }
-
-      offset += limit
-
-      if (offset >= 45000) break
-    }
-
-    eventUrls = uniqueEvents
-  } catch (err) {
-    console.error('Sitemap error:', err)
+  let supabase: any = null
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey)
   }
 
-  const artistUrls: any[] = []
-  for (const pair of artistPairs) {
-    const [city, name] = pair.split('::')
-    const slug = encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'))
-    artistUrls.push({
-      url: `${baseUrl}/artists/${city}/${slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.5,
-    })
-  }
-
-  // Static pages: home + directories
+  // Static pages: home + directories — always included even if Supabase is unavailable
   const staticUrls: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
     { url: `${baseUrl}/events/cities`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
@@ -136,6 +68,79 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
   )
+
+  let eventUrls: any[] = []
+  let artistPairs = new Set<string>()
+
+  if (supabase) {
+    try {
+      const seenEventUrls = new Set<string>()
+      const uniqueEvents: any[] = []
+
+      let hasMore = true
+      let offset = 0
+      const limit = 1000
+
+      while (hasMore) {
+        const { data: events, error } = await supabase
+          .from('music_events')
+          .select('title, city, artists, updated_at, starts_at')
+          .or('is_approved.eq.true,is_approved.is.null')
+          .order('starts_at', { ascending: false })
+          .range(offset, offset + limit - 1)
+
+        if (error) {
+          console.error('Sitemap error:', error)
+          break
+        }
+
+        if (!events || events.length === 0) {
+          hasMore = false
+          break
+        }
+
+        for (const e of events) {
+          const url = `${baseUrl}${createEventUrl(e.title, e.city)}`
+          if (!seenEventUrls.has(url)) {
+            seenEventUrls.add(url)
+            uniqueEvents.push({
+              url,
+              lastModified: new Date(e.updated_at || new Date()),
+              changeFrequency: 'weekly' as const,
+              priority: 0.6,
+            })
+          }
+
+          const eventCity = (e.city || '').toLowerCase().trim()
+          if (eventCity) {
+            for (const name of parseArtistNames(e.artists)) {
+              artistPairs.add(`${eventCity}::${name}`)
+            }
+          }
+        }
+
+        offset += limit
+
+        if (offset >= 45000) break
+      }
+
+      eventUrls = uniqueEvents
+    } catch (err) {
+      console.error('Sitemap error:', err)
+    }
+  }
+
+  const artistUrls: any[] = []
+  for (const pair of artistPairs) {
+    const [city, name] = pair.split('::')
+    const slug = encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'))
+    artistUrls.push({
+      url: `${baseUrl}/artists/${city}/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
+    })
+  }
 
   return [
     ...staticUrls,

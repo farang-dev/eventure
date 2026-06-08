@@ -4,6 +4,9 @@ import ExploreClient from "./ExploreClient";
 export const metadata = {
   title: "Explore DJs | Eventure",
   description: "Discover DJ sets from cities around the world — 10 minutes each with seamless transitions.",
+  alternates: {
+    canonical: "https://www.eventurer.online/artists/explore",
+  },
 };
 
 export default async function ExplorePage({
