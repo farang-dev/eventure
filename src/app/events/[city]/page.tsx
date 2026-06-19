@@ -406,11 +406,37 @@ export default async function CityEventsPage(props: { params: Promise<{ city: st
               </div>
             )}
           </section>
+          {/* SEO text section */}
+          <section style={{ marginTop: 48, paddingTop: 32, borderTop: "1px solid var(--border)" }}>
+            <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.8, maxWidth: 800, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 20, fontFamily: "'Poppins', sans-serif", fontWeight: 700, color: "var(--text-primary)", marginBottom: 16, textAlign: "center" }}>
+                About the {info.name} Electronic Music Scene
+              </h2>
+              <p style={{ marginBottom: 16 }}>
+                {info.name} has a thriving electronic music scene with clubs, underground venues, and parties happening year-round.
+                From techno and house to drum & bass and experimental sounds, {info.name}{"'s"} nightlife offers something for every electronic music enthusiast.
+              </p>
+              <p style={{ marginBottom: 16 }}>
+                Eventure brings you a live-updating map of all upcoming club nights and music events in {info.name}.
+                Browse events by genre, discover new venues, and find your next party — all in one place.
+              </p>
+              <p>
+                Check back regularly as new events are added daily from local promoters and venues.
+                Whether you {"'"}re looking for weekend raves or mid-week underground sessions,
+                {info.name} has events happening every night of the week.
+              </p>
+            </div>
+          </section>
         </main>
 
         <footer style={{ borderTop: "1px solid var(--border)", padding: "24px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: 12, marginTop: 48 }}>
           <Link href="/" style={{ color: "var(--text-secondary)", textDecoration: "none", fontWeight: 600 }}>Eventure</Link>
           {" "}· Live interactive map of club events worldwide
+          <div style={{ marginTop: 8, display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
+            <Link href="/events/cities" style={{ color: "var(--text-muted)", textDecoration: "none" }}>All Cities</Link>
+            <Link href="/artists" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Artists</Link>
+            <Link href="/venues" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Venues</Link>
+          </div>
         </footer>
       </div>
     </>

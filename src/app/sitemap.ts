@@ -36,25 +36,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase = createClient(supabaseUrl, supabaseKey)
   }
 
-  // Static pages: home + directories — always included even if Supabase is unavailable
+  const now = new Date()
+
+  // Static pages — always included even if Supabase is unavailable
   const staticUrls: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
-    { url: `${baseUrl}/events/cities`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/artists`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: baseUrl, lastModified: now, changeFrequency: 'daily', priority: 1 },
+    { url: `${baseUrl}/events/cities`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/artists`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/venues`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
   ]
 
-  // City-level pages (highest priority after home — these must always be indexed)
-  const cityPageUrls: MetadataRoute.Sitemap = cityIds.map((city) => ({
+  // City-level event pages (highest priority — these must always be indexed)
+  const cityEventUrls: MetadataRoute.Sitemap = cityIds.map((city) => ({
     url: `${baseUrl}/events/${city}`,
-    lastModified: new Date(),
+    lastModified: now,
     changeFrequency: 'daily',
     priority: 1,
   }))
 
-  // City artists directory pages — always generated for every city
+  // City artist directory pages
   const artistCityUrls: MetadataRoute.Sitemap = cityIds.map((city) => ({
     url: `${baseUrl}/artists/${city}`,
-    lastModified: new Date(),
+    lastModified: now,
+    changeFrequency: 'daily',
+    priority: 0.9,
+  }))
+
+  // City venue pages
+  const venueCityUrls: MetadataRoute.Sitemap = cityIds.map((city) => ({
+    url: `${baseUrl}/venues/${city}`,
+    lastModified: now,
     changeFrequency: 'daily',
     priority: 0.9,
   }))
@@ -63,7 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const genrePageUrls: MetadataRoute.Sitemap = cityIds.flatMap((city) =>
     genreKeys.map((genre) => ({
       url: `${baseUrl}/${city}/${genre}`,
-      lastModified: new Date(),
+      lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.7,
     }))
@@ -71,6 +82,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let eventUrls: any[] = []
   let artistPairs = new Set<string>()
+  let venueNames = new Map<string, Set<string>>()
 
   if (supabase) {
     try {
@@ -84,7 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       while (hasMore) {
         const { data: events, error } = await supabase
           .from('music_events')
-          .select('title, city, artists, updated_at, starts_at')
+          .select('title, city, artists, venue_name, updated_at, starts_at')
           .or('is_approved.eq.true,is_approved.is.null')
           .order('starts_at', { ascending: false })
           .range(offset, offset + limit - 1)
@@ -105,7 +117,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             seenEventUrls.add(url)
             uniqueEvents.push({
               url,
-              lastModified: new Date(e.updated_at || new Date()),
+              lastModified: new Date(e.updated_at || now),
               changeFrequency: 'weekly' as const,
               priority: 0.6,
             })
@@ -117,10 +129,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               artistPairs.add(`${eventCity}::${name}`)
             }
           }
+
+          if (eventCity && e.venue_name) {
+            const v = e.venue_name.trim()
+            if (v && v.toLowerCase() !== 'tba') {
+              if (!venueNames.has(eventCity)) venueNames.set(eventCity, new Set())
+              venueNames.get(eventCity)!.add(v)
+            }
+          }
         }
 
         offset += limit
-
         if (offset >= 45000) break
       }
 
@@ -136,18 +155,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const slug = encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'))
     artistUrls.push({
       url: `${baseUrl}/artists/${city}/${slug}`,
-      lastModified: new Date(),
+      lastModified: now,
       changeFrequency: 'weekly' as const,
       priority: 0.5,
     })
   }
 
+  const venueDetailUrls: any[] = []
+  for (const [city, venues] of venueNames) {
+    for (const venueName of venues) {
+      const slug = encodeURIComponent(venueName.toLowerCase().replace(/\s+/g, '-'))
+      venueDetailUrls.push({
+        url: `${baseUrl}/venues/${city}/${slug}`,
+        lastModified: now,
+        changeFrequency: 'weekly' as const,
+        priority: 0.5,
+      })
+    }
+  }
+
   return [
     ...staticUrls,
-    ...cityPageUrls,
+    ...cityEventUrls,
     ...artistCityUrls,
+    ...venueCityUrls,
     ...genrePageUrls,
     ...eventUrls,
     ...artistUrls,
+    ...venueDetailUrls,
   ]
 }
