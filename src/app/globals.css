@@ -626,6 +626,7 @@ select.input { cursor: pointer; }
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow-y: auto;
 }
 .detail-hero {
   position: relative;
@@ -711,8 +712,14 @@ select.input { cursor: pointer; }
 
 /* Mobile: stacked */
 @media (max-width: 767px) {
+  .detail-layout {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   .detail-hero {
     height: 300px;
+    flex-shrink: 0;
   }
   .detail-hero img {
     object-fit: cover !important;
